@@ -15,7 +15,6 @@ node --version
 #### - Node Version Manager (nvm)
 >To manage Node.js versions, it's recommended to use Node Version Manager (nvm).
 >  Follow these steps to install it:
-
 ```
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
 ```
@@ -25,22 +24,16 @@ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
 ```
 nvm install --lts
 ```
----
 #### - Frontend Setup
-
 > Navigate to the Frontend folder:
 ```
 cd Frontend
 ``` 
-
 > Install Axios, a popular HTTP client for making requests:
 ```
 npm install axios
 ``` 
-
----
 ### Expo CLI
-
 >To work with Expo, you need to install the Expo CLI. Use one of the following commands based on your operating system:
 > ##### On Windows: 
 ```
@@ -50,12 +43,10 @@ npm install -g expo-cli
 ```
 sudo npm install -g expo-cli
 ```
-
 > Make sure you are in the Frontend folder, and then start Expo:
 ```
 expo start
 ```
-
 ## Setting up Backend
 ### - Backend Folder
 > Navigate to the Backend folder in your terminal:
