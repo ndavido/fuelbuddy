@@ -1,5 +1,5 @@
 
-# Leafit
+# FuelBuddy
 
 ## Setting up Frontend
 
