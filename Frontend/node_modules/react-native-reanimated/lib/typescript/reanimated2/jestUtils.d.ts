@@ -1,0 +1,14 @@
+declare global {
+    namespace jest {
+        interface Matchers<R> {
+            toHaveAnimatedStyle(style: Record<string, unknown>[] | Record<string, unknown>, config?: {
+                shouldMatchAllProps?: boolean;
+            }): R;
+        }
+    }
+}
+export declare const withReanimatedTimer: (animationTest: any) => void;
+export declare const advanceAnimationByTime: (time?: number) => void;
+export declare const advanceAnimationByFrame: (count: any) => void;
+export declare const setUpTests: (userConfig?: {}) => void;
+export declare const getAnimatedStyle: (received: any) => Record<string, any>;
