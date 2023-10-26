@@ -7,6 +7,7 @@ import HomeScreen from './Screens/HomeScreen';
 import Map from './Screens/MapScreen';
 import AccountScreen from './Screens/AccountScreen';
 import MapScreen from './Screens/MapScreen';
+import RegisterScreen from './Screens/RegisterScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -40,7 +41,7 @@ const AppNavigator = () => {
       >
         <Tab.Screen name="Home" component={HomeScreen} />
         <Tab.Screen name="Map" component={MapScreen} />
-        <Tab.Screen name="Account" component={AccountScreen} />
+        <Tab.Screen name="Register" component={RegisterScreen} />
       </Tab.Navigator>
     </NavigationContainer>
   );

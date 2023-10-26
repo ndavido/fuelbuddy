@@ -1,7 +1,7 @@
 {
   "expoServerPort": 19000,
   "packagerPort": 19000,
-  "webpackServerPort": null,
+  "webpackServerPort": 19006,
   "packagerPid": null,
   "expoServerNgrokUrl": null,
   "packagerNgrokUrl": null,

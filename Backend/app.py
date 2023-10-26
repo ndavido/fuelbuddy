@@ -1,5 +1,5 @@
 #! /usr/bin/python3
-
+import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from database import db, collection
@@ -12,9 +12,9 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
-account_sid = 'TWILIO_ACCOUNT_SID'
-auth_token = 'TWILIO_AUTH_TOKEN'
-twilio_number = 'TWILIO_PHONE_NUMBER'
+account_sid = os.getenv('TWILIO_SID')
+auth_token = os.getenv('TWILIO_AUTH_TOKEN')
+twilio_number = os.getenv('TWILIO_PHONE_NUMBER')
 twilio_client = Client(account_sid, auth_token)
 
 tasks = []
@@ -27,6 +27,7 @@ def register():
     full_name = data.get('full_name')
     username = data.get('username')
     phone_number = data.get('phone_number')
+    phone_number = "+"+phone_number
 
     # Check if user already exists
     if username in users:
