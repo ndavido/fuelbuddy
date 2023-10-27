@@ -1,6 +1,6 @@
 #! /usr/bin/python3
 import os
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, sessions
 from flask_cors import CORS
 from database import db, collection
 import bcrypt
@@ -58,7 +58,7 @@ def register():
 
     return jsonify({"message": "Verification code sent successfully!"})
 
-@app.route('/verify', methods=['POST'])
+@app.route('/register/verify', methods=['POST'])
 def verify():
     # Get JSON data from the request
     data = request.get_json()
@@ -75,6 +75,53 @@ def verify():
         return jsonify({"message": "Verification successful!"})
     
     return jsonify({"error": "Verification failed"}), 401
+
+@app.route('/login', methods=['POST'])
+def login():
+    # Get JSON data from the request
+    data = request.get_json()
+    phone_number = data.get('phone_number')
+    phone_number = "+"+phone_number
+
+    # Generate a 6-digit verification code
+    login_code = str(random.randint(100000, 999999))
+
+    # Hash the login code using bcrypt for secure storage
+    hashed_login_code = bcrypt.hashpw(login_code.encode('utf-8'), bcrypt.gensalt())
+
+    # Store the login code in the user's data
+    # Check if user exists by phone number
+    user = next((u for u in users.values() if u["phone_number"] == phone_number), None)
+    if user:
+        user["login_code"] = hashed_login_code
+    else:
+        return jsonify({"error": "User not registered"}), 404
+
+    # Send the login code via SMS using Twilio
+    message = twilio_client.messages.create(
+        to=phone_number,
+        from_=twilio_number,
+        body=f"Your login code is: {login_code}"
+    )
+
+    return jsonify({"message": "Login code sent successfully!"})
+
+@app.route('/login_verify', methods=['POST'])
+def login_verify():
+    # Get JSON data from the request
+    data = request.get_json()
+    phone_number = data.get('phone_number')
+    phone_number = "+"+phone_number
+    code = data.get('code')
+
+    # Retrieve the user by phone number
+    user = next((u for u in users.values() if u["phone_number"] == phone_number), None)
+
+    # Check if the user exists and if the login code matches
+    if user and bcrypt.checkpw(code.encode('utf-8'), user['login_code']):
+        return jsonify({"message": "Login successful!"})
+    
+    return jsonify({"error": "Login failed"}), 401
 
 if __name__ == '__main__':
     app.run(debug=True)
