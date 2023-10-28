@@ -34,13 +34,19 @@ def register():
         data = request.get_json()
         full_name = data.get('full_name')
         username = data.get('username')
-        phone_number = data.get('phone_number')
-        phone_number = "+" + phone_number
+        phone_number = "+" + data.get('phone_number')
 
-        # Check if user already exists in the database
-        existing_user = users_collection.find_user({"username": username})
-        if existing_user:
+        # Check if user with the same username already exists in the database
+        existing_user_by_username = users_collection.find_user(
+            {"username": username})
+        if existing_user_by_username:
             return jsonify({"error": "Username already exists"}), 409
+
+        # Check if user with the same phone number already exists in the database
+        existing_user_by_phone = users_collection.find_user(
+            {"phone_number": phone_number})
+        if existing_user_by_phone:
+            return jsonify({"error": "Phone number is already associated with another account"}), 409
 
         verification_code = str(random.randint(100000, 999999))
         hashed_code = bcrypt.hashpw(
