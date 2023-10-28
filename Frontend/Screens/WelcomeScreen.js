@@ -20,7 +20,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     zIndex: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    opacity: '.2',
+    opacity: '.5',
   },
   bttn: {
     zIndex: 1,
@@ -48,7 +48,7 @@ const WelcomeScreen = () => {
     <View style={styles.container}>
       <ImageBackground source={require('../assets/welcomeTemp.jpg')} resizeMode="cover" style={styles.image}>
         <View
-          style={styles.logo}
+          style={styles.tint}
         />
         <View style={styles.buttonWrapper}>
           <Button
