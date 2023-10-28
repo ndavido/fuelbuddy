@@ -171,7 +171,7 @@ def login_verify():
         return jsonify({"error": "An error occurred while verifying your code."}), 500
 
 
-# Neural Network Connection
+# Neural Network Connection Commented out for now
 # @app.route('/store_fuel_prices', methods=['POST'])
 # def store_fuel_prices():
 #     try:
@@ -189,5 +189,6 @@ def login_verify():
 #         return jsonify({"message": "Fuel price inserted"})
 #     except Exception as e:
 #         return jsonify({"error": str(e)}), 500
+
 if __name__ == '__main__':
     app.run(debug=True)
