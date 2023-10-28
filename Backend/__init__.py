@@ -2,7 +2,7 @@
 import os
 from flask import Flask, request, jsonify, sessions
 from flask_cors import CORS
-from database import db, collection
+from database import db, temp_nn_collection
 import bcrypt
 from twilio.rest import Client
 import random
@@ -122,6 +122,25 @@ def login_verify():
         return jsonify({"message": "Login successful!"})
     
     return jsonify({"error": "Login failed"}), 401
+
+## Neural Network Connection
+@app.route('/store_fuel_prices', methods=['POST'])
+def store_fuel_prices():
+    try:
+        data = request.get_json()
+
+        date = data.get('date')
+        price = data.get('price')
+
+        fuel_price_data = {
+            "date": date,
+            "price": price
+        }
+        temp_nn_collection.insert_one(fuel_price_data)
+
+        return jsonify({"message": "Fuel price inserted"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
