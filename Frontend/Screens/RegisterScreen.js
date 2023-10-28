@@ -17,19 +17,23 @@ const RegisterScreen = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleRegister = async () => {
-    try {
-      const response = await axios.post('http://127.0.0.1:5000/register', formData);
+const handleRegister = async () => {
+  try {
+    const response = await axios.post('http://127.0.0.1:5000/register', formData);
+    if (response && response.data) {
       setMessage(response.data.message);
 
-      // If registration successful, navigate to the Verify screen
       if (response.data.message === 'Verification code sent successfully!') {
         navigation.navigate('RegisterVerify');
       }
-    } catch (error) {
-      setMessage(error.response.data.error);
+    } else {
+      // else
     }
-  };
+  } catch (error) {
+    setMessage(error.response?.data?.error || 'An error occurred.');
+  }
+};
+
 
   return (
     <View>

@@ -2,15 +2,16 @@
 import os
 from flask import Flask, request, jsonify, sessions
 from flask_cors import CORS
-from database import db, temp_nn_collection
+from database import db, temp_nn_collection, users_collection
 import bcrypt
 from twilio.rest import Client
 import random
 from dotenv import load_dotenv
+from datetime import datetime
 
 load_dotenv()
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "http://localhost:19006"}})
 
 account_sid = os.getenv('TWILIO_SID')
 auth_token = os.getenv('TWILIO_AUTH_TOKEN')
@@ -20,6 +21,7 @@ twilio_client = Client(account_sid, auth_token)
 tasks = []
 users = {}
 
+
 @app.route('/register', methods=['POST'])
 def register():
     # Get JSON data from the request
@@ -27,7 +29,7 @@ def register():
     full_name = data.get('full_name')
     username = data.get('username')
     phone_number = data.get('phone_number')
-    phone_number = "+"+phone_number
+    phone_number = "+" + phone_number
 
     # Check if user already exists
     if username in users:
@@ -46,7 +48,10 @@ def register():
         "phone_number": phone_number,
         "verification_code": hashed_code,
         "verified": False,
-        "login_code": ""
+        "login_code": "",
+        "roles": ["user"],
+        "created_at": datetime.now(),
+        "updated_at": datetime.now()
     }
 
     # Send the verification code via SMS using Twilio
@@ -58,6 +63,7 @@ def register():
 
     return jsonify({"message": "Verification code sent successfully!"})
 
+
 @app.route('/register/verify', methods=['POST'])
 def verify():
     # Get JSON data from the request
@@ -67,21 +73,23 @@ def verify():
 
     # Retrieve the user from the users dictionary
     user = users.get(username)
-    
+
     # Check if the user exists and if the verification code matches
     if user and bcrypt.checkpw(code.encode('utf-8'), user['verification_code']):
-        # Update the user's status to verified
-        user['verified'] = True
+        # this inserts the users into the collection, the also takes them out of the dictionary
+        users_collection.insert_one(user)
+        users.pop(username)
         return jsonify({"message": "Verification successful!"})
-    
-    return jsonify({"error": "Verification failed"}), 401
+    else:
+        return jsonify({"error": "Verification failed"}), 401
+
 
 @app.route('/login', methods=['POST'])
 def login():
     # Get JSON data from the request
     data = request.get_json()
     phone_number = data.get('phone_number')
-    phone_number = "+"+phone_number
+    phone_number = "+" + phone_number
 
     # Generate a 6-digit verification code
     login_code = str(random.randint(100000, 999999))
@@ -106,12 +114,13 @@ def login():
 
     return jsonify({"message": "Login code sent successfully!"})
 
+
 @app.route('/login_verify', methods=['POST'])
 def login_verify():
     # Get JSON data from the request
     data = request.get_json()
     phone_number = data.get('phone_number')
-    phone_number = "+"+phone_number
+    phone_number = "+" + phone_number
     code = data.get('code')
 
     # Retrieve the user by phone number
@@ -120,8 +129,9 @@ def login_verify():
     # Check if the user exists and if the login code matches
     if user and bcrypt.checkpw(code.encode('utf-8'), user['login_code']):
         return jsonify({"message": "Login successful!"})
-    
+
     return jsonify({"error": "Login failed"}), 401
+
 
 ## Neural Network Connection
 @app.route('/store_fuel_prices', methods=['POST'])
@@ -141,6 +151,7 @@ def store_fuel_prices():
         return jsonify({"message": "Fuel price inserted"})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True)
