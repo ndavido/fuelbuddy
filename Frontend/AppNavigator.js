@@ -1,19 +1,46 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons'; // Import icons from Expo's vector-icons
 
-import HomeScreen from './Screens/HomeScreen';
+import Welcome from './Screens/WelcomeScreen';
+import Home from './Screens/HomeScreen';
 import Map from './Screens/MapScreen';
-import AccountScreen from './Screens/AccountScreen';
-import MapScreen from './Screens/MapScreen';
-import RegisterScreen from './Screens/RegisterScreen';
+import Account from './Screens/AccountScreen';
+import Register from './Screens/RegisterScreen';
+import RegisterVerify from './Screens/RegisterVerifyScreen';
 
 const Tab = createBottomTabNavigator();
 
+const Stack = createNativeStackNavigator();
+
+const RegisterNavigator = () => {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="Register" component={Register} />
+      <Stack.Screen name="RegisterVerify" component={RegisterVerify} />
+    </Stack.Navigator>
+  );
+};
+
+const LoginNavigator = () => {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="Register" component={Register} />
+      <Stack.Screen name="RegisterVerify" component={RegisterVerify} />
+    </Stack.Navigator>
+  );
+};
+
+
 const AppNavigator = () => {
+
+  const isUserAuthenticated = false;
+
   return (
     <NavigationContainer>
+      {isUserAuthenticated ? (
       <Tab.Navigator
         screenOptions={({ route }) => ({
           tabBarActiveTintColor: 'blue',
@@ -39,11 +66,19 @@ const AppNavigator = () => {
           },
         })}
       >
-        <Tab.Screen name="Home" component={HomeScreen} />
-        <Tab.Screen name="Map" component={MapScreen} />
-        <Tab.Screen name="Register" component={RegisterScreen} />
+        <Tab.Screen name="Home" component={Home} />
+        <Tab.Screen name="Map" component={Map} />
+        <Tab.Screen name="Account" component={Account} />
       </Tab.Navigator>
+      ) : (
+        <Stack.Navigator initialRouteName="Welcome">
+          <Stack.Screen name="Welcome" component={Welcome} />
+          <Stack.Screen name="Login" component={LoginNavigator} />
+          <Stack.Screen name="Register" component={RegisterNavigator} />
+        </Stack.Navigator>
+      )}
     </NavigationContainer>
+    
   );
 };
 

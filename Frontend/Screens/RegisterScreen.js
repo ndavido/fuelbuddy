@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 
 const RegisterScreen = () => {
+  const navigation = useNavigation();
   const [formData, setFormData] = useState({
     full_name: '',
     username: '',
@@ -19,6 +21,11 @@ const RegisterScreen = () => {
     try {
       const response = await axios.post('http://127.0.0.1:5000/register', formData);
       setMessage(response.data.message);
+
+      // If registration successful, navigate to the Verify screen
+      if (response.data.message === 'Verification code sent successfully!') {
+        navigation.navigate('RegisterVerify');
+      }
     } catch (error) {
       setMessage(error.response.data.error);
     }
