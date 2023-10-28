@@ -12,7 +12,7 @@ from datetime import datetime
 load_dotenv()
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "http://localhost:19006"}})
-app.secret_key = os.urandom(24)
+app.secret_key = "production"  # os.random(24)
 
 
 account_sid = os.getenv('TWILIO_SID')
@@ -30,6 +30,7 @@ users = {}
 @app.route('/register', methods=['POST'])
 def register():
     try:
+        # Get JSON data from the request
         data = request.get_json()
         full_name = data.get('full_name')
         username = data.get('username')
@@ -76,6 +77,7 @@ def register():
 @app.route('/register/verify', methods=['POST'])
 def verify():
     try:
+        # Get JSON data from the request
         data = request.get_json()
         username = data.get('username')
         code = data.get('code')
@@ -101,54 +103,72 @@ def verify():
 
 @app.route('/login', methods=['POST'])
 def login():
-    # Get JSON data from the request
-    data = request.get_json()
-    phone_number = data.get('phone_number')
-    phone_number = "+" + phone_number
+    try:
+        # Get JSON data from the request
+        data = request.get_json()
+        phone_number = data.get('phone_number')
+        phone_number = "+" + phone_number
 
-    # Generate a 6-digit verification code
-    login_code = str(random.randint(100000, 999999))
+        # Generate a 6-digit verification code
+        login_code = str(random.randint(100000, 999999))
+        hashed_login_code = bcrypt.hashpw(
+            login_code.encode('utf-8'), bcrypt.gensalt())
 
-    # Hash the login code using bcrypt for secure storage
-    hashed_login_code = bcrypt.hashpw(
-        login_code.encode('utf-8'), bcrypt.gensalt())
+        # Retrieve the user by phone number from the database
+        user = users_collection.find_user({"phone_number": phone_number})
+        if user:
+            # Update the user's data with the hashed login code
+            users_collection.update_user({"phone_number": phone_number}, {
+                                         "$set": {"login_code": hashed_login_code}})
+        else:
+            return jsonify({"error": "User not registered"}), 404
 
-    # Store the login code in the user's data
-    # Check if user exists by phone number
-    user = next((u for u in users.values()
-                if u["phone_number"] == phone_number), None)
-    if user:
-        user["login_code"] = hashed_login_code
-    else:
-        return jsonify({"error": "User not registered"}), 404
+        # Send the login code via SMS using Twilio
+        message = twilio_client.messages.create(
+            to=phone_number,
+            from_=twilio_number,
+            body=f"Your login code is: {login_code}"
+        )
 
-    # Send the login code via SMS using Twilio
-    message = twilio_client.messages.create(
-        to=phone_number,
-        from_=twilio_number,
-        body=f"Your login code is: {login_code}"
-    )
+        return jsonify({"message": "Login code sent successfully!"})
 
-    return jsonify({"message": "Login code sent successfully!"})
+    except Exception as e:
+        # Log the exception for debugging
+        print(f"Error: {str(e)}")
+        return jsonify({"error": "An error occurred while processing your request."}), 500
 
 
 @app.route('/login_verify', methods=['POST'])
 def login_verify():
-    # Get JSON data from the request
-    data = request.get_json()
-    phone_number = data.get('phone_number')
-    phone_number = "+" + phone_number
-    code = data.get('code')
+    try:
+        # Get JSON data from the request
+        data = request.get_json()
+        phone_number = data.get('phone_number')
+        phone_number = "+" + phone_number
+        code = data.get('code')
 
-    # Retrieve the user by phone number
-    user = next((u for u in users.values()
-                if u["phone_number"] == phone_number), None)
+        # Retrieve the user by phone number from the database
+        user = users_collection.find_user({"phone_number": phone_number})
+        if not user:
+            return jsonify({"error": "User not found"}), 404
 
-    # Check if the user exists and if the login code matches
-    if user and bcrypt.checkpw(code.encode('utf-8'), user['login_code']):
-        return jsonify({"message": "Login successful!"})
+        # Check if the login code matches
+        if bcrypt.checkpw(code.encode('utf-8'), user.get('login_code', '')):
+            # Remove the login code from the database after verification
+            users_collection.update_user({"phone_number": phone_number}, {
+                                         "$unset": {"login_code": 1}})
 
-    return jsonify({"error": "Login failed"}), 401
+            # Store the user's username in session
+            session['username'] = user
+
+            return jsonify({"message": "Login successful!"})
+
+        return jsonify({"error": "Login failed"}), 401
+
+    except Exception as e:
+        # Log the exception for debugging
+        print(f"Error: {str(e)}")
+        return jsonify({"error": "An error occurred while verifying your code."}), 500
 
 
 # Neural Network Connection
@@ -169,7 +189,5 @@ def login_verify():
 #         return jsonify({"message": "Fuel price inserted"})
 #     except Exception as e:
 #         return jsonify({"error": str(e)}), 500
-
-
 if __name__ == '__main__':
     app.run(debug=True)
