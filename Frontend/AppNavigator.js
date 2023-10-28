@@ -71,7 +71,9 @@ const AppNavigator = () => {
         <Tab.Screen name="Account" component={Account} />
       </Tab.Navigator>
       ) : (
-        <Stack.Navigator initialRouteName="Welcome">
+        <Stack.Navigator screenOptions={{
+          headerShown: false
+        }}>
           <Stack.Screen name="Welcome" component={Welcome} />
           <Stack.Screen name="Login" component={LoginNavigator} />
           <Stack.Screen name="Register" component={RegisterNavigator} />
