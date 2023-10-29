@@ -1,1 +1,0 @@
-{"version":3,"names":[],"sources":["index.ts"],"sourcesContent":["export type { FrameInfo } from './FrameCallbackRegistryUI';\n"],"mappings":""}

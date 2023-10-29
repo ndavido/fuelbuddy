@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Frontend",
-    "slug": "Frontend",
+    "name": "fuelbuddy-FE",
+    "slug": "fuelbuddy-FE",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

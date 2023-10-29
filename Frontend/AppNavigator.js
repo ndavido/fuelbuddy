@@ -3,11 +3,14 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons'; // Import icons from Expo's vector-icons
+import { useAuth } from './Screens/AuthContext';
 
 import Welcome from './Screens/WelcomeScreen';
 import Home from './Screens/HomeScreen';
 import Map from './Screens/MapScreen';
 import Account from './Screens/AccountScreen';
+import Login from './Screens/LoginScreen';
+import LoginVerify from './Screens/LoginVerifyScreen';
 import Register from './Screens/RegisterScreen';
 import RegisterVerify from './Screens/RegisterVerifyScreen';
 
@@ -27,8 +30,8 @@ const RegisterNavigator = () => {
 const LoginNavigator = () => {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="Register" component={Register} />
-      <Stack.Screen name="RegisterVerify" component={RegisterVerify} />
+      <Stack.Screen name="Login" component={Login} />
+      <Stack.Screen name="LoginVerify" component={LoginVerify} />
     </Stack.Navigator>
   );
 };
@@ -36,11 +39,11 @@ const LoginNavigator = () => {
 
 const AppNavigator = () => {
 
-  const isUserAuthenticated = false;
+  const { state, dispatch } = useAuth();
 
   return (
     <NavigationContainer>
-      {isUserAuthenticated ? (
+      {state.isUserAuthenticated ? (
       <Tab.Navigator
         screenOptions={({ route }) => ({
           tabBarActiveTintColor: 'blue',
