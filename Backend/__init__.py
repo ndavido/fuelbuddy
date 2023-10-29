@@ -25,6 +25,7 @@ users_collection = UserCollection(db)
 
 tasks = []
 users = {}
+session = {}
 
 
 @app.route('/register', methods=['POST'])
