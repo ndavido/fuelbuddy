@@ -10,6 +10,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Initialize the MongoDB client
+
+
 class Database:
     def __init__(self):
         client = MongoClient(os.getenv('MONGO_URI'), server_api=ServerApi('1'))
@@ -21,7 +23,7 @@ class Database:
 
 class UserCollection:
     def __init__(self, db):
-        self.collection = db.get_collection['users']
+        self.collection = db.get_collection('users')
 
     def insert_user(self, user_data):
         return self.collection.insert_one(user_data).inserted_id
@@ -34,11 +36,11 @@ class UserCollection:
 
 
 # Create collections
-#? users_collection = db['users']
-#? routes_collection = db['routes']
-#? waypoints_collection = db['waypoints']
-#? stations_collection = db['stations']
-#? notifications_collection = db['notifications']
-#? discussions_collection = db['discussions']
-#? fuel_cards_collection = db['fuel_cards']
-#? temp_nn_collection = db['nn_storage']
+# ? users_collection = db['users']
+# ? routes_collection = db['routes']
+# ? waypoints_collection = db['waypoints']
+# ? stations_collection = db['stations']
+# ? notifications_collection = db['notifications']
+# ? discussions_collection = db['discussions']
+# ? fuel_cards_collection = db['fuel_cards']
+# ? temp_nn_collection = db['nn_storage']
