@@ -13,8 +13,8 @@ const WelcomeScreen = () => {
   return (
     <StyledView>
       <ImageBackground source={require('../assets/welcomeTemp.jpg')} resizeMode="cover" style={{ flex: 1, width: '100%' }}>
-        <Logo/>
         <BttnWrapper>
+          <Logo/>
           <BttnDiv>
             <PressableButton
               onPress={() => navigation.navigate('Login')}
