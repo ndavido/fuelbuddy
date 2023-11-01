@@ -3,6 +3,12 @@ import { View, Text, TextInput, Button } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 
+//Styling
+import { StyledView, BttnDiv, BttnWrapper, TxtWrapper, WelcomeTxt, BttnDiv2, InputWrapper, InputTxt } from '../styles/wrapper';
+import PressableButton from '../styles/buttons';
+import PressableButton2 from '../styles/buttons2';
+import Logo from '../styles/logo';
+
 const LoginScreen = () => {
   const navigation = useNavigation();
   const [formData, setFormData] = useState({
@@ -33,15 +39,40 @@ const LoginScreen = () => {
   };
 
   return (
-    <View>
-      <Text>Login</Text>
-      <TextInput
-        placeholder="Phone Number"
-        onChangeText={(text) => handleChange('phone_number', text)}
-      />
-      <Button title="Send Login Code" onPress={handleLogin} />
+    <StyledView>
+      <Logo/>
+      <BttnWrapper>
+        <BttnDiv2>
+          <PressableButton2
+            onPress={() => navigation.navigate('Register')}
+            title='Register'
+            bgColor='#6bff91'
+            txtColor='white'
+          />
+          <PressableButton2
+            
+            title='Login'
+            bgColor='white'
+            txtColor='black'
+          />
+        </BttnDiv2>
+        <InputWrapper>
+        <Text>Phone Number</Text>
+        <InputTxt
+          placeholder=""
+          onChangeText={(text) => handleChange('phone_number', text)}
+        />
+        </InputWrapper>
+      <BttnDiv>
+          <PressableButton
+            onPress={handleLogin} 
+            title='Send Login Code'
+            bgColor='#6bff91'
+          />
+        </BttnDiv>
       <Text>{message}</Text>
-    </View>
+      </BttnWrapper>
+    </StyledView>
   );
 };
 

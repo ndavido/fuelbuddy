@@ -20,7 +20,9 @@ const Stack = createNativeStackNavigator();
 
 const RegisterNavigator = () => {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator screenOptions={{
+      headerShown: false
+    }}>
       <Stack.Screen name="Register" component={Register} />
       <Stack.Screen name="RegisterVerify" component={RegisterVerify} />
     </Stack.Navigator>
@@ -29,7 +31,9 @@ const RegisterNavigator = () => {
 
 const LoginNavigator = () => {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator screenOptions={{
+      headerShown: false
+    }}>
       <Stack.Screen name="Login" component={Login} />
       <Stack.Screen name="LoginVerify" component={LoginVerify} />
     </Stack.Navigator>

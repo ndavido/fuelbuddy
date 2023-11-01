@@ -3,6 +3,12 @@ import { View, Text, TextInput, Button } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 
+//Styling
+import { StyledView, BttnDiv, BttnWrapper, TxtWrapper, WelcomeTxt, BttnDiv2, InputWrapper, InputTxt } from '../styles/wrapper';
+import PressableButton from '../styles/buttons';
+import PressableButton2 from '../styles/buttons2';
+import Logo from '../styles/logo';
+
 const RegisterScreen = () => {
   const navigation = useNavigation();
   const [formData, setFormData] = useState({
@@ -36,23 +42,50 @@ const handleRegister = async () => {
 
 
   return (
-    <View>
-      <Text>User Registration</Text>
-      <TextInput
-        placeholder="Full Name"
-        onChangeText={(text) => handleChange('full_name', text)}
-      />
-      <TextInput
-        placeholder="Username"
-        onChangeText={(text) => handleChange('username', text)}
-      />
-      <TextInput
-        placeholder="Phone Number"
-        onChangeText={(text) => handleChange('phone_number', text)}
-      />
-      <Button title="Register" onPress={handleRegister} />
+    <StyledView>
+      <Logo/>
+      <BttnWrapper>
+        <BttnDiv2>
+          <PressableButton2
+            title='Register'
+            bgColor='white'
+            txtColor='black'
+          />
+          <PressableButton2
+            onPress={() => navigation.navigate('Login')}
+            title='Login'
+            bgColor='#6bff91'
+            txtColor='white'
+          />
+        </BttnDiv2>
+        <InputWrapper>
+          <Text>Name</Text>
+          <InputTxt
+            placeholder=""
+            onChangeText={(text) => handleChange('full_name', text)}
+          />
+          <Text>Username</Text>
+          <InputTxt
+            placeholder=""
+            onChangeText={(text) => handleChange('username', text)}
+          />
+          <Text>Phone Number</Text>
+          <InputTxt
+            placeholder=""
+            onChangeText={(text) => handleChange('phone_number', text)}
+          />
+        </InputWrapper>
+        
+      <BttnDiv>
+          <PressableButton
+            onPress={handleRegister}
+            title='Send Register Code'
+            bgColor='#6bff91'
+          />
+        </BttnDiv>
       <Text>{message}</Text>
-    </View>
+      </BttnWrapper>
+    </StyledView>
   );
 };
 

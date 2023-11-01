@@ -3,7 +3,7 @@ import { ImageBackground, Image, View, Text, Button, StyleSheet } from 'react-na
 import { useNavigation } from '@react-navigation/native';
 
 //Styling
-import { StyledView, BttnDiv, BttnWrapper } from '../styles/wrapper';
+import { StyledView, BttnDiv, BttnWrapper, TxtWrapper, WelcomeTxt } from '../styles/wrapper';
 import PressableButton from '../styles/buttons';
 import Logo from '../styles/logo';
 
@@ -12,25 +12,22 @@ const WelcomeScreen = () => {
 
   return (
     <StyledView>
-      <ImageBackground source={require('../assets/welcomeTemp.jpg')} resizeMode="cover" style={{ flex: 1, width: '100%' }}>
-        <BttnWrapper>
-          <Logo/>
-          <BttnDiv>
-            <PressableButton
-              onPress={() => navigation.navigate('Login')}
-              title='Login'
-              bgColor='#2196f3'
-            />
-            <PressableButton
-              onPress={() => navigation.navigate('Register')}
-              title='Register'
-              bgColor='red'
-            />
-          </BttnDiv>
-        </BttnWrapper>
-      </ImageBackground>
-        
-      
+      <Logo/>
+      <BttnWrapper>
+        <TxtWrapper>
+          <WelcomeTxt>
+            Welcome To fuelbuddy
+          </WelcomeTxt>
+          <Text>Sample Text Sample Text Sample</Text>
+        </TxtWrapper>
+        <BttnDiv>
+          <PressableButton
+            onPress={() => navigation.navigate('Register')}
+            title='Register'
+            bgColor='#6bff91'
+          />
+        </BttnDiv>
+      </BttnWrapper>
     </StyledView>
   );
 };
