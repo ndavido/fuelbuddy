@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 
 //Styling
-import { StyledView, BttnDiv, BttnWrapper, TxtWrapper, WelcomeTxt, BttnDiv2, InputWrapper, InputTxt } from '../styles/wrapper';
+import { Main, ContainerWrapper, ContainerInner, ContainerContent, BttnDiv, TxtWrapper, WelcomeTxt, BttnDiv2, InputWrapper, InputTxt } from '../styles/wrapper';
 import PressableButton from '../styles/buttons';
 import PressableButton2 from '../styles/buttons2';
 import Logo from '../styles/logo';
@@ -39,9 +39,11 @@ const LoginScreen = () => {
   };
 
   return (
-    <StyledView>
+    <Main>
       <Logo/>
-      <BttnWrapper>
+      <ContainerWrapper>
+          <ContainerInner>
+            <ContainerContent>
         <BttnDiv2>
           <PressableButton2
             onPress={() => navigation.navigate('Register')}
@@ -62,6 +64,7 @@ const LoginScreen = () => {
           placeholder=""
           onChangeText={(text) => handleChange('phone_number', text)}
         />
+        <Text>{message}</Text>
         </InputWrapper>
       <BttnDiv>
           <PressableButton
@@ -70,9 +73,10 @@ const LoginScreen = () => {
             bgColor='#6bff91'
           />
         </BttnDiv>
-      <Text>{message}</Text>
-      </BttnWrapper>
-    </StyledView>
+        </ContainerContent>
+          </ContainerInner>
+        </ContainerWrapper>
+    </Main>
   );
 };
 

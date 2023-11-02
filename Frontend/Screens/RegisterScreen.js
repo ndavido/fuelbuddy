@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 
 //Styling
-import { StyledView, BttnDiv, BttnWrapper, TxtWrapper, WelcomeTxt, BttnDiv2, InputWrapper, InputTxt } from '../styles/wrapper';
+import { Main, ContainerWrapper, ContainerInner, ContainerContent, BttnDiv, TxtWrapper, WelcomeTxt, BttnDiv2, InputWrapper, InputTxt } from '../styles/wrapper';
 import PressableButton from '../styles/buttons';
 import PressableButton2 from '../styles/buttons2';
 import Logo from '../styles/logo';
@@ -42,50 +42,54 @@ const handleRegister = async () => {
 
 
   return (
-    <StyledView>
+    <Main>
       <Logo/>
-      <BttnWrapper>
-        <BttnDiv2>
-          <PressableButton2
-            title='Register'
-            bgColor='white'
-            txtColor='black'
-          />
-          <PressableButton2
-            onPress={() => navigation.navigate('Login')}
-            title='Login'
-            bgColor='#6bff91'
-            txtColor='white'
-          />
-        </BttnDiv2>
-        <InputWrapper>
-          <Text>Name</Text>
-          <InputTxt
-            placeholder=""
-            onChangeText={(text) => handleChange('full_name', text)}
-          />
-          <Text>Username</Text>
-          <InputTxt
-            placeholder=""
-            onChangeText={(text) => handleChange('username', text)}
-          />
-          <Text>Phone Number</Text>
-          <InputTxt
-            placeholder=""
-            onChangeText={(text) => handleChange('phone_number', text)}
-          />
-        </InputWrapper>
-        
-      <BttnDiv>
-          <PressableButton
-            onPress={handleRegister}
-            title='Send Register Code'
-            bgColor='#6bff91'
-          />
-        </BttnDiv>
-      <Text>{message}</Text>
-      </BttnWrapper>
-    </StyledView>
+      <ContainerWrapper>
+          <ContainerInner>
+            <ContainerContent>
+              <BttnDiv2>
+                <PressableButton2
+                  title='Register'
+                  bgColor='white'
+                  txtColor='black'
+                />
+                <PressableButton2
+                  onPress={() => navigation.navigate('Login')}
+                  title='Login'
+                  bgColor='#6bff91'
+                  txtColor='white'
+                />
+              </BttnDiv2>
+              <InputWrapper>
+                <Text>Name</Text>
+                <InputTxt
+                  placeholder=""
+                  onChangeText={(text) => handleChange('full_name', text)}
+                />
+                <Text>Username</Text>
+                <InputTxt
+                  placeholder=""
+                  onChangeText={(text) => handleChange('username', text)}
+                />
+                <Text>Phone Number</Text>
+                <InputTxt
+                  placeholder=""
+                  onChangeText={(text) => handleChange('phone_number', text)}
+                />
+                <Text>{message}</Text>
+              </InputWrapper>
+              
+              <BttnDiv>
+                <PressableButton
+                  onPress={handleRegister}
+                  title='Send Register Code'
+                  bgColor='#6bff91'
+                />
+              </BttnDiv>
+            </ContainerContent>
+          </ContainerInner>
+        </ContainerWrapper>
+    </Main>
   );
 };
 

@@ -5,7 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useAuth } from './AuthContext';
 
 //Styling
-import { StyledView, BttnDiv, BttnWrapper, TxtWrapper, WelcomeTxt, BttnDiv2, InputWrapper, InputTxt } from '../styles/wrapper';
+import { Main, ContainerWrapper, ContainerInner, ContainerContent, BttnDiv, TxtWrapper, WelcomeTxt, BttnDiv2, InputWrapper, InputTxt } from '../styles/wrapper';
 import PressableButton from '../styles/buttons';
 import PressableButton2 from '../styles/buttons2';
 import Logo from '../styles/logo';
@@ -41,23 +41,11 @@ const LoginVerifyScreen = () => {
   };
 
   return (
-    <StyledView>
+    <Main>
       <Logo/>
-      <BttnWrapper>
-        <BttnDiv2>
-          <PressableButton2
-            onPress={() => navigation.navigate('Register')}
-            title='Register'
-            bgColor='#6bff91'
-            txtColor='white'
-          />
-          <PressableButton2
-            
-            title='Login'
-            bgColor='white'
-            txtColor='black'
-          />
-        </BttnDiv2>
+      <ContainerWrapper>
+          <ContainerInner>
+            <ContainerContent>
         <InputWrapper>
         <Text>Phone Number</Text>
         <InputTxt
@@ -69,6 +57,7 @@ const LoginVerifyScreen = () => {
           placeholder=""
           onChangeText={(text) => handleChange('code', text)}
         />
+        <Text>{message}</Text>
         </InputWrapper>
       <BttnDiv>
           <PressableButton
@@ -77,9 +66,10 @@ const LoginVerifyScreen = () => {
             bgColor='#6bff91'
           />
         </BttnDiv>
-      <Text>{message}</Text>
-      </BttnWrapper>
-    </StyledView>
+      </ContainerContent>
+          </ContainerInner>
+        </ContainerWrapper>
+    </Main>
   );
 };
 

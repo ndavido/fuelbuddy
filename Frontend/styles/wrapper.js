@@ -1,20 +1,36 @@
 import styled from 'styled-components/native';
+import { Dimensions } from 'react-native';
 import LogoSrc from '../assets/welcomeTemp.jpg';
 
-export const StyledView = styled.View`
+export const Main = styled.View`
   flex: 1;
   background-color: white;
   align-items: center;
   justify-content: center;
 `;
 
-export const BttnWrapper = styled.View`
+export const ContainerWrapper = styled.View`
   height: 100%;
   width: 100%;
   margin: auto;
-  max-width: 300px;
-  position: relative;
 `;
+
+export const ContainerInner = styled.View`
+  margin: 20px
+  position: relative;
+  flex: 1 1 auto;
+`;
+
+export const ContainerContent = styled.View`
+    flex: 1 1 auto;
+    position: relative;
+    min-width: 1px;
+    max-width: 500px;
+    margin: 0 auto;
+    width: 100%; 
+`;
+
+//background-color: ${Dimensions.get('window').width < 768 ? 'green' : 'blue'};
 
 export const TxtWrapper = styled.View`
   position: absolute;
@@ -31,11 +47,10 @@ export const WelcomeTxt = styled.Text`
 
 export const BttnDiv = styled.View`
   height: auto;
-  padding: 20px;
   width: 100%;
+  display: inline-block;
   margin: auto;
-  bottom: 0;
-  max-width: 600px;
+  bottom: 40;
   position: absolute;
 `;
 
@@ -43,10 +58,9 @@ export const BttnDiv2 = styled.View`
   height: auto;
   padding: 20px;
   width: 100%;
-  display: inline-block;
+  flex-direction: row;
   margin: auto;
   top: 100;
-  max-width: 600px;
   position: absolute;
 `;
 
@@ -55,7 +69,6 @@ export const InputWrapper = styled.View`
   width: 100%;
   top: 40%;
   margin: auto;
-  max-width: 300px;
   position: absolute;
 `;
 

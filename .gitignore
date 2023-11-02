@@ -1,1 +1,3 @@
 /Backend/venv/
+/Frontend/node_modules/@babel/
+/Frontend/node_modules/.cache/
