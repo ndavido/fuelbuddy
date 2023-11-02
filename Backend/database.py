@@ -35,6 +35,23 @@ class UserCollection:
         return self.collection.update_one(query, new_data)
 
 
+class FuelPricesCollection:
+    def __init__(self, db):
+        self.collection = db.get_collection('fuel_prices')
+
+    def insert_fuel_price(self, fuel_price_data):
+        return self.collection.insert_one(fuel_price_data).inserted_id
+
+    def get_fuel_prices(self, query={}, limit=None):
+        # Retrieve fuel prices from the collection based on a query
+        # 'query' is a dictionary defining the search criteria (default is an empty dictionary, which matches all documents)
+        # 'limit' is an optional parameter specifying the maximum number of documents to retrieve
+        # The method returns a list of documents matching the query
+        return list(self.collection.find(query).limit(limit)) if limit else list(self.collection.find(query))
+
+    def delete_prices(self, query):
+        return self.collection.delete_many(query)
+
 # Create collections
 # ? users_collection = db['users']
 # ? routes_collection = db['routes']
