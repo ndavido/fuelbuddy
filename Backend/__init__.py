@@ -140,8 +140,8 @@ def login():
         user = users_collection.find_user({"phone_number": phone_number})
         if user:
             # Update the user's data with the hashed login code
-            # users_collection.update_user({"phone_number": phone_number}, {
-            #                              "$set": {"login_code": hashed_login_code}})
+            users_collection.update_user({"phone_number": phone_number}, {
+                                         "$set": {"login_code": 000000}})
             print('User found')
         else:
             return jsonify({"error": "User not registered"}), 404
