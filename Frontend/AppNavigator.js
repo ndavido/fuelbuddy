@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect }  from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons'; // Import icons from Expo's vector-icons
+import * as SecureStore from 'expo-secure-store';
 import { useAuth } from './AuthContext';
 
 import Welcome from './Screens/WelcomeScreen';
@@ -44,6 +45,19 @@ const LoginNavigator = () => {
 const AppNavigator = () => {
 
   const { state, dispatch } = useAuth();
+
+  useEffect(() => {
+    // Check for saved authentication state in SecureStore
+    const getAuthState = async () => {
+      const savedAuthState = await SecureStore.getItemAsync('authState');
+      if (savedAuthState) {
+        const user = JSON.parse(savedAuthState);
+        dispatch({ type: 'LOGIN', payload: user });
+      }
+    };
+
+    getAuthState();
+  }, [dispatch]);
 
   return (
     <NavigationContainer>

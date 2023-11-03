@@ -3,6 +3,7 @@ import { View, Text, TextInput, Button } from 'react-native';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../AuthContext';
+import * as SecureStore from 'expo-secure-store';
 
 // Styling
 import { Main, ContainerWrapper, ContainerInner, ContainerContent, BttnDiv, TxtWrapper, WelcomeTxt, BttnDiv2, InputWrapper, InputTxt } from '../styles/wrapper';
@@ -12,7 +13,9 @@ import Logo from '../styles/logo';
 
 const LoginVerifyScreen = () => {
   const navigation = useNavigation();
+  
   const { dispatch } = useAuth(); // Get the dispatch function from the AuthContext
+  console.log('Value of dispatch:', dispatch);
 
   const [formData, setFormData] = useState({
     phone_number: '',
@@ -41,8 +44,12 @@ const LoginVerifyScreen = () => {
 
       // If verification is successful, update the authentication state
       if (response.data.message === 'Login successful!') {
-        dispatch({ type: 'LOGIN', payload: response.data.user }); // Update the user in the state
-        navigation.navigate('Home'); // Change 'Home' to the screen you want to navigate to
+        dispatch({ type: 'LOGIN', payload: response.data.user });
+        
+        // Save the authentication state in SecureStore
+        await SecureStore.setItemAsync('authState', JSON.stringify(response.data.user));
+        
+        navigation.navigate('Home');
       }
     } catch (error) {
       setMessage(error.response.data.error);

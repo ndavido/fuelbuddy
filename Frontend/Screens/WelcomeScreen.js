@@ -20,7 +20,8 @@ const WelcomeScreen = () => {
                 <WelcomeTxt>
                   Welcome To fuelbuddy
                 </WelcomeTxt>
-                <Text>Sample Text Sample Text Sample</Text>
+                
+                {/* <Text>Sample Text Sample Text Sample</Text> */}
               </TxtWrapper>
               <BttnDiv>
                 <PressableButton
