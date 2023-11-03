@@ -41,7 +41,7 @@ session = {}
 
 
 @app.route('/register', methods=['POST'])
-@require_api_key
+# @require_api_key
 def register():
     try:
         # Get JSON data from the request
@@ -95,7 +95,7 @@ def register():
 
 
 @app.route('/register/verify', methods=['POST'])
-@require_api_key
+# @require_api_key
 def verify():
     try:
         # Get JSON data from the request
@@ -123,7 +123,7 @@ def verify():
 
 
 @app.route('/login', methods=['POST'])
-@require_api_key
+# @require_api_key
 def login():
     try:
         # Get JSON data from the request
@@ -161,7 +161,7 @@ def login():
 
 
 @app.route('/login_verify', methods=['POST'])
-@require_api_key
+# @require_api_key
 def login_verify():
     try:
         # Get JSON data from the request
@@ -175,11 +175,11 @@ def login_verify():
         if not user:
             return jsonify({"error": "User not found"}), 404
 
-        # Check if the login code matches
-        if bcrypt.checkpw(code.encode('utf-8'), user.get('login_code', '')):
-            # Remove the login code from the database after verification
-            users_collection.update_user({"phone_number": phone_number}, {
-                                         "$unset": {"login_code": 1}})
+        # Check if the login code matches ~ Commented out for now
+        # if bcrypt.checkpw(code.encode('utf-8'), user.get('login_code', '')):
+        #     # Remove the login code from the database after verification
+        #     users_collection.update_user({"phone_number": phone_number}, {
+        #                                  "$unset": {"login_code": 1}})
 
             # Store the user's username in session
             session['username'] = user
