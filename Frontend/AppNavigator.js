@@ -3,7 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons'; // Import icons from Expo's vector-icons
-import { useAuth } from './Screens/AuthContext';
+import { useAuth } from './AuthContext';
 
 import Welcome from './Screens/WelcomeScreen';
 import Home from './Screens/HomeScreen';

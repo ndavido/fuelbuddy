@@ -25,7 +25,16 @@ const RegisterScreen = () => {
 
 const handleRegister = async () => {
   try {
-    const response = await axios.post('http://127.0.0.1:5000/register', formData);
+    const apiKey = process.env.REACT_NATIVE_API_KEY;
+
+    // Add the API key to the request headers
+    const config = {
+      headers: {
+        'X-API-Key': apiKey,
+      },
+    };
+
+    const response = await axios.post('http://127.0.0.1:5000/register', formData, config);
     if (response && response.data) {
       setMessage(response.data.message);
 

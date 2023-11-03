@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Button } from 'react-native';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
-import { useAuth } from './AuthContext';
+import { useAuth } from '../AuthContext';
 
-//Styling
+// Styling
 import { Main, ContainerWrapper, ContainerInner, ContainerContent, BttnDiv, TxtWrapper, WelcomeTxt, BttnDiv2, InputWrapper, InputTxt } from '../styles/wrapper';
 import PressableButton from '../styles/buttons';
 import PressableButton2 from '../styles/buttons2';
@@ -27,7 +27,16 @@ const LoginVerifyScreen = () => {
 
   const handleVerify = async () => {
     try {
-      const response = await axios.post('http://127.0.0.1:5000/login_verify', formData);
+      const apiKey = process.env.REACT_NATIVE_API_KEY;
+
+      // Add the API key to the request headers
+      const config = {
+        headers: {
+          'X-API-Key': apiKey,
+        },
+      };
+
+      const response = await axios.post('http://127.0.0.1:5000/login_verify', formData, config);
       setMessage(response.data.message);
 
       // If verification is successful, update the authentication state

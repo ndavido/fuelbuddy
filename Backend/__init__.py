@@ -41,7 +41,7 @@ session = {}
 
 
 @app.route('/register', methods=['POST'])
-# @require_api_key
+@require_api_key
 def register():
     try:
         # Get JSON data from the request
@@ -95,7 +95,7 @@ def register():
 
 
 @app.route('/register/verify', methods=['POST'])
-# @require_api_key
+@require_api_key
 def verify():
     try:
         # Get JSON data from the request
@@ -123,7 +123,7 @@ def verify():
 
 
 @app.route('/login', methods=['POST'])
-# @require_api_key
+@require_api_key
 def login():
     try:
         # Get JSON data from the request
@@ -162,7 +162,7 @@ def login():
 
 
 @app.route('/login_verify', methods=['POST'])
-# @require_api_key
+@require_api_key
 def login_verify():
     try:
         # Get JSON data from the request

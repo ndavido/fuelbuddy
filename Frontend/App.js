@@ -19,7 +19,7 @@
 //   },
 // });
 import React from 'react';
-import { AuthProvider } from './Screens/AuthContext';
+import { AuthProvider } from './AuthContext';
 import AppNavigator from './AppNavigator';
 
 function App() {

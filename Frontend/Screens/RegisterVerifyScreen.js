@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Button } from 'react-native';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
+import { useAuth } from '../AuthContext';
 
+// Styling
 import { Main, ContainerWrapper, ContainerInner, ContainerContent, BttnDiv, TxtWrapper, WelcomeTxt, BttnDiv2, InputWrapper, InputTxt } from '../styles/wrapper';
 import PressableButton from '../styles/buttons';
 import PressableButton2 from '../styles/buttons2';
@@ -10,6 +12,8 @@ import Logo from '../styles/logo';
 
 const RegisterVerifyScreen = () => {
   const navigation = useNavigation();
+  const { dispatch } = useAuth(); // Get the dispatch function from the AuthContext
+
   const [formData, setFormData] = useState({
     username: '',
     code: '',
@@ -23,7 +27,16 @@ const RegisterVerifyScreen = () => {
 
   const handleVerify = async () => {
     try {
-      const response = await axios.post('http://127.0.0.1:5000/register/verify', formData);
+      const apiKey = process.env.REACT_NATIVE_API_KEY;
+
+      // Add the API key to the request headers
+      const config = {
+        headers: {
+          'X-API-Key': apiKey,
+        },
+      };
+
+      const response = await axios.post('http://127.0.0.1:5000/register/verify', formData, config);
       setMessage(response.data.message);
 
       // If verification is successful, update the authentication state
