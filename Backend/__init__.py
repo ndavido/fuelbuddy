@@ -147,11 +147,11 @@ def login():
             return jsonify({"error": "User not registered"}), 404
 
         # Send the login code via SMS using Twilio
-        message = twilio_client.messages.create(
-            to=phone_number,
-            from_=twilio_number,
-            body=f"Your login code is: {login_code}"
-        )
+        # message = twilio_client.messages.create(
+        #     to=phone_number,
+        #     from_=twilio_number,
+        #     body=f"Your login code is: {login_code}"
+        # )
 
         return jsonify({"message": "Login code sent successfully!"})
 
