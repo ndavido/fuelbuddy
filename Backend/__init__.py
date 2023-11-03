@@ -177,10 +177,10 @@ def login_verify():
             return jsonify({"error": "User not found"}), 404
 
         # Check if the login code matches ~ Commented out for now
-        # if bcrypt.checkpw(code.encode('utf-8'), user.get('login_code', '')):
-        #     # Remove the login code from the database after verification
-        #     users_collection.update_user({"phone_number": phone_number}, {
-        #                                  "$unset": {"login_code": 1}})
+        if bcrypt.checkpw(code.encode('utf-8'), user.get('login_code', '')):
+            # Remove the login code from the database after verification
+            # users_collection.update_user({"phone_number": phone_number}, {
+            #                              "$unset": {"login_code": 1}})
 
             # Store the user's username in session
             session['username'] = user
