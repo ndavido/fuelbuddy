@@ -198,6 +198,28 @@ def login_verify():
         return jsonify({"error": "An error occurred while verifying your code."}), 500
 
 
+@app.route('/account', methods=['POST'])
+@require_api_key
+def account():
+    try:
+        username = session.get('username')
+        
+        if not username:
+            return jsonify({"error": "User not found"}), 404 
+        
+        user_info = users_collection.find_user({"username": username})
+        
+        if user_info:
+            user_info.pop('_id', None)
+            user_info.pop('verification_code', None)
+            user_info.pop('verified', None)
+            user_info.pop('login_code', None)
+            user_info.pop('updated_at', None)
+
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return jsonify({"error": "An error occurred while retrieving your account."}), 500
+
 # Neural Network Connection Commented out for now
 @app.route('/store_fuel_stations', methods=['POST'])
 def store_fuel_stations():
