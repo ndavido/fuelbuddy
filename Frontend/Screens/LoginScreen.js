@@ -15,6 +15,8 @@ const LoginScreen = () => {
     phone_number: '',
   });
 
+  const countryCode = '353';
+
   const [message, setMessage] = useState('');
 
   const handleChange = (name, value) => {
@@ -25,6 +27,8 @@ const LoginScreen = () => {
     try {
       const apiKey = process.env.REACT_NATIVE_API_KEY;
 
+      const fullNum = `${countryCode}${formData.phone_number}`;
+
       // Add the API key to the request headers
       const config = {
         headers: {
@@ -34,12 +38,12 @@ const LoginScreen = () => {
 
       console.log(config)
 
-      const response = await axios.post('http://127.0.0.1:5000/login', formData, config);
+      const response = await axios.post('http://127.0.0.1:5000/login', { ...formData, phone_number: fullNum }, config);
       if (response && response.data) {
         setMessage(response.data.message);
 
         if (response.data.message === 'Login code sent successfully!') {
-          navigation.navigate('LoginVerify', { phone: formData.phone_number }); // Navigate to code verification screen
+          navigation.navigate('LoginVerify', { phone: fullNum }); // Navigate to code verification screen
         }
       } else {
         // Handle other cases or errors if needed
@@ -70,6 +74,13 @@ const LoginScreen = () => {
           />
         </BttnDiv2>
         <InputWrapper>
+        <Text>Country Code</Text>
+        <InputTxt
+          value = "353"
+          editable = {false}
+          placeholder=""
+          onChangeText={(text) => handleChange('country_code', text)}
+        />
         <Text>Phone Number</Text>
         <InputTxt
           placeholder=""
