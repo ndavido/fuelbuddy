@@ -4,8 +4,8 @@
 import os
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
-from bson import ObjectId
 from dotenv import load_dotenv
+from models import FuelStation
 
 load_dotenv()
 
@@ -35,7 +35,25 @@ class UserCollection:
         return self.collection.update_one(query, new_data)
 
 
-class FuelPricesCollection:
+class FuelStationsCollection:
+    def __init__(self, db):
+        self.collection = db.get_collection('fuelStation')
+
+    def insert_fuel_station(self, fuel_station_data):
+        # Insert a new fuel station document into the collection
+        fuel_station_id = self.collection.insert_one(fuel_station_data).inserted_id
+        return fuel_station_id
+
+    def find_fuel_station(self, query):
+        # Find a fuel station based on the query
+        fuel_station = self.collection.find_one(query)
+        return fuel_station
+
+    def update_fuel_station(self, query, new_data):
+        # Update a fuel station based on the query
+        self.collection.update_one(query, {"$set": new_data})
+
+class PetrolFuelPricesCollection:
     def __init__(self, db):
         self.collection = db.get_collection('fuel_prices')
 

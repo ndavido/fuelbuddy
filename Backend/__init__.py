@@ -2,13 +2,15 @@
 import os
 from flask import Flask, request, jsonify, session, abort
 from flask_cors import CORS
-from database import Database, UserCollection
+from database import Database, UserCollection, FuelStationsCollection
 import bcrypt
 from twilio.rest import Client
 import random
 from dotenv import load_dotenv
 from datetime import datetime
 from functools import wraps
+from models import FuelStation
+
 
 load_dotenv()
 app = Flask(__name__)
@@ -197,24 +199,33 @@ def login_verify():
 
 
 # Neural Network Connection Commented out for now
-# @app.route('/store_fuel_prices', methods=['POST'])
-# def store_fuel_prices():
-#     try:
-#         data = request.get_json()
+@app.route('/store_fuel_stations', methods=['POST'])
+def store_fuel_stations():
+    try:
+        data = request.get_json()
 
-#         date = data.get('date')
-#         price = data.get('price')
+        fuel_stations = data.get('fuelStation', [])
 
-#         fuel_price_data = {
-#             "date": date,
-#             "price": price
-#         }
-#         temp_nn_collection.insert_one(fuel_price_data)
+        fuel_station_data_list = []
 
-#         return jsonify({"message": "Fuel price inserted"})
-#     except Exception as e:
-#         return jsonify({"error": str(e)}), 500
+        # Create an instance of the FuelStationsCollection class
+        db = Database()
+        fuel_station_collection = FuelStationsCollection(db)
 
+        for station in fuel_stations:
+            fuel_station_data = {
+                "name": station.get('name'),
+                "location": station.get('location'),
+            }
+            fuel_station_data_list.append(fuel_station_data)
+
+        # Insert the fuel station data into the MongoDB collection using FuelStationsCollection
+        for fuel_station_data in fuel_station_data_list:
+            fuel_station_collection.insert_fuel_station(fuel_station_data)
+
+        return jsonify({"message": "Fuel stations stored successfully"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
