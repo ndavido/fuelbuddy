@@ -11,14 +11,14 @@ import PressableButton from '../styles/buttons';
 import PressableButton2 from '../styles/buttons2';
 import Logo from '../styles/logo';
 
-const LoginVerifyScreen = () => {
+const LoginVerifyScreen = ({ route }) => {
   const navigation = useNavigation();
   
   const { dispatch } = useAuth(); // Get the dispatch function from the AuthContext
   console.log('Value of dispatch:', dispatch);
 
   const [formData, setFormData] = useState({
-    phone_number: '',
+    phone_number: route.params.phone,
     code: '',
   });
 
@@ -62,27 +62,23 @@ const LoginVerifyScreen = () => {
       <ContainerWrapper>
           <ContainerInner>
             <ContainerContent>
-        <InputWrapper>
-        <Text>Phone Number</Text>
-        <InputTxt
-          placeholder=""
-          onChangeText={(text) => handleChange('phone_number', text)}
-        />
-        <Text>Verification Code</Text>
-        <InputTxt
-          placeholder=""
-          onChangeText={(text) => handleChange('code', text)}
-        />
-        <Text>{message}</Text>
-        </InputWrapper>
-      <BttnDiv>
-          <PressableButton
-            onPress={handleVerify}
-            title='Verify'
-            bgColor='#6bff91'
-          />
-        </BttnDiv>
-      </ContainerContent>
+              <InputWrapper>
+              <Text>6-digits code sent to +{route.params.phone}</Text>
+              <Text>Verification Code</Text>
+              <InputTxt
+                placeholder=""
+                onChangeText={(text) => handleChange('code', text)}
+              />
+              <Text>{message}</Text>
+              </InputWrapper>
+            <BttnDiv>
+                <PressableButton
+                  onPress={handleVerify}
+                  title='Verify'
+                  bgColor='#6bff91'
+                />
+              </BttnDiv>
+            </ContainerContent>
           </ContainerInner>
         </ContainerWrapper>
     </Main>

@@ -39,7 +39,7 @@ const LoginScreen = () => {
         setMessage(response.data.message);
 
         if (response.data.message === 'Login code sent successfully!') {
-          navigation.navigate('LoginVerify'); // Navigate to code verification screen
+          navigation.navigate('LoginVerify', { phone: formData.phone_number }); // Navigate to code verification screen
         }
       } else {
         // Handle other cases or errors if needed

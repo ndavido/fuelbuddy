@@ -10,12 +10,12 @@ import PressableButton from '../styles/buttons';
 import PressableButton2 from '../styles/buttons2';
 import Logo from '../styles/logo';
 
-const RegisterVerifyScreen = () => {
+const RegisterVerifyScreen = ({ route }) => {
   const navigation = useNavigation();
   const { dispatch } = useAuth(); // Get the dispatch function from the AuthContext
 
   const [formData, setFormData] = useState({
-    username: '',
+    username: route.params.username,
     code: '',
   });
 
@@ -55,28 +55,30 @@ const RegisterVerifyScreen = () => {
       <ContainerWrapper>
           <ContainerInner>
             <ContainerContent>
-        <InputWrapper>
-        <Text>Username</Text>
-        <InputTxt
-          placeholder=""
-          onChangeText={(text) => handleChange('username', text)}
-        />
-        <Text>Verification Code</Text>
-        <InputTxt
-          placeholder=""
-          onChangeText={(text) => handleChange('code', text)}
-        />
-        <Text>{message}</Text>
-        </InputWrapper>
-      <BttnDiv>
-          <PressableButton
-            onPress={handleVerify}
-            title='Verify'
-            bgColor='#6bff91'
-          />
-        </BttnDiv>
-      
-      </ContainerContent>
+              <InputWrapper>
+                <Text>6-digits code sent to +{route.params.phone}</Text>
+                <Text>Username</Text>
+                <InputTxt
+                  placeholder=""
+                  value = {route.params.username}
+                  editable = {false}
+                  onChangeText={(text) => handleChange('username', text)} readonly
+                />
+                <Text>Verification Code</Text>
+                <InputTxt
+                  placeholder=""
+                  onChangeText={(text) => handleChange('code', text)}
+                />
+                <Text>{message}</Text>
+              </InputWrapper>
+              <BttnDiv>
+                <PressableButton
+                  onPress={handleVerify}
+                  title='Verify'
+                  bgColor='#6bff91'
+                />
+              </BttnDiv>
+            </ContainerContent>
           </ContainerInner>
         </ContainerWrapper>
     </Main>
