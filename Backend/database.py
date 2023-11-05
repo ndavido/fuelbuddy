@@ -55,7 +55,7 @@ class FuelStationsCollection:
 
 class PetrolFuelPricesCollection:
     def __init__(self, db):
-        self.collection = db.get_collection('fuel_prices')
+        self.collection = db.get_collection('petrol_fuel_prices')
 
     def insert_fuel_price(self, fuel_price_data):
         return self.collection.insert_one(fuel_price_data).inserted_id

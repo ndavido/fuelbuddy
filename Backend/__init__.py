@@ -2,7 +2,7 @@
 import os
 from flask import Flask, request, jsonify, session, abort
 from flask_cors import CORS
-from database import Database, UserCollection, FuelStationsCollection
+from database import Database, UserCollection, FuelStationsCollection, PetrolFuelPricesCollection
 import bcrypt
 from twilio.rest import Client
 import random
@@ -226,6 +226,36 @@ def store_fuel_stations():
         return jsonify({"message": "Fuel stations stored successfully"})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+@app.route('/store_petrol_fuel_prices', methods=['POST'])
+def store_petrol_fuel_prices():
+    try:
+        data = request.get_json()
+
+        petrol_prices = data.get('petrol_fuel_prices', [])
+
+        petrol_price_data_list = []
+
+        # Create an instance of the PetrolPricesCollection class
+        db = Database()
+        petrol_price_collection = PetrolFuelPricesCollection(db)
+
+        for station in petrol_prices:
+            petrol_price_data = {
+                "station_id": station.get('station_id'),
+                "location": station.get('location'),
+                "price_per_liter": station.get('price_per_liter'),
+                "timestamp": station.get('timestamp')
+            }
+            petrol_price_data_list.append(petrol_price_data)
+
+        # using insert from PetrolFuelPricesCollection
+        for petrol_price_data in petrol_price_data_list:
+            petrol_price_collection.insert_fuel_price(petrol_price_data)
+
+        return jsonify({"message": "Petrol fuel prices stored successfully"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True)
