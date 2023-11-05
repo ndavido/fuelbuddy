@@ -203,12 +203,12 @@ def login_verify():
 def account():
     try:
         username = session.get('username')
-        
+
         if not username:
-            return jsonify({"error": "User not found"}), 404 
-        
+            return jsonify({"error": "User not found"}), 404
+
         user_info = users_collection.find_user({"username": username})
-        
+
         if user_info:
             user_info.pop('_id', None)
             user_info.pop('verification_code', None)
@@ -216,29 +216,30 @@ def account():
             user_info.pop('login_code', None)
             user_info.pop('updated_at', None)
 
+        return jsonify(user_info)
     except Exception as e:
         print(f"Error: {str(e)}")
         return jsonify({"error": "An error occurred while retrieving your account."}), 500
-    
+
 
 @app.route('/delete_account', methods=['POST'])
 @require_api_key
 def delete_account():
     try:
         username = session.get('username')
-        
+
         if not username:
-            return jsonify({"error": "User not found"}), 404 
-        
+            return jsonify({"error": "User not found"}), 404
+
         users_collection.delete_user({"username": username})
         session.pop('username', None)
-        
+
         return jsonify({"message": "Account deleted successfully!"})
     except Exception as e:
         print(f"Error: {str(e)}")
         return jsonify({"error": "An error occurred while deleting your account."}), 500
-    
-    
+
+
 @app.route('/logout', methods=['POST'])
 @require_api_key
 def logout():
@@ -278,6 +279,8 @@ def store_fuel_stations():
         return jsonify({"message": "Fuel stations stored successfully"})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
 @app.route('/store_petrol_fuel_prices', methods=['POST'])
 def store_petrol_fuel_prices():
     try:
