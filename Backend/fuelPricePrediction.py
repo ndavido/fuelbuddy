@@ -22,14 +22,14 @@ new_data = fuel_prices_collection.get_fuel_prices()
 new_prices = np.array([doc['price_per_liter'] for doc in new_data if 'price_per_liter' in doc]).reshape(-1, 1)
 
 # Normalize the new data using the same scaler used during training
-scaler = MinMaxScaler()  # Use the same scaler as during training
+scaler = MinMaxScaler()
 new_prices_scaled = scaler.fit_transform(new_prices)
-
+print(new_prices_scaled)
 # Prepare the input data with the same time_steps used during training
-time_steps = 10  # Should be the same as during training
+time_steps = 2  # Should be the same as during training
 # Use the same prepare_data function as in the training code
 X_new, _ = prepare_data(new_prices_scaled, time_steps)
-
+print(X_new)
 # Use the pre-trained model to make predictions
 predicted_new_prices = model.predict(X_new)
 
@@ -64,8 +64,8 @@ accurate_predictions_with_next_day = np.append(
 fig = go.Figure()
 
 # Plotting the actual fuel prices
-fig.add_trace(go.Scatter(x=list(range(len(new_prices))),
-              y=new_prices.reshape(-1), mode='lines+markers', name='Actual Fuel Prices'))
+# fig.add_trace(go.Scatter(x=list(range(len(new_prices))),
+#               y=new_prices.reshape(-1), mode='lines+markers', name='Actual Fuel Prices'))
 
 # Plotting the predicted fuel prices (including next day)
 fig.add_trace(go.Scatter(x=list(range(len(accurate_predictions_with_next_day))),

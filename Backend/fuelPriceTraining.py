@@ -10,7 +10,7 @@ from sklearn.model_selection import train_test_split
 
 # Load your dataset. For this example, I'll assume you have a CSV file with a 'Price' column.
 # Replace 'your_dataset.csv' with your data file.
-data = pd.read_csv(r"C:\Users\liamh\OneDrive\Desktop\fuel price.csv")
+data = pd.read_csv("Backend/FuelPrices.csv")
 prices = data['Price'].values.reshape(-1, 1)
 
 # Normalize the data using Min-Max scaling
@@ -26,7 +26,7 @@ def prepare_data(data, time_steps):
     return np.array(X), np.array(y)
 
 # Define the number of time steps (look-back window) and split the data into training and testing sets
-time_steps = 10  # You can adjust this value
+time_steps = 2  # You can adjust this value
 X, y = prepare_data(prices_scaled, time_steps)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=False)
 
