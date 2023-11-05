@@ -6,20 +6,20 @@ import plotly.express as px
 import tensorflow as tf
 from tensorflow.keras.models import load_model
 
-from database import Database, FuelPricesCollection
+from database import Database, PetrolFuelPricesCollection
 from fuelPriceTraining import prepare_data
 
 # Load the pre-trained RNN model
 # Replace with the path to your trained model
 db = Database()
-fuel_prices_collection = FuelPricesCollection(db)
+fuel_prices_collection = PetrolFuelPricesCollection(db)
 
 model = load_model('Fuel_Price_Predictor.keras')
 
 # Load your new, unseen data
 # Replace with the path to your new data file
 new_data = fuel_prices_collection.get_fuel_prices()
-new_prices = new_data['Price'].values.reshape(-1, 1)
+new_prices = np.array([doc['price_per_liter'] for doc in new_data if 'price_per_liter' in doc]).reshape(-1, 1)
 
 # Normalize the new data using the same scaler used during training
 scaler = MinMaxScaler()  # Use the same scaler as during training
