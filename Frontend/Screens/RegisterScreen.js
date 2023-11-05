@@ -17,6 +17,8 @@ const RegisterScreen = () => {
     phone_number: '',
   });
 
+  const countryCode = '353';
+
   const [message, setMessage] = useState('');
 
   const handleChange = (name, value) => {
@@ -27,6 +29,8 @@ const handleRegister = async () => {
   try {
     const apiKey = process.env.REACT_NATIVE_API_KEY;
 
+    const fullNum = `${countryCode}${formData.phone_number}`;
+
     // Add the API key to the request headers
     const config = {
       headers: {
@@ -34,13 +38,13 @@ const handleRegister = async () => {
       },
     };
 
-    const response = await axios.post('http://127.0.0.1:5000/register', formData, config);
+    const response = await axios.post('http://127.0.0.1:5000/register', { ...formData, phone_number: fullNum }, config);
     if (response && response.data) {
       setMessage(response.data.message);
 
       if (response.data.message === 'Verification code sent successfully!') {
         
-        navigation.navigate('RegisterVerify', { username: formData.username, phone: formData.phone_number });
+        navigation.navigate('RegisterVerify', { username: formData.username, phone: fullNum });
       }
     } else {
       // else
@@ -80,6 +84,13 @@ const handleRegister = async () => {
                 <InputTxt
                   placeholder=""
                   onChangeText={(text) => handleChange('username', text)}
+                />
+                <Text>Country Code</Text>
+                <InputTxt
+                  value = "353"
+                  editable = {false}
+                  placeholder=""
+                  onChangeText={(text) => handleChange('country_code', text)}
                 />
                 <Text>Phone Number</Text>
                 <InputTxt
