@@ -64,6 +64,7 @@ const AppNavigator = () => {
       {state.isUserAuthenticated ? (
       <Tab.Navigator
         screenOptions={({ route }) => ({
+          headerShown: false,
           tabBarActiveTintColor: 'blue',
           tabBarInactiveTintColor: 'gray',
           tabBarStyle: {

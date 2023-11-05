@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button } from 'react-native';
+import { View, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 
-//Styling
+// Styled Components and other imports
 import { Main, ContainerWrapper, ContainerInner, ContainerContent, BttnDiv, TxtWrapper, WelcomeTxt, BttnDiv2, InputWrapper, InputTxt } from '../styles/wrapper';
 import PressableButton from '../styles/buttons';
 import PressableButton2 from '../styles/buttons2';
 import Logo from '../styles/logo';
+
+// Import the CountryAndNumberInput component
+import CountryAndNumberInput from '../styles/countryCodePlusNum';
 
 const LoginScreen = () => {
   const navigation = useNavigation();
@@ -36,7 +39,7 @@ const LoginScreen = () => {
         },
       };
 
-      console.log(config)
+      console.log(config);
 
       const response = await axios.post('http://127.0.0.1:5000/login', { ...formData, phone_number: fullNum }, config);
       if (response && response.data) {
@@ -55,49 +58,33 @@ const LoginScreen = () => {
 
   return (
     <Main>
-      <Logo/>
+      <Logo />
       <ContainerWrapper>
-          <ContainerInner>
-            <ContainerContent>
-        <BttnDiv2>
-          <PressableButton2
-            onPress={() => navigation.navigate('Register')}
-            title='Register'
-            bgColor='#6bff91'
-            txtColor='white'
-          />
-          <PressableButton2
-            
-            title='Login'
-            bgColor='white'
-            txtColor='black'
-          />
-        </BttnDiv2>
-        <InputWrapper>
-        <Text>Country Code</Text>
-        <InputTxt
-          value = "353"
-          editable = {false}
-          placeholder=""
-          onChangeText={(text) => handleChange('country_code', text)}
-        />
-        <Text>Phone Number</Text>
-        <InputTxt
-          placeholder=""
-          onChangeText={(text) => handleChange('phone_number', text)}
-        />
-        <Text>{message}</Text>
-        </InputWrapper>
-      <BttnDiv>
-          <PressableButton
-            onPress={handleLogin} 
-            title='Send Login Code'
-            bgColor='#6bff91'
-          />
-        </BttnDiv>
-        </ContainerContent>
-          </ContainerInner>
-        </ContainerWrapper>
+        <ContainerInner>
+          <ContainerContent>
+            <BttnDiv2>
+              <PressableButton2
+                onPress={() => navigation.navigate('Register')}
+                title="Register"
+                bgColor="#6bff91"
+                txtColor="white"
+              />
+              <PressableButton2 title="Login" bgColor="white" txtColor="black" />
+            </BttnDiv2>
+            <InputWrapper>
+              <Text>Country Code</Text>
+              <InputTxt value="353" editable={false} placeholder="" />
+              <Text>Phone Number</Text>
+              {/* Replace the existing phone number input with CountryAndNumberInput */}
+              <CountryAndNumberInput value={formData.phone_number} onChangeText={(text) => handleChange('phone_number', text)} />
+              <Text>{message}</Text>
+            </InputWrapper>
+            <BttnDiv>
+              <PressableButton onPress={handleLogin} title="Send Login Code" bgColor="#6bff91" />
+            </BttnDiv>
+          </ContainerContent>
+        </ContainerInner>
+      </ContainerWrapper>
     </Main>
   );
 };
