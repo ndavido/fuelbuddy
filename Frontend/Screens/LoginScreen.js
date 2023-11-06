@@ -20,9 +20,6 @@ import PressableButton from '../styles/buttons';
 import PressableButton2 from '../styles/buttons2';
 import Logo from '../styles/logo';
 
-// Import the CountryAndNumberInput component
-import CountryAndNumberInput from '../styles/countryCodePlusNum';
-
 const LoginScreen = () => {
     const navigation = useNavigation();
     const [formData, setFormData] = useState({
