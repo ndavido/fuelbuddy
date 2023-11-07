@@ -29,7 +29,7 @@ const AccountScreen = () => {
           },
         };
 
-        const response = await axios.post('http://127.0.0.1:5000/account', { username: "TEST" }, config);
+        const response = await axios.post('ec2-54-172-255-239.compute-1.amazonaws.com/account', { username: "TEST" }, config);
         if (response.data) {
           const userJSON = response.data.user; // Assuming userJSON is a JSON string
           const parsedUser = JSON.parse(userJSON); // Parse the JSON string
