@@ -145,17 +145,17 @@ def login():
         if user:
             # Update the user's data with the hashed login code
             users_collection.update_user({"phone_number": phone_number}, {
-                                         "$set": {"login_code": 000000}})
+                                         "$set": {"login_code": hashed_login_code}})
             print('User found')
         else:
             return jsonify({"error": "User not registered"}), 404
 
         # Send the login code via SMS using Twilio
-        # message = twilio_client.messages.create(
-        #     to=phone_number,
-        #     from_=twilio_number,
-        #     body=f"Your login code is: {login_code}"
-        # )
+        message = twilio_client.messages.create(
+            to=phone_number,
+            from_=twilio_number,
+            body=f"Your login code is: {login_code}"
+        )
 
         return jsonify({"message": "Login code sent successfully!"})
 
@@ -182,10 +182,10 @@ def login_verify():
 
         # Check if the login code matches ~ Commented out for now
         if user:
-            # if bcrypt.checkpw(code.encode('utf-8'), user.get('login_code', '')):
-            # Remove the login code from the database after verification
-            # users_collection.update_user({"phone_number": phone_number}, {
-            #                              "$unset": {"login_code": 1}})
+            if bcrypt.checkpw(code.encode('utf-8'), user.get('login_code', '')):
+                # Remove the login code from the database after verification
+                users_collection.update_user({"phone_number": phone_number}, {
+                    "$unset": {"login_code": 1}})
 
             # Store the user's username in session
             session['username'] = user

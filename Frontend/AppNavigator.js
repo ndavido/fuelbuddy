@@ -61,7 +61,7 @@ const AppNavigator = () => {
 
   return (
     <NavigationContainer>
-      {/* {state.isUserAuthenticated ? ( */}
+      {state.isUserAuthenticated ? (
       <Tab.Navigator
         screenOptions={({ route }) => ({
           headerShown: false,
@@ -92,7 +92,7 @@ const AppNavigator = () => {
         <Tab.Screen name="Map" component={Map} />
         <Tab.Screen name="Account" component={Account} />
       </Tab.Navigator>
-     {/* ) : (
+     ) : (
         <Stack.Navigator screenOptions={{
           headerShown: false
         }}>
@@ -100,7 +100,7 @@ const AppNavigator = () => {
           <Stack.Screen name="Login" component={LoginNavigator} />
           <Stack.Screen name="Register" component={RegisterNavigator} />
         </Stack.Navigator>
-      )} */}
+      )}
     </NavigationContainer>
     
   );
