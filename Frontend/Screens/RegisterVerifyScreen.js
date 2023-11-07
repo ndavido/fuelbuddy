@@ -36,7 +36,7 @@ const RegisterVerifyScreen = ({ route }) => {
         },
       };
 
-      const response = await axios.post('ec2-54-172-255-239.compute-1.amazonaws.com/register/verify', formData, config);
+      const response = await axios.post('http://ec2-54-172-255-239.compute-1.amazonaws.com/register/verify', formData, config);
       setMessage(response.data.message);
 
       // If verification is successful, update the authentication state
