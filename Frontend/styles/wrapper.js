@@ -9,6 +9,11 @@ export const Main = styled.View`
   justify-content: center;
 `;
 
+export const Main2 = styled.View`
+  flex: 1;
+  background-color: #6BFF91;
+`;
+
 export const ContainerWrapper = styled.View`
   height: 100%;
   width: 100%;

@@ -2,12 +2,12 @@ import React, { useEffect }  from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Ionicons } from '@expo/vector-icons'; // Import icons from Expo's vector-icons
+import { FontAwesome5 } from '@expo/vector-icons'; // Import icons from Expo's vector-icons
 import * as SecureStore from 'expo-secure-store';
 import { useAuth } from './AuthContext';
 
 import Welcome from './Screens/WelcomeScreen';
-import Home from './Screens/HomeScreen';
+import Dashboard from './Screens/DashboardScreen';
 import Map from './Screens/MapScreen';
 import Account from './Screens/AccountScreen';
 import Login from './Screens/LoginScreen';
@@ -61,14 +61,14 @@ const AppNavigator = () => {
 
   return (
     <NavigationContainer>
-      {state.isUserAuthenticated ? (
+      {/* {state.isUserAuthenticated ? ( */}
       <Tab.Navigator
         screenOptions={({ route }) => ({
           headerShown: false,
-          tabBarActiveTintColor: 'blue',
-          tabBarInactiveTintColor: 'gray',
+          tabBarActiveTintColor: '#6BFF91',
+          tabBarInactiveTintColor: 'black',
           tabBarStyle: {
-            backgroundColor: 'lightgray',
+            backgroundColor: '#FFFFFF',
           },
           tabBarLabelStyle: {
             fontSize: 16,
@@ -76,23 +76,23 @@ const AppNavigator = () => {
           tabBarIcon: ({ color, size }) => {
             let iconName;
 
-            if (route.name === 'Home') {
-                iconName = 'home';
+            if (route.name === 'Dashboard') {
+                iconName = 'th-large';
             } else if (route.name === 'Map') {
                 iconName = 'map';
             } else if (route.name === 'Account') {
-                iconName = 'star';
+                iconName = 'user';
             }
 
-            return <Ionicons name={iconName} size={size} color={color} />; // Use Ionicons from Expo
+            return <FontAwesome5 name={iconName} size={size} color="#6BFF91" />; // Use FontAwesome5 from Expo
           },
         })}
       >
-        <Tab.Screen name="Home" component={Home} />
+        <Tab.Screen name="Dashboard" component={Dashboard} />
         <Tab.Screen name="Map" component={Map} />
         <Tab.Screen name="Account" component={Account} />
       </Tab.Navigator>
-      ) : (
+     {/* ) : (
         <Stack.Navigator screenOptions={{
           headerShown: false
         }}>
@@ -100,7 +100,7 @@ const AppNavigator = () => {
           <Stack.Screen name="Login" component={LoginNavigator} />
           <Stack.Screen name="Register" component={RegisterNavigator} />
         </Stack.Navigator>
-      )}
+      )} */}
     </NavigationContainer>
     
   );

@@ -4,15 +4,13 @@ import axios from 'axios';
 
 // Styling 
 import {
-  Main,
-  ContainerWrapper,
-  ContainerInner,
-  ContainerContent,
-  InputWrapper,
-  TxtWrapper,
-  WelcomeTxt,
-  BttnDiv2,
+  Main2,
 } from '../styles/wrapper';
+import {
+  AccountWrapper, AccountInner, AccountContent, AccountTopInfo, AccountBottomInfo, AccountTitle, AccountTxt, AccountTxtWrapper, AccountUsername
+} from '../styles/accountPage';
+import MainLogo from '../styles/mainLogo';
+import AccountImg from '../styles/accountImg';
 
 const AccountScreen = () => {
   const [userInfo, setUserInfo] = useState({});
@@ -48,27 +46,32 @@ const AccountScreen = () => {
   }, []);
 
   return (
-    <Main>
-      <ContainerWrapper>
-        <ContainerInner>
-          <ContainerContent>
-            <TxtWrapper>
-              <WelcomeTxt>Your Account</WelcomeTxt>
-            </TxtWrapper>
-            {loading ? (
-              <Text>Loading...</Text>
-            ) : (
-              <InputWrapper>
-                <Text>Full Name: {userInfo.full_name}</Text>
-                <Text>@{userInfo.username}</Text>
-                <Text>Phone Number: {userInfo.phone_number}</Text>
-                <Text>Email: {userInfo.email}</Text>
-              </InputWrapper>
-            )}
-          </ContainerContent>
-        </ContainerInner>
-      </ContainerWrapper>
-    </Main>
+    <Main2>
+      <MainLogo/>
+      <AccountWrapper>
+        <AccountInner>
+          <AccountTopInfo>
+            <AccountContent>
+              <AccountTitle>Account</AccountTitle>
+              <AccountImg/>
+              <AccountUsername>@{userInfo.username}</AccountUsername>
+            </AccountContent>
+          </AccountTopInfo>
+          <AccountBottomInfo>
+            <AccountContent>
+              <AccountTxtWrapper>
+                <Text>Name</Text>
+                <AccountTxt>{userInfo.full_name}</AccountTxt>
+                <Text>Phone Number</Text>
+                <AccountTxt>{userInfo.phone_number}</AccountTxt>
+                <Text>Email</Text>
+                <AccountTxt>{userInfo.email}</AccountTxt>
+              </AccountTxtWrapper>
+            </AccountContent>
+          </AccountBottomInfo>
+        </AccountInner>
+      </AccountWrapper>
+    </Main2>
   );
 };
 

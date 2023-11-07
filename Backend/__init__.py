@@ -1,5 +1,7 @@
 #! /usr/bin/python3
 import os
+
+from bson import json_util
 from flask import Flask, request, jsonify, session, abort
 from flask_cors import CORS
 from database import Database, UserCollection, FuelStationsCollection, PetrolFuelPricesCollection
@@ -202,7 +204,8 @@ def login_verify():
 @require_api_key
 def account():
     try:
-        username = session.get('username')
+        data = request.get_json()
+        username = data.get('username')
 
         if not username:
             return jsonify({"error": "User not found"}), 404
@@ -216,7 +219,11 @@ def account():
             user_info.pop('login_code', None)
             user_info.pop('updated_at', None)
 
-        return jsonify(user_info)
+            user_info_json = json_util.dumps(user_info)
+            return jsonify({"message": "User found", "user": user_info_json}), 200
+        else:
+            return jsonify({"error": "User not found"}), 404
+
     except Exception as e:
         print(f"Error: {str(e)}")
         return jsonify({"error": "An error occurred while retrieving your account."}), 500
