@@ -47,6 +47,11 @@ export const AccountUsername = styled.Text`
   font-weight: 500;
 `;
 
+export const DeveloperTick = styled.Text`
+  font-size: 20px;
+  margin-left: 2px;
+`;
+
 export const AccountBottomInfo = styled.View`
     position: relative;
     background-color: white;
@@ -71,51 +76,3 @@ export const AccountTxt = styled.Text`
 `;
 
 //background-color: ${Dimensions.get('window').width < 768 ? 'green' : 'blue'};
-
-export const TxtWrapper = styled.View`
-  position: absolute;
-  top: 50%;
-  text-align: center;
-  display: inline-block;
-`;
-
-export const WelcomeTxt = styled.Text`
-  font-size: 25px;
-  text-align: center;
-  color: black;
-`;
-
-export const BttnDiv = styled.View`
-  height: auto;
-  width: 100%;
-  display: inline-block;
-  margin: auto;
-  bottom: 40;
-  position: absolute;
-`;
-
-export const BttnDiv2 = styled.View`
-  height: auto;
-  padding: 20px;
-  width: 100%;
-  flex-direction: row;
-  margin: auto;
-  top: 100;
-  position: absolute;
-`;
-
-export const InputWrapper = styled.View`
-  height: auto;
-  width: 100%;
-  top: 40%;
-  margin: auto;
-  position: absolute;
-`;
-
-export const InputTxt = styled.TextInput`
-  margin-bottom: 10px;
-  padding: 10px;
-  height: 30px;
-  background-color: #E1E1E1;
-  border-radius: 10px;
-`;

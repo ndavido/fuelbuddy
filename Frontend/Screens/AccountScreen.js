@@ -7,7 +7,7 @@ import {
   Main2,
 } from '../styles/wrapper';
 import {
-  AccountWrapper, AccountInner, AccountContent, AccountTopInfo, AccountBottomInfo, AccountTitle, AccountTxt, AccountTxtWrapper, AccountUsername
+  AccountWrapper, AccountInner, AccountContent, AccountTopInfo, AccountBottomInfo, AccountTitle, AccountTxt, AccountTxtWrapper, AccountUsername, DeveloperTick
 } from '../styles/accountPage';
 import MainLogo from '../styles/mainLogo';
 import AccountImg from '../styles/accountImg';
@@ -29,7 +29,7 @@ const AccountScreen = () => {
           },
         };
 
-        const response = await axios.post('http://ec2-54-172-255-239.compute-1.amazonaws.com/account', { username: "TEST" }, config);
+        const response = await axios.post('http://ec2-54-172-255-239.compute-1.amazonaws.com/account', { username: "David" }, config);
         if (response.data) {
           const userJSON = response.data.user; // Assuming userJSON is a JSON string
           const parsedUser = JSON.parse(userJSON); // Parse the JSON string
@@ -54,7 +54,7 @@ const AccountScreen = () => {
             <AccountContent>
               <AccountTitle>Account</AccountTitle>
               <AccountImg/>
-              <AccountUsername>@{userInfo.username}</AccountUsername>
+              <AccountUsername>@{userInfo.username} {userInfo.roles && userInfo.roles.includes("Developer") && <DeveloperTick>[Dev]</DeveloperTick>}</AccountUsername>
             </AccountContent>
           </AccountTopInfo>
           <AccountBottomInfo>

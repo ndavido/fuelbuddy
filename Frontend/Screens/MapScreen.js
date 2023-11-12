@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import MapView from '../Components/mymaps';
+import MapView from '../Components/mymap';
 import MainLogo from '../styles/mainLogo';
 const apiKey = process.env.googleMapsApiKey;
 
