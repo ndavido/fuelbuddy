@@ -3,15 +3,18 @@ import os
 
 from bson import json_util
 from flask import Flask, request, jsonify, session, abort
+from flask_session import Session
 from flask_cors import CORS
 from database import Database, UserCollection, FuelStationsCollection, PetrolFuelPricesCollection
 import bcrypt
 from twilio.rest import Client
 import random
 from dotenv import load_dotenv
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import wraps
 from models import FuelStation
+from pymongo import MongoClient
+from pymongo.server_api import ServerApi
 
 
 load_dotenv()
@@ -19,6 +22,18 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "http://localhost:19006"}})
 app.secret_key = "production"  # os.random(24)
 api_key = os.getenv('API_KEY')
+
+# Flask-Session Configuration
+app.config["SESSION_TYPE"] = "mongodb"
+app.config["SESSION_MONGODB"] = MongoClient(
+    os.getenv('MONGO_URI'), server_api=ServerApi('1'))
+app.config["SESSION_MONGODB_DB"] = os.getenv('MONGO_DB_NAME')
+app.config["SESSION_MONGODB_COLLECT"] = "flask_sessions"
+app.config["SESSION_USE_SIGNER"] = True
+app.config["SESSION_PERMANENT"] = False
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
 
 
 def require_api_key(view_function):
@@ -38,10 +53,6 @@ twilio_client = Client(account_sid, auth_token)
 
 db = Database()
 users_collection = UserCollection(db)
-
-tasks = []
-users = {}
-session = {}
 
 
 @app.route('/register', methods=['POST'])
@@ -71,7 +82,7 @@ def register():
             verification_code.encode('utf-8'), bcrypt.gensalt())
 
         # Temporarily store user data in the session
-        session['temp_user'] = {
+        session['new_user'] = {
             "full_name": full_name,
             "username": username,
             "phone_number": phone_number,
@@ -107,15 +118,16 @@ def verify():
         username = data.get('username')
         code = data.get('code')
 
-        temp_user = session.get('temp_user')
-        if not temp_user or temp_user['username'] != username:
+        new_user = session.get('new_user')
+        if not new_user or new_user['username'] != username:
             return jsonify({"error": "User data not found or session expired"}), 404
 
-        if bcrypt.checkpw(code.encode('utf-8'), temp_user['verification_code']):
+        if bcrypt.checkpw(code.encode('utf-8'), new_user['verification_code']):
             # Add the user's data to the database
-            users_collection.insert_user(temp_user)
+            users_collection.insert_user(new_user)
+            session['current_user'] = new_user
             # Clear the temporary data from the session
-            session.pop('temp_user', None)
+            session.pop('new_user', None)
             return jsonify({"message": "Verification successful!"})
 
         return jsonify({"error": "Verification failed"}), 401
