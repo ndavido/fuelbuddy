@@ -19,7 +19,8 @@ from pymongo.server_api import ServerApi
 
 load_dotenv()
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "http://localhost:19006"}})
+CORS(app, resources={
+     r"/*": {"origins": "http://localhost:19006"}}, supports_credentials=True)
 app.secret_key = "production"  # os.random(24)
 api_key = os.getenv('API_KEY')
 
@@ -34,6 +35,9 @@ app.config["SESSION_PERMANENT"] = False
 app.config['SESSION_COOKIE_SECURE'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
+
+Session(app)
+session = {}
 
 
 def require_api_key(view_function):
@@ -53,35 +57,32 @@ twilio_client = Client(account_sid, auth_token)
 
 db = Database()
 users_collection = UserCollection(db)
+new_user = None
 
 
 @app.route('/register', methods=['POST'])
 @require_api_key
 def register():
     try:
-        # Get JSON data from the request
         data = request.get_json()
         full_name = data.get('full_name')
         username = data.get('username')
         phone_number = "+" + data.get('phone_number')
 
-        # Check if user with the same username already exists in the database
-        existing_user_by_username = users_collection.find_user(
-            {"username": username})
-        if existing_user_by_username:
+        if not all([full_name, username, phone_number]):
+            return jsonify({"error": "Missing required fields"}), 400
+
+        if users_collection.find_user({"username": username}):
             return jsonify({"error": "Username already exists"}), 409
 
-        # Check if user with the same phone number already exists in the database
-        existing_user_by_phone = users_collection.find_user(
-            {"phone_number": phone_number})
-        if existing_user_by_phone:
+        if users_collection.find_user({"phone_number": phone_number}):
             return jsonify({"error": "Phone number is already associated with another account"}), 409
 
         verification_code = str(random.randint(100000, 999999))
         hashed_code = bcrypt.hashpw(
             verification_code.encode('utf-8'), bcrypt.gensalt())
 
-        # Temporarily store user data in the session
+        # Set session data
         session['new_user'] = {
             "full_name": full_name,
             "username": username,
@@ -94,8 +95,10 @@ def register():
             "updated_at": datetime.now()
         }
 
-        # Send verification code via SMS using Twilio
-        message = twilio_client.messages.create(
+        # Debug print
+        print("Session new_user set:", session['new_user'])
+
+        twilio_client.messages.create(
             to=phone_number,
             from_=twilio_number,
             body=f"Your verification code is: {verification_code}"
@@ -104,8 +107,7 @@ def register():
         return jsonify({"message": "Verification code sent successfully!"})
 
     except Exception as e:
-        # Log the exception for debugging
-        print(f"Error: {str(e)}")
+        print(f"Error in /register: {str(e)}")
         return jsonify({"error": "An error occurred while processing your request."}), 500
 
 
@@ -113,28 +115,31 @@ def register():
 @require_api_key
 def verify():
     try:
-        # Get JSON data from the request
         data = request.get_json()
         username = data.get('username')
         code = data.get('code')
 
         new_user = session.get('new_user')
+        print("Retrieved from session in /verify:", new_user)
+
         if not new_user or new_user['username'] != username:
             return jsonify({"error": "User data not found or session expired"}), 404
 
         if bcrypt.checkpw(code.encode('utf-8'), new_user['verification_code']):
-            # Add the user's data to the database
+            new_user.pop('verification_code', None)
             users_collection.insert_user(new_user)
-            session['current_user'] = new_user
-            # Clear the temporary data from the session
+            user_data_for_session = {
+                "username": new_user["username"],
+                "phone_number": new_user["phone_number"]
+            }
+            session['current_user'] = user_data_for_session
             session.pop('new_user', None)
             return jsonify({"message": "Verification successful!"})
 
         return jsonify({"error": "Verification failed"}), 401
 
     except Exception as e:
-        # Log the exception for debugging
-        print(f"Error: {str(e)}")
+        print(f"Error in /register/verify: {str(e)}")
         return jsonify({"error": "An error occurred while verifying your code."}), 500
 
 
@@ -144,8 +149,11 @@ def login():
     try:
         # Get JSON data from the request
         data = request.get_json()
-        phone_number = data.get('phone_number')
-        phone_number = "+" + phone_number
+        phone_number = "+" + data.get('phone_number')
+
+        # Basic data validation
+        if not phone_number:
+            return jsonify({"error": "Phone number is required"}), 400
 
         # Generate a 6-digit verification code
         login_code = str(random.randint(100000, 999999))
@@ -158,7 +166,6 @@ def login():
             # Update the user's data with the hashed login code
             users_collection.update_user({"phone_number": phone_number}, {
                                          "$set": {"login_code": hashed_login_code}})
-            print('User found')
         else:
             return jsonify({"error": "User not registered"}), 404
 
@@ -172,7 +179,6 @@ def login():
         return jsonify({"message": "Login code sent successfully!"})
 
     except Exception as e:
-        # Log the exception for debugging
         print(f"Error: {str(e)}")
         return jsonify({"error": "An error occurred while processing your request."}), 500
 
@@ -183,31 +189,36 @@ def login_verify():
     try:
         # Get JSON data from the request
         data = request.get_json()
-        phone_number = data.get('phone_number')
-        phone_number = "+" + phone_number
+        phone_number = "+" + data.get('phone_number')
         code = data.get('code')
+
+        # Basic data validation
+        if not phone_number or not code:
+            return jsonify({"error": "Phone number and code are required"}), 400
 
         # Retrieve the user by phone number from the database
         user = users_collection.find_user({"phone_number": phone_number})
         if not user:
             return jsonify({"error": "User not found"}), 404
 
-        # Check if the login code matches ~ Commented out for now
-        if user:
-            if bcrypt.checkpw(code.encode('utf-8'), user.get('login_code', '')):
-                # Remove the login code from the database after verification
-                users_collection.update_user({"phone_number": phone_number}, {
-                    "$unset": {"login_code": 1}})
+        # Check if the login code matches
+        if bcrypt.checkpw(code.encode('utf-8'), user.get('login_code', b'')):
+            # Remove the login code from the database after verification
+            users_collection.update_user({"phone_number": phone_number}, {
+                                         "$unset": {"login_code": 1}})
 
-            # Store the user's username in session
-            session['username'] = user
-
+            # Store relevant user information in session
+            user_data_for_session = {
+                "username": user.get("username"),
+                "phone_number": user.get("phone_number"),
+                # add other necessary fields here
+            }
+            session['current_user'] = user_data_for_session
             return jsonify({"message": "Login successful!"})
-
-        return jsonify({"error": "Login failed"}), 401
+        else:
+            return jsonify({"error": "Login failed"}), 401
 
     except Exception as e:
-        # Log the exception for debugging
         print(f"Error: {str(e)}")
         return jsonify({"error": "An error occurred while verifying your code."}), 500
 
