@@ -82,27 +82,34 @@ def register():
         data = request.get_json()
         full_name = data.get('full_name')
         username = data.get('username')
-        phone_number = "+" + data.get('phone_number')
+        # Assume this is the number without +353
+        phone_number = data.get('phone_number')
 
-        if not all([full_name, username, phone_number]):
-            return jsonify({"error": "Missing required fields"}), 400
+        # Validate and standardize phone number
+        standardized_phone_number = standardize_irish_number(phone_number)
+        full_phone_number = "+" + standardized_phone_number  # Prefix with +353
+        if not validate_phone_number(full_phone_number):
+            return jsonify({"error": "Invalid phone number format"}), 400
 
+        print("Full phone number:", full_phone_number)
+        # Check for existing users with the same username or phone number
         if users_collection.find_user({"username": username}):
             return jsonify({"error": "Username already exists"}), 409
-
-        if users_collection.find_user({"phone_number": phone_number}):
+        if users_collection.find_user({"phone_number": full_phone_number}):
             return jsonify({"error": "Phone number is already associated with another account"}), 409
 
+        # Generate verification code and hash it
         verification_code = str(random.randint(100000, 999999))
         hashed_code = bcrypt.hashpw(
-            verification_code.encode('utf-8'), bcrypt.gensalt())
+            verification_code.encode('utf-8'), bcrypt.gensalt()
+        )
 
-        # Set session data
+        # Set session data for the new user
         session['new_user'] = {
             "full_name": full_name,
             "username": username,
-            "phone_number": phone_number,
-            "verification_code": hashed_code,
+            "phone_number": full_phone_number,  # Use the full phone number including +353
+            "verification_code": hashed_code,  # Store the hashed verification code
             "verified": False,
             "login_code": "",
             "roles": ["user"],
@@ -110,11 +117,9 @@ def register():
             "updated_at": datetime.now()
         }
 
-        # Debug print
-        print("Session new_user set:", session['new_user'])
-
+        # Send the verification code via SMS using Twilio
         twilio_client.messages.create(
-            to=phone_number,
+            to=full_phone_number,
             from_=twilio_number,
             body=f"Your verification code is: {verification_code}"
         )
@@ -134,25 +139,38 @@ def verify():
         username = data.get('username')
         code = data.get('code')
 
+        # Validate the verification code format
+        if not validate_verification_code(code):
+            return jsonify({"error": "Invalid code format"}), 400
+
+        # Retrieve the session data for the new user
         new_user = session.get('new_user')
         print("Retrieved from session in /verify:", new_user)
 
+        # Check if the session data exists and the username matches
         if not new_user or new_user['username'] != username:
             return jsonify({"error": "User data not found or session expired"}), 404
 
+        # Verify the provided code against the stored hashed code
         if bcrypt.checkpw(code.encode('utf-8'), new_user['verification_code']):
+            # If the code is correct, remove the verification code and add the user to the database
             new_user.pop('verification_code', None)
             users_collection.insert_user(new_user)
+
+            # Store relevant user information in the session to indicate they are now logged in
             user_data_for_session = {
                 "username": new_user["username"],
                 "phone_number": new_user["phone_number"]
             }
             session['current_user'] = user_data_for_session
+
+            # Clear the new user data from the session
             session.pop('new_user', None)
+
             return jsonify({"message": "Verification successful!"})
-
-        return jsonify({"error": "Verification failed"}), 401
-
+        else:
+            # If the code does not match, return a verification failed message
+            return jsonify({"error": "Verification failed"}), 401
     except Exception as e:
         print(f"Error in /register/verify: {str(e)}")
         return jsonify({"error": "An error occurred while verifying your code."}), 500
