@@ -15,6 +15,7 @@ from functools import wraps
 from models import FuelStation
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
+import re
 
 
 load_dotenv()
@@ -39,6 +40,15 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
 Session(app)
 session = {}
 
+account_sid = os.getenv('TWILIO_SID')
+auth_token = os.getenv('TWILIO_AUTH_TOKEN')
+twilio_number = os.getenv('TWILIO_PHONE_NUMBER')
+twilio_client = Client(account_sid, auth_token)
+
+db = Database()
+users_collection = UserCollection(db)
+new_user = None
+
 
 def require_api_key(view_function):
     @wraps(view_function)
@@ -50,14 +60,19 @@ def require_api_key(view_function):
     return decorated_function
 
 
-account_sid = os.getenv('TWILIO_SID')
-auth_token = os.getenv('TWILIO_AUTH_TOKEN')
-twilio_number = os.getenv('TWILIO_PHONE_NUMBER')
-twilio_client = Client(account_sid, auth_token)
+def standardize_irish_number(phone_number):
+    if phone_number.startswith('+3530'):
+        return '+353' + phone_number[5:]  # Remove leading '0'
+    return phone_number
 
-db = Database()
-users_collection = UserCollection(db)
-new_user = None
+
+def validate_phone_number(phone_number):
+    pattern = re.compile(r"^\+[1-9]\d{1,14}$")
+    return bool(pattern.match(phone_number))
+
+
+def validate_verification_code(code):
+    return code.isdigit() and len(code) == 6
 
 
 @app.route('/register', methods=['POST'])
@@ -149,11 +164,15 @@ def login():
     try:
         # Get JSON data from the request
         data = request.get_json()
-        phone_number = "+" + data.get('phone_number')
-
-        # Basic data validation
+        phone_number = data.get('phone_number')
         if not phone_number:
             return jsonify({"error": "Phone number is required"}), 400
+
+        standardized_phone_number = "+" + \
+            standardize_irish_number(phone_number)
+        if not validate_phone_number(standardized_phone_number):
+            return jsonify({"error": "Invalid phone number format"}), 400
+        print("Standardized phone number:", standardized_phone_number)
 
         # Generate a 6-digit verification code
         login_code = str(random.randint(100000, 999999))
@@ -161,17 +180,18 @@ def login():
             login_code.encode('utf-8'), bcrypt.gensalt())
 
         # Retrieve the user by phone number from the database
-        user = users_collection.find_user({"phone_number": phone_number})
+        user = users_collection.find_user(
+            {"phone_number": standardized_phone_number})
         if user:
             # Update the user's data with the hashed login code
-            users_collection.update_user({"phone_number": phone_number}, {
+            users_collection.update_user({"phone_number": standardized_phone_number}, {
                                          "$set": {"login_code": hashed_login_code}})
         else:
             return jsonify({"error": "User not registered"}), 404
 
         # Send the login code via SMS using Twilio
         message = twilio_client.messages.create(
-            to=phone_number,
+            to=standardized_phone_number,
             from_=twilio_number,
             body=f"Your login code is: {login_code}"
         )
@@ -189,22 +209,27 @@ def login_verify():
     try:
         # Get JSON data from the request
         data = request.get_json()
-        phone_number = "+" + data.get('phone_number')
-        code = data.get('code')
 
-        # Basic data validation
+        phone_number = data.get('phone_number')
+        code = data.get('code')
         if not phone_number or not code:
             return jsonify({"error": "Phone number and code are required"}), 400
 
+        standardized_phone_number = "+" + \
+            standardize_irish_number(phone_number)
+        if not validate_phone_number(standardized_phone_number) or not validate_verification_code(code):
+            return jsonify({"error": "Invalid phone number or code format"}), 400
+
         # Retrieve the user by phone number from the database
-        user = users_collection.find_user({"phone_number": phone_number})
+        user = users_collection.find_user(
+            {"phone_number": standardized_phone_number})
         if not user:
             return jsonify({"error": "User not found"}), 404
 
         # Check if the login code matches
         if bcrypt.checkpw(code.encode('utf-8'), user.get('login_code', b'')):
             # Remove the login code from the database after verification
-            users_collection.update_user({"phone_number": phone_number}, {
+            users_collection.update_user({"phone_number": standardized_phone_number}, {
                                          "$unset": {"login_code": 1}})
 
             # Store relevant user information in session
