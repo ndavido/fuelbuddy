@@ -61,14 +61,25 @@ def require_api_key(view_function):
 
 
 def standardize_irish_number(phone_number):
-    if phone_number.startswith('+3530'):
-        return '+353' + phone_number[5:]  # Remove leading '0'
-    return phone_number
+    # @dawid, so i removed the '+' from the phone number in the request(login, reg, login_verify, reg_verify)
+    if phone_number.startswith('353') and not phone_number.startswith('+353'):
+        # Checks if the fourth character is '0'
+        if len(phone_number) > 3 and phone_number[3] == '0':
+            # remove the '0' if its the 4th character
+            return '+353' + phone_number[4:]
+        else:
+            return '+353' + phone_number[3:]
+    # If the number is already in international format which it most likely won't ever be, return as is
+    elif phone_number.startswith('+353'):
+        return phone_number
+
 
 
 def validate_phone_number(phone_number):
-    pattern = re.compile(r"^\+[1-9]\d{1,14}$")
+    # Allow phone numbers with or without a country code
+    pattern = re.compile(r"^\+?[1-9]\d{1,14}$")
     return bool(pattern.match(phone_number))
+
 
 
 def validate_verification_code(code):
@@ -86,8 +97,7 @@ def register():
         phone_number = data.get('phone_number')
 
         # Validate and standardize phone number
-        standardized_phone_number = standardize_irish_number(phone_number)
-        full_phone_number = "+" + standardized_phone_number  # Prefix with +353
+        full_phone_number = standardize_irish_number(phone_number)
         if not validate_phone_number(full_phone_number):
             return jsonify({"error": "Invalid phone number format"}), 400
 
@@ -183,14 +193,18 @@ def login():
         # Get JSON data from the request
         data = request.get_json()
         phone_number = data.get('phone_number')
+        print("phone number:", phone_number)
+
         if not phone_number:
             return jsonify({"error": "Phone number is required"}), 400
 
-        standardized_phone_number = "+" + \
-            standardize_irish_number(phone_number)
+        # Do not append '+' before standardizing for login
+        standardized_phone_number = standardize_irish_number(phone_number)
+        print("standardized_phone_number:", standardized_phone_number)
+
         if not validate_phone_number(standardized_phone_number):
             return jsonify({"error": "Invalid phone number format"}), 400
-        print("Standardized phone number:", standardized_phone_number)
+        print("Standardized phone number2:", standardized_phone_number)
 
         # Generate a 6-digit verification code
         login_code = str(random.randint(100000, 999999))
@@ -233,8 +247,7 @@ def login_verify():
         if not phone_number or not code:
             return jsonify({"error": "Phone number and code are required"}), 400
 
-        standardized_phone_number = "+" + \
-            standardize_irish_number(phone_number)
+        standardized_phone_number = standardize_irish_number(phone_number)
         if not validate_phone_number(standardized_phone_number) or not validate_verification_code(code):
             return jsonify({"error": "Invalid phone number or code format"}), 400
 
