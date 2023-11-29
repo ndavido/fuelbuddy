@@ -61,29 +61,47 @@ def require_api_key(view_function):
 
 
 def standardize_irish_number(phone_number):
-    # @dawid, so i removed the '+' from the phone number in the request(login, reg, login_verify, reg_verify)
+    """
+    Standardize Irish phone numbers to include the country code.
+    """
     if phone_number.startswith('353') and not phone_number.startswith('+353'):
-        # Checks if the fourth character is '0'
         if len(phone_number) > 3 and phone_number[3] == '0':
-            # remove the '0' if its the 4th character
             return '+353' + phone_number[4:]
         else:
             return '+353' + phone_number[3:]
-    # If the number is already in international format which it most likely won't ever be, return as is
     elif phone_number.startswith('+353'):
         return phone_number
-
+    else:
+        raise ValueError(
+            "Invalid Irish phone number format. Number should start with '353' or '+353'.")
 
 
 def validate_phone_number(phone_number):
-    # Allow phone numbers with or without a country code
+    """
+    Validate the phone number format.
+    """
     pattern = re.compile(r"^\+?[1-9]\d{1,14}$")
     return bool(pattern.match(phone_number))
 
 
-
 def validate_verification_code(code):
+    """
+    Validate the format of the verification code.
+    """
     return code.isdigit() and len(code) == 6
+
+
+def handle_api_error(e):
+    """
+    Centralized error handler for API routes.
+    """
+    error_message = "An error occurred while processing your request."
+    if isinstance(e, ValueError):
+        error_message = str(e)
+    elif isinstance(e, KeyError):
+        error_message = "Missing required data in the request."
+    print(f"Error: {str(e)}")
+    return jsonify({"error": error_message}), 500
 
 
 @app.route('/register', methods=['POST'])
@@ -93,33 +111,27 @@ def register():
         data = request.get_json()
         full_name = data.get('full_name')
         username = data.get('username')
-        # Assume this is the number without +353
         phone_number = data.get('phone_number')
 
-        # Validate and standardize phone number
         full_phone_number = standardize_irish_number(phone_number)
         if not validate_phone_number(full_phone_number):
             return jsonify({"error": "Invalid phone number format"}), 400
 
-        print("Full phone number:", full_phone_number)
-        # Check for existing users with the same username or phone number
         if users_collection.find_user({"username": username}):
             return jsonify({"error": "Username already exists"}), 409
         if users_collection.find_user({"phone_number": full_phone_number}):
             return jsonify({"error": "Phone number is already associated with another account"}), 409
 
-        # Generate verification code and hash it
         verification_code = str(random.randint(100000, 999999))
         hashed_code = bcrypt.hashpw(
             verification_code.encode('utf-8'), bcrypt.gensalt()
         )
 
-        # Set session data for the new user
         session['new_user'] = {
             "full_name": full_name,
             "username": username,
-            "phone_number": full_phone_number,  # Use the full phone number including +353
-            "verification_code": hashed_code,  # Store the hashed verification code
+            "phone_number": full_phone_number,
+            "verification_code": hashed_code,
             "verified": False,
             "login_code": "",
             "roles": ["user"],
@@ -127,7 +139,6 @@ def register():
             "updated_at": datetime.now()
         }
 
-        # Send the verification code via SMS using Twilio
         twilio_client.messages.create(
             to=full_phone_number,
             from_=twilio_number,
@@ -137,8 +148,7 @@ def register():
         return jsonify({"message": "Verification code sent successfully!"})
 
     except Exception as e:
-        print(f"Error in /register: {str(e)}")
-        return jsonify({"error": "An error occurred while processing your request."}), 500
+        return handle_api_error(e)
 
 
 @app.route('/register/verify', methods=['POST'])
@@ -146,82 +156,62 @@ def register():
 def verify():
     try:
         data = request.get_json()
-        username = data.get('username')
-        code = data.get('code')
+        username = data['username']
+        code = data['code']
 
-        # Validate the verification code format
         if not validate_verification_code(code):
             return jsonify({"error": "Invalid code format"}), 400
 
-        # Retrieve the session data for the new user
         new_user = session.get('new_user')
-        print("Retrieved from session in /verify:", new_user)
-
-        # Check if the session data exists and the username matches
         if not new_user or new_user['username'] != username:
             return jsonify({"error": "User data not found or session expired"}), 404
 
-        # Verify the provided code against the stored hashed code
         if bcrypt.checkpw(code.encode('utf-8'), new_user['verification_code']):
-            # If the code is correct, remove the verification code and add the user to the database
             new_user.pop('verification_code', None)
             users_collection.insert_user(new_user)
 
-            # Store relevant user information in the session to indicate they are now logged in
-            user_data_for_session = {
+            session['current_user'] = {
                 "username": new_user["username"],
                 "phone_number": new_user["phone_number"]
             }
-            session['current_user'] = user_data_for_session
-
-            # Clear the new user data from the session
             session.pop('new_user', None)
-
             return jsonify({"message": "Verification successful!"})
         else:
-            # If the code does not match, return a verification failed message
             return jsonify({"error": "Verification failed"}), 401
     except Exception as e:
-        print(f"Error in /register/verify: {str(e)}")
-        return jsonify({"error": "An error occurred while verifying your code."}), 500
+        return handle_api_error(e)
 
 
 @app.route('/login', methods=['POST'])
 @require_api_key
 def login():
     try:
-        # Get JSON data from the request
         data = request.get_json()
-        phone_number = data.get('phone_number')
-        print("phone number:", phone_number)
+        phone_number = data['phone_number']
 
         if not phone_number:
             return jsonify({"error": "Phone number is required"}), 400
 
-        # Do not append '+' before standardizing for login
-        standardized_phone_number = standardize_irish_number(phone_number)
-        print("standardized_phone_number:", standardized_phone_number)
+        try:
+            standardized_phone_number = standardize_irish_number(phone_number)
+        except ValueError as err:
+            return jsonify({"error": str(err)}), 400
 
         if not validate_phone_number(standardized_phone_number):
             return jsonify({"error": "Invalid phone number format"}), 400
-        print("Standardized phone number2:", standardized_phone_number)
 
-        # Generate a 6-digit verification code
         login_code = str(random.randint(100000, 999999))
         hashed_login_code = bcrypt.hashpw(
             login_code.encode('utf-8'), bcrypt.gensalt())
 
-        # Retrieve the user by phone number from the database
         user = users_collection.find_user(
             {"phone_number": standardized_phone_number})
         if user:
-            # Update the user's data with the hashed login code
             users_collection.update_user({"phone_number": standardized_phone_number}, {
                                          "$set": {"login_code": hashed_login_code}})
         else:
             return jsonify({"error": "User not registered"}), 404
 
-        # Send the login code via SMS using Twilio
         message = twilio_client.messages.create(
             to=standardized_phone_number,
             from_=twilio_number,
@@ -231,39 +221,37 @@ def login():
         return jsonify({"message": "Login code sent successfully!"})
 
     except Exception as e:
-        print(f"Error: {str(e)}")
-        return jsonify({"error": "An error occurred while processing your request."}), 500
+        return handle_api_error(e)
 
 
 @app.route('/login_verify', methods=['POST'])
 @require_api_key
 def login_verify():
     try:
-        # Get JSON data from the request
         data = request.get_json()
+        phone_number = data['phone_number']
+        code = data['code']
 
-        phone_number = data.get('phone_number')
-        code = data.get('code')
         if not phone_number or not code:
             return jsonify({"error": "Phone number and code are required"}), 400
 
-        standardized_phone_number = standardize_irish_number(phone_number)
+        try:
+            standardized_phone_number = standardize_irish_number(phone_number)
+        except ValueError as ve:
+            return jsonify({"error": str(ve)}), 400
+
         if not validate_phone_number(standardized_phone_number) or not validate_verification_code(code):
             return jsonify({"error": "Invalid phone number or code format"}), 400
 
-        # Retrieve the user by phone number from the database
         user = users_collection.find_user(
             {"phone_number": standardized_phone_number})
         if not user:
             return jsonify({"error": "User not found"}), 404
 
-        # Check if the login code matches
         if bcrypt.checkpw(code.encode('utf-8'), user.get('login_code', b'')):
-            # Remove the login code from the database after verification
             users_collection.update_user({"phone_number": standardized_phone_number}, {
                                          "$unset": {"login_code": 1}})
 
-            # Store relevant user information in session
             user_data_for_session = {
                 "username": user.get("username"),
                 "phone_number": user.get("phone_number"),
@@ -275,8 +263,7 @@ def login_verify():
             return jsonify({"error": "Login failed"}), 401
 
     except Exception as e:
-        print(f"Error: {str(e)}")
-        return jsonify({"error": "An error occurred while verifying your code."}), 500
+        return handle_api_error(e)
 
 
 @app.route('/account', methods=['POST'])
@@ -304,8 +291,7 @@ def account():
             return jsonify({"error": "User not found"}), 404
 
     except Exception as e:
-        print(f"Error: {str(e)}")
-        return jsonify({"error": "An error occurred while retrieving your account."}), 500
+        return handle_api_error(e)
 
 
 @app.route('/delete_account', methods=['POST'])
@@ -322,8 +308,7 @@ def delete_account():
 
         return jsonify({"message": "Account deleted successfully!"})
     except Exception as e:
-        print(f"Error: {str(e)}")
-        return jsonify({"error": "An error occurred while deleting your account."}), 500
+        return handle_api_error(e)
 
 
 @app.route('/logout', methods=['POST'])
@@ -333,8 +318,7 @@ def logout():
         session.pop('username', None)
         return jsonify({"message": "Logout successful!"})
     except Exception as e:
-        print(f"Error: {str(e)}")
-        return jsonify({"error": "An error occurred while logging out."}), 500
+        return handle_api_error(e)
 
 
 # Neural Network Connection Commented out for now
@@ -364,7 +348,7 @@ def store_fuel_stations():
 
         return jsonify({"message": "Fuel stations stored successfully"})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return handle_api_error(e)
 
 
 @app.route('/store_petrol_fuel_prices', methods=['POST'])
@@ -395,7 +379,7 @@ def store_petrol_fuel_prices():
 
         return jsonify({"message": "Petrol fuel prices stored successfully"})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return handle_api_error(e)
 
 
 if __name__ == '__main__':
