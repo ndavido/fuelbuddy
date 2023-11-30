@@ -14,11 +14,18 @@ import {
     WelcomeTxt,
     BttnDiv2,
     InputWrapper,
-    InputTxt
+    InputTxt,
+    PhoneTxt,
+    CCTxt
 } from '../styles/wrapper';
 import PressableButton from '../styles/buttons';
 import PressableButton2 from '../styles/buttons2';
 import Logo from '../styles/logo';
+import styled from "styled-components/native";
+
+const PhoneContainer = styled(View)`
+  flex-direction: row;
+`;
 
 const LoginScreen = () => {
     const navigation = useNavigation();
@@ -49,7 +56,7 @@ const LoginScreen = () => {
 
             console.log(config);
 
-            const response = await axios.post('http://ec2-54-172-255-239.compute-1.amazonaws.com/login', {
+            const response = await axios.post('http://127.0.0.1:5000/login', {
                 ...formData,
                 phone_number: fullNum
             }, config);
@@ -73,9 +80,6 @@ const LoginScreen = () => {
             <ContainerWrapper>
                 <ContainerInner>
                     <ContainerContent>
-                        <View style={{height:230, width:230, borderRadius:180, backgroundColor:'#3bb77b', position:'absolute', top:-150, left:-20, transform: [{scaleX: 2}]}}/>
-                        <View style={{height:220, width:220, borderRadius:200, backgroundColor:'#38e892', position:'absolute', top:-120, left:-80, transform: [{scaleX: 2}]}}/>
-                        <Text style={{position:'absolute', top:30, left:30, fontSize:18, fontWeight: 'bold', color:'white'}} >Login</Text>
                         <BttnDiv2>
                             <PressableButton2
                                 onPress={() => navigation.navigate('Register')}
@@ -91,18 +95,21 @@ const LoginScreen = () => {
                             />
                         </BttnDiv2>
                         <InputWrapper>
-                            <Text>Country Code</Text>
-                            <InputTxt
-                                value="353"
-                                editable={false}
-                                placeholder=""
-                                onChangeText={(text) => handleChange('country_code', text)}
-                            />
                             <Text>Phone Number</Text>
-                            <InputTxt
-                                placeholder=""
-                                onChangeText={(text) => handleChange('phone_number', text)}
-                            />
+                            <PhoneContainer>
+                                <CCTxt
+                                    value="+353"
+                                    editable={false}
+                                    placeholder=""
+                                    onChangeText={(text) => handleChange('country_code', text)}
+                                />
+                                <PhoneTxt
+                                    placeholder=""
+                                    maxLength={10}
+                                    onChangeText={(text) => handleChange('phone_number', text)}
+                                />
+                            </PhoneContainer>
+
                             <Text>{message}</Text>
                         </InputWrapper>
                         <BttnDiv>

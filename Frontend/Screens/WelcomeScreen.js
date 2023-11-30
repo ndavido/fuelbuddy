@@ -16,15 +16,13 @@ const WelcomeScreen = () => {
       <ContainerWrapper>
           <ContainerInner>
             <ContainerContent>
-              <View style={{height:230, width:230, borderRadius:180, backgroundColor:'#3bb77b', position:'absolute', top:-150, left:-20, transform: [{scaleX: 2}]}}/>
-              <View style={{height:220, width:220, borderRadius:200, backgroundColor:'#38e892', position:'absolute', top:-120, left:-80, transform: [{scaleX: 2}]}}/>
-              
               <TxtWrapper>
                 <WelcomeTxt>
                   Welcome To fuelbuddy
                 </WelcomeTxt>
                 
-                {/* <Text>Sample Text Sample Text Sample</Text> */}
+                <Text>Find it. Route it. fuelbuddy.<br/>
+                The Friend Your Tank Deserves.</Text>
               </TxtWrapper>
               <BttnDiv>
                 <PressableButton

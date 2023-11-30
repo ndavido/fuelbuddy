@@ -2,8 +2,8 @@ import React from 'react';
 import styled from 'styled-components/native';
 
 const LogoContainer = styled.SafeAreaView`
-  height: 80px;
-  width: 150px;
+  height: 150px;
+  width: 220px;
   top: 10;
   z-index: 1000;
   margin: auto;
@@ -18,7 +18,7 @@ const LogoImg = styled.Image`
 
 const Logo = () => (
   <LogoContainer>
-    <LogoImg source={require('../assets/fuelbuddyDrop.png') }/>
+    <LogoImg source={require('../assets/fuelbuddyLogo.png') }/>
   </LogoContainer>
 );
 export default Logo;

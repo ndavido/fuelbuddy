@@ -36,7 +36,7 @@ const RegisterVerifyScreen = ({ route }) => {
         },
       };
 
-      const response = await axios.post('http://ec2-54-172-255-239.compute-1.amazonaws.com/register/verify', formData, config);
+      const response = await axios.post('http://127.0.0.1:5000/register/verify', formData, config);
       setMessage(response.data.message);
 
       // If verification is successful, update the authentication state
@@ -55,9 +55,6 @@ const RegisterVerifyScreen = ({ route }) => {
       <ContainerWrapper>
           <ContainerInner>
             <ContainerContent>
-              <View style={{height:230, width:230, borderRadius:180, backgroundColor:'#3bb77b', position:'absolute', top:-150, left:-20, transform: [{scaleX: 2}]}}/>
-              <View style={{height:220, width:220, borderRadius:200, backgroundColor:'#38e892', position:'absolute', top:-120, left:-80, transform: [{scaleX: 2}]}}/>
-              <Text style={{position:'absolute', top:30, left:30, fontSize:18, fontWeight: 'bold', color:'white'}} >Register Verify</Text>
               <InputWrapper>
                 <Text>6-digits code sent to +{route.params.phone}</Text>
                 <Text>Username</Text>

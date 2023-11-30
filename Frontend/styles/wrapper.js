@@ -21,7 +21,7 @@ export const ContainerWrapper = styled.View`
 `;
 
 export const ContainerInner = styled.View`
-  margin: 20px
+  margin: 20px;
   position: relative;
   flex: 1 1 auto;
 `;
@@ -46,6 +46,7 @@ export const TxtWrapper = styled.View`
 
 export const WelcomeTxt = styled.Text`
   font-size: 25px;
+  width: 100%;
   text-align: center;
   color: black;
 `;
@@ -72,12 +73,30 @@ export const BttnDiv2 = styled.View`
 export const InputWrapper = styled.View`
   height: auto;
   width: 100%;
-  top: 40%;
+  padding-top: 100px;
   margin: auto;
-  position: absolute;
+  position: relative;
 `;
 
 export const InputTxt = styled.TextInput`
+  margin-bottom: 10px;
+  padding: 10px;
+  height: 30px;
+  background-color: #E1E1E1;
+  border-radius: 10px;
+`;
+
+export const PhoneTxt = styled.TextInput`
+  flex: 4;
+  margin-bottom: 10px;
+  padding: 10px;
+  height: 30px;
+  background-color: #E1E1E1;
+  border-radius: 10px;
+`;
+
+export const CCTxt = styled.TextInput`
+  flex: 1;
   margin-bottom: 10px;
   padding: 10px;
   height: 30px;
