@@ -65,7 +65,7 @@ const handleRegister = async () => {
 
       if (response.data.message === 'Verification code sent successfully!') {
         
-        navigation.navigate('RegisterVerify', { username: formData.username, phone: fullNum });
+        navigation.navigate('RegisterVerify', { username: formData.username, phone_number: fullNum, full_name: formData.full_name });
       }
     } else {
       // else

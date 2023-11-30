@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, Text, TextInput, Button } from 'react-native';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
@@ -6,16 +6,26 @@ import { useAuth } from '../AuthContext';
 import * as SecureStore from 'expo-secure-store';
 
 // Styling
-import { Main, ContainerWrapper, ContainerInner, ContainerContent, BttnDiv, TxtWrapper, WelcomeTxt, BttnDiv2, InputWrapper, InputTxt } from '../styles/wrapper';
+import {
+  Main,
+  ContainerWrapper,
+  ContainerInner,
+  ContainerContent,
+  BttnDiv,
+  TxtWrapper,
+  WelcomeTxt,
+  BttnDiv2,
+  InputWrapper,
+  InputTxt,
+} from '../styles/wrapper';
 import PressableButton from '../styles/buttons';
 import PressableButton2 from '../styles/buttons2';
 import Logo from '../styles/logo';
 
 const LoginVerifyScreen = ({ route }) => {
   const navigation = useNavigation();
-  
+
   const { dispatch } = useAuth(); // Get the dispatch function from the AuthContext
-  console.log('Value of dispatch:', dispatch);
 
   const [formData, setFormData] = useState({
     phone_number: route.params.phone,
@@ -23,6 +33,8 @@ const LoginVerifyScreen = ({ route }) => {
   });
 
   const [message, setMessage] = useState('');
+  const [resendCount, setResendCount] = useState(0); // Counter for resend attempts
+  const maxResendLimit = 2; // Maximum resend limit
 
   const handleChange = (name, value) => {
     setFormData({ ...formData, [name]: value });
@@ -45,10 +57,10 @@ const LoginVerifyScreen = ({ route }) => {
       // If verification is successful, update the authentication state
       if (response.data.message === 'Login successful!') {
         dispatch({ type: 'LOGIN', payload: response.data.user });
-        
+
         // Save the authentication state in SecureStore
         await SecureStore.setItemAsync('authState', JSON.stringify(response.data.user));
-        
+
         navigation.navigate('Home');
       }
     } catch (error) {
@@ -56,13 +68,53 @@ const LoginVerifyScreen = ({ route }) => {
     }
   };
 
+  const updateResendCount = () => {
+    setResendCount(resendCount + 1);
+  };
+
+  const handleResendCode = async () => {
+  if (resendCount < maxResendLimit) {
+    try {
+      const apiKey = process.env.REACT_NATIVE_API_KEY;
+
+      // Add the API key to the request headers
+      const config = {
+        headers: {
+          'X-API-Key': apiKey,
+        },
+      };
+
+      // Replace the placeholder with your actual code to resend the verification code
+      const response = await axios.post(
+        'http://127.0.0.1:5000/login', // Replace with your endpoint URL
+        {
+          phone_number: formData.phone_number,
+        },
+        config
+      );
+
+      // Check the response status or message to confirm code resent successfully
+      if (response && response.data) {
+        setMessage('Code resent successfully!');
+        updateResendCount(); // Increment resend count
+      } else {
+        setMessage('Failed to resend code. Please try again.');
+      }
+    } catch (error) {
+      setMessage('Failed to resend code. Please try again.');
+    }
+  } else {
+    setMessage('Maximum resend limit reached.');
+  }
+};
+
   return (
     <Main>
-      <Logo/>
+      <Logo />
       <ContainerWrapper>
-          <ContainerInner>
-            <ContainerContent>
-              <InputWrapper>
+        <ContainerInner>
+          <ContainerContent>
+            <InputWrapper>
               <Text>6-digits code sent to +{route.params.phone}</Text>
               <Text>Verification Code</Text>
               <InputTxt
@@ -70,17 +122,22 @@ const LoginVerifyScreen = ({ route }) => {
                 onChangeText={(text) => handleChange('code', text)}
               />
               <Text>{message}</Text>
-              </InputWrapper>
+              <PressableButton
+                onPress={handleResendCode}
+                title="Resend Code"
+                bgColor="#6bff91"
+              />
+            </InputWrapper>
             <BttnDiv>
-                <PressableButton
-                  onPress={handleVerify}
-                  title='Verify'
-                  bgColor='#6bff91'
-                />
-              </BttnDiv>
-            </ContainerContent>
-          </ContainerInner>
-        </ContainerWrapper>
+              <PressableButton
+                onPress={handleVerify}
+                title="Verify"
+                bgColor="#6bff91"
+              />
+            </BttnDiv>
+          </ContainerContent>
+        </ContainerInner>
+      </ContainerWrapper>
     </Main>
   );
 };
