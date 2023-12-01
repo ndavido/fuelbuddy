@@ -179,7 +179,11 @@ def verify():
                 "phone_number": new_user["phone_number"]
             }
             session.pop('new_user', None)
-            return jsonify({"message": "Verification successful!"})
+            access_token = create_access_token(identity=new_user["phone_number"])
+            return jsonify({
+                "message": "Verification successful!",
+                "access_token": access_token
+            }), 200
         else:
             return jsonify({"error": "Verification failed"}), 401
     except Exception as e:

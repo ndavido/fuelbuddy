@@ -53,7 +53,6 @@ const LoginVerifyScreen = ({ route }) => {
       };
 
       const response = await axios.post('http://127.0.0.1:5000/login_verify', formData, config);
-      console.log(response.data);
 
       setMessage(response.data.message);
 

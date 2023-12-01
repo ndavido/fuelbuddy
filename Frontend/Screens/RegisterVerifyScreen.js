@@ -3,6 +3,7 @@ import {View, Text, TextInput, Button} from 'react-native';
 import axios from 'axios';
 import {useNavigation} from '@react-navigation/native';
 import {useAuth} from '../AuthContext';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Styling
 import {
@@ -20,6 +21,7 @@ import {
 import PressableButton from '../styles/buttons';
 import PressableButton2 from '../styles/buttons2';
 import Logo from '../styles/logo';
+
 
 const RegisterVerifyScreen = ({route}) => {
     const navigation = useNavigation();
@@ -53,9 +55,16 @@ const RegisterVerifyScreen = ({route}) => {
             setMessage(response.data.message);
 
             // If verification is successful, update the authentication state
-            if (response.data.message === 'Verification successful!') {
-                dispatch({type: 'LOGIN', payload: response.data.user}); // Update the user in the state
-                navigation.navigate('Home');
+            if (response.data.message === 'Verification successful!' && response.data.access_token) {
+                // Store the received access token securely
+                await AsyncStorage.setItem('token', response.data.access_token);
+
+                // Attach the access token to the request headers for subsequent requests
+                axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access_token}`;
+
+                navigation.navigate('Dashboard');
+            } else {
+                console.log("Uh Oh")
             }
         } catch (error) {
             setMessage(error.response.data.error);
@@ -106,7 +115,6 @@ const RegisterVerifyScreen = ({route}) => {
                 <ContainerInner>
                     <ContainerContent>
                         <InputWrapper>
-                            <Text>Name {route.params.full_name}</Text>
                             <Text>6-digits code sent to +{route.params.phone_number}</Text>
                             <Text>Username</Text>
                             <InputTxt
