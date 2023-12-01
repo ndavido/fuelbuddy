@@ -1,38 +1,83 @@
-import { createContext, useReducer, useContext } from 'react';
+import React, { createContext, useReducer, useContext, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage for storing JWT
 
+// Create the AuthContext
 const AuthContext = createContext();
 
+// Custom hook to use the AuthContext
 export const useAuth = () => useContext(AuthContext);
 
-const initialState = {
-  isUserAuthenticated: false,
-  user: null,
-};
-
+// Reducer function to manage authentication state
 const authReducer = (state, action) => {
   switch (action.type) {
     case 'LOGIN':
       return {
         ...state,
         isUserAuthenticated: true,
-        user: action.payload,
       };
     case 'LOGOUT':
       return {
         ...state,
         isUserAuthenticated: false,
-        user: null,
       };
     default:
       return state;
   }
 };
 
+// Initial state for authentication
+const initialState = {
+  isUserAuthenticated: false,
+};
+
+// AuthProvider component to wrap the app and provide authentication context
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
+  useEffect(() => {
+    const checkAuthState = async () => {
+      try {
+        // Check if token exists in AsyncStorage
+        const token = await AsyncStorage.getItem('token');
+
+        if (token) {
+          // Dispatch action to set user as authenticated
+          dispatch({ type: 'LOGIN' });
+        }
+      } catch (error) {
+        // Handle AsyncStorage or token retrieval errors
+      }
+    };
+
+    checkAuthState();
+  }, []);
+
+  const login = async (token) => {
+    try {
+      // Save the JWT token in AsyncStorage upon successful login
+      await AsyncStorage.setItem('token', token);
+
+      // Dispatch action to set user as authenticated
+      dispatch({ type: 'LOGIN' });
+    } catch (error) {
+      // Handle AsyncStorage or token storage errors
+    }
+  };
+
+  const logout = async () => {
+    try {
+      // Remove the JWT token from AsyncStorage upon logout
+      await AsyncStorage.removeItem('token');
+
+      // Dispatch action to set user as not authenticated
+      dispatch({ type: 'LOGOUT' });
+    } catch (error) {
+      // Handle AsyncStorage or token removal errors
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ state, dispatch }}>
+    <AuthContext.Provider value={{ state, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

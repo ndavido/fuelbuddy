@@ -4,6 +4,7 @@ import os
 from bson import json_util
 from flask import Flask, request, jsonify, session, abort
 from flask_session import Session
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from flask_cors import CORS
 from database import Database, UserCollection, FuelStationsCollection, PetrolFuelPricesCollection
 import bcrypt
@@ -24,6 +25,9 @@ CORS(app, resources={
      r"/*": {"origins": "http://localhost:19006"}}, supports_credentials=True)
 app.secret_key = "production"  # os.random(24)
 api_key = os.getenv('API_KEY')
+
+app.config['JWT_SECRET_KEY'] = 'your-secret-key'  # Change this to a secure secret key
+jwt = JWTManager(app)
 
 # Flask-Session Configuration
 app.config["SESSION_TYPE"] = "mongodb"
@@ -258,13 +262,22 @@ def login_verify():
                 # add other necessary fields here
             }
             session['current_user'] = user_data_for_session
-            return jsonify({"message": "Login successful!"})
+            access_token = create_access_token(identity=data['phone_number'])
+            return jsonify({
+                "message": "Login successful!",
+                "access_token": access_token
+            }), 200
         else:
             return jsonify({"error": "Login failed"}), 401
 
     except Exception as e:
         return handle_api_error(e)
 
+@app.route('/protected', methods=['GET'])
+@jwt_required()
+def protected():
+    current_user = get_jwt_identity()
+    return jsonify(logged_in_as=current_user), 200
 
 @app.route('/account', methods=['POST'])
 @require_api_key
@@ -312,7 +325,6 @@ def delete_account():
 
 
 @app.route('/logout', methods=['POST'])
-@require_api_key
 def logout():
     try:
         session.pop('username', None)

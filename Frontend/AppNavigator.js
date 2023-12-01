@@ -5,6 +5,7 @@ import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {FontAwesome5} from '@expo/vector-icons'; // Import icons from Expo's vector-icons
 import * as SecureStore from 'expo-secure-store';
 import {useAuth} from './AuthContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import Welcome from './Screens/WelcomeScreen';
 import Dashboard from './Screens/DashboardScreen';
@@ -47,17 +48,26 @@ const AppNavigator = () => {
     const {state, dispatch} = useAuth();
 
     useEffect(() => {
-        // Check for saved authentication state in SecureStore
-        const getAuthState = async () => {
-            const savedAuthState = await SecureStore.getItemAsync('authState');
-            if (savedAuthState) {
-                const user = JSON.parse(savedAuthState);
-                dispatch({type: 'LOGIN', payload: user});
-            }
-        };
+        const checkAuthState = async () => {
+      try {
+        // Check if token exists in AsyncStorage
+        const token = await AsyncStorage.getItem('token');
 
-        getAuthState();
-    }, [dispatch]);
+        if (token) {
+          // Dispatch action to set user as authenticated
+          dispatch({ type: 'LOGIN' });
+
+        } else {
+            // Dispatch action to set user as not authenticated
+            dispatch({ type: 'LOGOUT' });
+        }
+      } catch (error) {
+        // Handle AsyncStorage or token retrieval errors
+      }
+    };
+
+    checkAuthState();
+  }, [dispatch]);
 
     return (
         <NavigationContainer>

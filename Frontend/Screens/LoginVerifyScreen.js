@@ -3,6 +3,7 @@ import { View, Text, TextInput, Button } from 'react-native';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../AuthContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 
 // Styling
@@ -52,16 +53,21 @@ const LoginVerifyScreen = ({ route }) => {
       };
 
       const response = await axios.post('http://127.0.0.1:5000/login_verify', formData, config);
+      console.log(response.data);
+
       setMessage(response.data.message);
 
       // If verification is successful, update the authentication state
-      if (response.data.message === 'Login successful!') {
-        dispatch({ type: 'LOGIN', payload: response.data.user });
+      if (response.data.message === 'Login successful!' && response.data.access_token) {
+        // Store the received access token securely
+        await AsyncStorage.setItem('token', response.data.access_token);
 
-        // Save the authentication state in SecureStore
-        await SecureStore.setItemAsync('authState', JSON.stringify(response.data.user));
+        // Attach the access token to the request headers for subsequent requests
+        axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access_token}`;
 
-        navigation.navigate('Home');
+        navigation.navigate('Dashboard');
+      } else {
+        console.log("Uh Oh")
       }
     } catch (error) {
       setMessage(error.response.data.error);

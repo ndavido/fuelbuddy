@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Button } from 'react-native';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Styling 
 import {
@@ -15,6 +16,16 @@ import AccountImg from '../styles/accountImg';
 const AccountScreen = () => {
   const [userInfo, setUserInfo] = useState({});
   const [loading, setLoading] = useState(true);
+
+  const handleLogout = async () => {
+    try {
+      // Clear the token stored in AsyncStorage
+      await AsyncStorage.removeItem('token');
+
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
 
   useEffect(() => {
     // Make an API request to fetch user account information from the backend
@@ -67,6 +78,7 @@ const AccountScreen = () => {
                 <Text>Email</Text>
                 <AccountTxt>{userInfo.email}</AccountTxt>
               </AccountTxtWrapper>
+              <Button title="Logout" onPress={handleLogout} />
             </AccountContent>
           </AccountBottomInfo>
         </AccountInner>
