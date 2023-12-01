@@ -55,7 +55,7 @@ const RegisterVerifyScreen = ({route}) => {
             // If verification is successful, update the authentication state
             if (response.data.message === 'Verification successful!') {
                 dispatch({type: 'LOGIN', payload: response.data.user}); // Update the user in the state
-                navigation.navigate('Home'); // Change 'Home' to the screen you want to navigate to
+                navigation.navigate('Home');
             }
         } catch (error) {
             setMessage(error.response.data.error);

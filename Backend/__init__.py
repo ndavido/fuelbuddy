@@ -262,7 +262,7 @@ def login_verify():
                 # add other necessary fields here
             }
             session['current_user'] = user_data_for_session
-            access_token = create_access_token(identity=data['phone_number'])
+            access_token = create_access_token(identity=standardized_phone_number)
             return jsonify({
                 "message": "Login successful!",
                 "access_token": access_token
@@ -284,12 +284,12 @@ def protected():
 def account():
     try:
         data = request.get_json()
-        username = data.get('username')
+        phone = data.get('phone_number')
 
-        if not username:
+        if not phone:
             return jsonify({"error": "User not found"}), 404
 
-        user_info = users_collection.find_user({"username": username})
+        user_info = users_collection.find_user({"phone_number": phone})
 
         if user_info:
             user_info.pop('_id', None)
