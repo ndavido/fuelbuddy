@@ -1,22 +1,34 @@
-from pymodm import MongoModel, fields
-# stores the current fuel prices for each fuel station, embedded
-class FuelPrice(MongoModel):
-    petrol_price = fields.FloatField()
-    diesel_price = fields.FloatField()
+# models.py
 
-# stores the fuel prices for each fuel station, and holds info for each fuel station
-class FuelStation(MongoModel):
-    name = fields.CharField()
-    location = fields.CharField()
-    current_fuel_prices = fields.EmbeddedDocumentField(FuelPrice)
-# stores historical fuel prices for each fuel station
-class PetrolFuelPrice(MongoModel):
-    fuel_station = fields.ReferenceField(FuelStation)
-    price = fields.FloatField()
-    timestamp = fields.DateTimeField()
-# stores historical fuel prices for each fuel station
-class DieselFuelPrice(MongoModel):
-    fuel_station = fields.ReferenceField(FuelStation)
-    price = fields.FloatField()
-    timestamp = fields.DateTimeField()
+from mongoengine import Document, StringField, FloatField, IntField, ReferenceField, BooleanField, ListField, \
+    DateTimeField
 
+class Location(Document):
+    latitude = FloatField(required=True)
+    longitude = FloatField(required=True)
+
+class User(Document):
+    username = StringField(required=True, unique=True)
+    full_name = StringField()
+    phone_number = StringField()
+    verification_code = StringField()
+    verified = BooleanField(default=False)
+    location = ReferenceField(Location)
+    roles = ListField(StringField())
+    created_at = DateTimeField()
+    updated_at = DateTimeField()
+class Vehicle(Document):
+    user = ReferenceField(User, reverse_delete_rule='CASCADE')
+    year = IntField()
+    make = StringField()
+    model = StringField()
+    engine_size = StringField()
+    license_plate = StringField()
+    fuel_type = StringField()
+
+class FuelStation(Document):
+    name = StringField(required=True)
+
+class FuelPrices(Document):
+    fuel_station = ReferenceField(FuelStation, reverse_delete_rule='CASCADE')
+    price = StringField()
