@@ -9,6 +9,7 @@ from sklearn.metrics import mean_squared_error
 
 np.random.seed(0)
 
+
 def main():
     # Main Execution
     time_step = 5  # Experiment with different time steps
@@ -35,7 +36,8 @@ def main():
         trained_model, last_weeks_data, scaler)
     print(f"Predicted expenditure for next week: {next_week_expenditure}")
     print(f"Actual expenditure for next week: {df['Total'].values[-1]}")
-    print(f"Accuracy: {accuracy(next_week_expenditure, df['Total'].values[-1])}")
+    print(
+        f"Accuracy: {accuracy(next_week_expenditure, df['Total'].values[-1])}")
 
 # Data Preprocessing Function
 

@@ -17,6 +17,7 @@ from models import FuelStation
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
 import re
+from updated_user_monthly_predictions import main as nn
 
 
 load_dotenv()
@@ -26,7 +27,8 @@ CORS(app, resources={
 app.secret_key = "production"  # os.random(24)
 api_key = os.getenv('API_KEY')
 
-app.config['JWT_SECRET_KEY'] = 'your-secret-key'  # Change this to a secure secret key
+# Change this to a secure secret key
+app.config['JWT_SECRET_KEY'] = 'your-secret-key'
 jwt = JWTManager(app)
 
 # Flask-Session Configuration
@@ -179,7 +181,8 @@ def verify():
                 "phone_number": new_user["phone_number"]
             }
             session.pop('new_user', None)
-            access_token = create_access_token(identity=new_user["phone_number"])
+            access_token = create_access_token(
+                identity=new_user["phone_number"])
             return jsonify({
                 "message": "Verification successful!",
                 "access_token": access_token
@@ -266,7 +269,8 @@ def login_verify():
                 # add other necessary fields here
             }
             session['current_user'] = user_data_for_session
-            access_token = create_access_token(identity=standardized_phone_number)
+            access_token = create_access_token(
+                identity=standardized_phone_number)
             return jsonify({
                 "message": "Login successful!",
                 "access_token": access_token
@@ -277,11 +281,13 @@ def login_verify():
     except Exception as e:
         return handle_api_error(e)
 
+
 @app.route('/protected', methods=['GET'])
 @jwt_required()
 def protected():
     current_user = get_jwt_identity()
     return jsonify(logged_in_as=current_user), 200
+
 
 @app.route('/account', methods=['POST'])
 @require_api_key
@@ -396,6 +402,12 @@ def store_petrol_fuel_prices():
         return jsonify({"message": "Petrol fuel prices stored successfully"})
     except Exception as e:
         return handle_api_error(e)
+
+
+@app.route('/user_spending', methods=['POST'])
+@require_api_key
+def user_spending():
+    nn()
 
 
 if __name__ == '__main__':
