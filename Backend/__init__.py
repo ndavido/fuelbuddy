@@ -17,7 +17,7 @@ from models import FuelStation
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
 import re
-from updated_user_monthly_predictions import main as nn
+# from updated_user_monthly_predictions import main as nn
 
 
 load_dotenv()
