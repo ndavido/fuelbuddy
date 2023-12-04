@@ -7,18 +7,19 @@ class Location(Document):
     latitude = FloatField(required=True)
     longitude = FloatField(required=True)
 
-class User(Document):
+class Users(Document):
     username = StringField(required=True, unique=True)
     full_name = StringField()
     phone_number = StringField()
     verification_code = StringField()
+    login_code = StringField()
     verified = BooleanField(default=False)
     location = ReferenceField(Location)
     roles = ListField(StringField())
     created_at = DateTimeField()
     updated_at = DateTimeField()
 class Vehicle(Document):
-    user = ReferenceField(User, reverse_delete_rule='CASCADE')
+    user = ReferenceField(Users, reverse_delete_rule='CASCADE')
     year = IntField()
     make = StringField()
     model = StringField()

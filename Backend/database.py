@@ -6,33 +6,52 @@ from pymongo import MongoClient
 from pymongo.server_api import ServerApi
 from dotenv import load_dotenv
 from models import FuelStation
+from mongoengine import connect
+from models import Users
 
 load_dotenv()
 
 # Initialize the MongoDB client
 
 
+connect(
+    db=os.getenv('MONGO_DB_NAME'),
+    host=os.getenv('MONGO_URI'),
+    alias='default'
+)
+
+
 class Database:
     def __init__(self):
-        client = MongoClient(os.getenv('MONGO_URI'), server_api=ServerApi('1'))
-        self.db = client[os.getenv('MONGO_DB_NAME')]
+        pass
 
     def get_collection(self, collection_name):
-        return self.db[collection_name]
+        return collection_name
+
 
 
 class UserCollection:
-    def __init__(self, db):
-        self.collection = db.get_collection('users')
+    def __init__(self):
+        self.collection = Users
 
     def insert_user(self, user_data):
-        return self.collection.insert_one(user_data).inserted_id
+        # Insert a new
+        user = Users(**user_data)
+        user.save()
+        return user.id
 
     def find_user(self, query):
-        return self.collection.find_one(query)
+        # Find a user
+        user = Users.objects(**query).first()
+        return user
 
     def update_user(self, query, new_data):
-        return self.collection.update_one(query, new_data)
+        # Update a user
+        user = Users.objects(**query).first()
+        if user:
+            user.modify(**new_data)
+            return True
+        return False
 
 
 class FuelStationsCollection:
