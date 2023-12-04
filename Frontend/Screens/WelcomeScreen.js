@@ -21,8 +21,8 @@ const WelcomeScreen = () => {
                   Welcome To fuelbuddy
                 </WelcomeTxt>
                 
-                <Text>Find it. Route it. fuelbuddy.<br/>
-                The Friend Your Tank Deserves.</Text>
+                <Text>Find it. Route it. fuelbuddy.</Text>
+                <Text>The Friend Your Tank Deserves.</Text>
               </TxtWrapper>
               <BttnDiv>
                 <PressableButton

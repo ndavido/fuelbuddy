@@ -11,6 +11,7 @@ class Users(Document):
     username = StringField(required=True, unique=True)
     full_name = StringField()
     phone_number = StringField()
+    email = StringField()
     verification_code = StringField()
     login_code = StringField()
     verified = BooleanField(default=False)
