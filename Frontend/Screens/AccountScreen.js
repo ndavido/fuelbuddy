@@ -56,20 +56,18 @@ const AccountScreen = () => {
 
                 const storedToken = await AsyncStorage.getItem('token');
                 if (storedToken) {
-                    const decodedToken = jwtDecode(storedToken);
-                    console.log(decodedToken);
+                  const decodedToken = jwtDecode(storedToken);
+                  console.log(decodedToken);
 
-                    const phone = decodedToken.sub;
+                  const phone = decodedToken.sub;
 
-                    const response = await axios.post('http://127.0.0.1:5000/account', {phone_number: phone}, config);
-                    if (response.data) {
-                        const userJSON = response.data.user; // Assuming userJSON is a JSON string
-                        const parsedUser = JSON.parse(userJSON); // Parse the JSON string
+                  const response = await axios.post('http://127.0.0.1:5000/account', { phone_number: phone }, config);
 
-                        setUserInfo(parsedUser);
-                        setLoading(false);
-                    }
+                  if (response.data && response.data.user) {
+                    setUserInfo(response.data.user); // Set the user info directly
 
+                    setLoading(false);
+                  }
                 }
             } catch (error) {
                 console.error('Error fetching user account information:', error);

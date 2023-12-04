@@ -13,7 +13,7 @@ import random
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from functools import wraps
-from models import FuelStation
+from models import FuelStation, Location, Users
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
 import re
@@ -34,7 +34,7 @@ jwt = JWTManager(app)
 # Flask-Session Configuration
 app.config["SESSION_TYPE"] = "mongodb"
 app.config["SESSION_MONGODB"] = MongoClient(
-    os.getenv('MONGO_URI'), server_api=ServerApi('1'))
+os.getenv('MONGO_URI'), server_api=ServerApi('1'))
 app.config["SESSION_MONGODB_DB"] = os.getenv('MONGO_DB_NAME')
 app.config["SESSION_MONGODB_COLLECT"] = "flask_sessions"
 app.config["SESSION_USE_SIGNER"] = True
@@ -52,7 +52,7 @@ twilio_number = os.getenv('TWILIO_PHONE_NUMBER')
 twilio_client = Client(account_sid, auth_token)
 
 db = Database()
-users_collection = UserCollection(db)
+users_collection = UserCollection()
 new_user = None
 
 
@@ -123,9 +123,9 @@ def register():
         if not validate_phone_number(full_phone_number):
             return jsonify({"error": "Invalid phone number format"}), 400
 
-        if users_collection.find_user({"username": username}):
+        if Users.objects(username=username).first():
             return jsonify({"error": "Username already exists"}), 409
-        if users_collection.find_user({"phone_number": full_phone_number}):
+        if Users.objects(phone_number=full_phone_number).first():
             return jsonify({"error": "Phone number is already associated with another account"}), 409
 
         verification_code = str(random.randint(100000, 999999))
@@ -173,13 +173,18 @@ def verify():
             return jsonify({"error": "User data not found or session expired"}), 404
 
         if bcrypt.checkpw(code.encode('utf-8'), new_user['verification_code']):
-            new_user.pop('verification_code', None)
-            users_collection.insert_user(new_user)
+            new_user_data = session.pop('new_user', None)
+            if not new_user_data:
+                return jsonify({"error": "User data not found or session expired"}), 404
 
+            new_user_data.pop('verification_code', None)
+            new_user = Users(**new_user_data)
+            new_user.save()  # Save the verified user to the database
             session['current_user'] = {
-                "username": new_user["username"],
-                "phone_number": new_user["phone_number"]
+                "username": new_user.username,
+                "phone_number": new_user.phone_number
             }
+
             session.pop('new_user', None)
             access_token = create_access_token(
                 identity=new_user["phone_number"])
@@ -212,14 +217,13 @@ def login():
             return jsonify({"error": "Invalid phone number format"}), 400
 
         login_code = str(random.randint(100000, 999999))
-        hashed_login_code = bcrypt.hashpw(
-            login_code.encode('utf-8'), bcrypt.gensalt())
+        hashed_login_code_bytes = bcrypt.hashpw(login_code.encode('utf-8'), bcrypt.gensalt())
+        hashed_login_code_str = hashed_login_code_bytes.decode('utf-8')  # Convert bytes to string
 
-        user = users_collection.find_user(
-            {"phone_number": standardized_phone_number})
+        user = Users.objects(phone_number=standardized_phone_number).first()
+
         if user:
-            users_collection.update_user({"phone_number": standardized_phone_number}, {
-                                         "$set": {"login_code": hashed_login_code}})
+            user.update(set__login_code=str(hashed_login_code_str))
         else:
             return jsonify({"error": "User not registered"}), 404
 
@@ -254,18 +258,19 @@ def login_verify():
         if not validate_phone_number(standardized_phone_number) or not validate_verification_code(code):
             return jsonify({"error": "Invalid phone number or code format"}), 400
 
-        user = users_collection.find_user(
-            {"phone_number": standardized_phone_number})
+        user = Users.objects(phone_number=standardized_phone_number).first()
+
         if not user:
             return jsonify({"error": "User not found"}), 404
+        stored_login_code = user.login_code
+        stored_login_code_bytes = stored_login_code.encode('utf-8')
+        if bcrypt.checkpw(code.encode('utf-8'), stored_login_code_bytes):
+            user.update(unset__login_code=True)
 
-        if bcrypt.checkpw(code.encode('utf-8'), user.get('login_code', b'')):
-            users_collection.update_user({"phone_number": standardized_phone_number}, {
-                                         "$unset": {"login_code": 1}})
 
             user_data_for_session = {
-                "username": user.get("username"),
-                "phone_number": user.get("phone_number"),
+                "username": user.username,
+                "phone_number": user.phone_number,
                 # add other necessary fields here
             }
             session['current_user'] = user_data_for_session
@@ -297,24 +302,25 @@ def account():
         phone = data.get('phone_number')
 
         if not phone:
-            return jsonify({"error": "User not found"}), 404
+            return jsonify({"error": "Phone number not provided"}), 400
 
-        user_info = users_collection.find_user({"phone_number": phone})
+        user_info = Users.objects(phone_number=phone).first()
 
         if user_info:
-            user_info.pop('_id', None)
-            user_info.pop('verification_code', None)
-            user_info.pop('verified', None)
-            user_info.pop('login_code', None)
-            user_info.pop('updated_at', None)
+            # Convert the user_info to a Python dictionary
+            user_info_dict = user_info.to_mongo().to_dict()
 
-            user_info_json = json_util.dumps(user_info)
-            return jsonify({"message": "User found", "user": user_info_json}), 200
+            # Exclude some fields from the response if needed
+            excluded_fields = ['_id', 'verification_code', 'verified', 'login_code', 'updated_at']
+            for field in excluded_fields:
+                user_info_dict.pop(field, None)
+
+            return jsonify({"message": "User found", "user": user_info_dict}), 200
         else:
             return jsonify({"error": "User not found"}), 404
 
     except Exception as e:
-        return handle_api_error(e)
+        return jsonify({"error": f"Error fetching user account information: {str(e)}"}), 500
 
 
 @app.route('/delete_account', methods=['POST'])
