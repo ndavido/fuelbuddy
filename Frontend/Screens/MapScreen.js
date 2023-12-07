@@ -23,6 +23,9 @@ const MapScreen = () => {
         loadingEnabled={true}
         showsMyLocationButton={true}
         showsCompass={true}
+        zoomEnabled={true}
+        rotateEnabled={true}
+        scrollEnabled={true}
         apiKey="AIzaSyCcXAgwPsQHnVmSUu3qsmK-L5t0OOA2y9o"
       />
     </View>
