@@ -87,7 +87,7 @@ const AccountScreen = () => {
                             <AccountTitle>Account</AccountTitle>
                             <AccountImg/>
                             <AccountUsername>@{userInfo.username} {userInfo.roles && userInfo.roles.includes("Developer") &&
-                                <DeveloperTick>[Dev]</DeveloperTick>}</AccountUsername>
+                                <DeveloperTick>🧑‍💻</DeveloperTick>}</AccountUsername>
                         </AccountContent>
                     </AccountTopInfo>
                     <AccountBottomInfo>

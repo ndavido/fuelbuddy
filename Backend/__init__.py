@@ -28,7 +28,7 @@ app.secret_key = "production"  # os.random(24)
 api_key = os.getenv('API_KEY')
 
 # Change this to a secure secret key
-app.config['JWT_SECRET_KEY'] = 'your-secret-key'
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 jwt = JWTManager(app)
 
 # Flask-Session Configuration

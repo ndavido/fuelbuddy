@@ -49,7 +49,6 @@ export const AccountUsername = styled.Text`
 
 export const DeveloperTick = styled.Text`
   font-size: 20px;
-  margin-left: 2px;
 `;
 
 export const AccountBottomInfo = styled.View`

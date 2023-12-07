@@ -21,13 +21,13 @@ const WelcomeScreen = () => {
                   Welcome To fuelbuddy
                 </WelcomeTxt>
                 
-                <Text>Find it. Route it. fuelbuddy.</Text>
+                  <Text>Find it. Route it. fuelbuddy.\n</Text>
                 <Text>The Friend Your Tank Deserves.</Text>
               </TxtWrapper>
               <BttnDiv>
                 <PressableButton
                 onPress={() => navigation.navigate('Register')}
-                title='Register'
+                title='Get Started'
                 bgColor='#6bff91'
                 />
               </BttnDiv>
