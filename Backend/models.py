@@ -34,3 +34,10 @@ class FuelStation(Document):
 class FuelPrices(Document):
     fuel_station = ReferenceField(FuelStation, reverse_delete_rule='CASCADE')
     price = StringField()
+
+class UserFuelBudget(Document):
+    user = ReferenceField('Users', required=True)  # Assuming you have a Users model for user information
+    weekly_fuel_budget = FloatField(required=True)  # The user's fuel budget for the week
+    location = ReferenceField(Location, required=True)  # The user's location
+    busy_pump = BooleanField(required=True)  # User input: whether the pump is busy or not
+    high_price = BooleanField(required=True)  # User input: whether the price is considered high
