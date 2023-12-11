@@ -432,7 +432,7 @@ def get_fuel_stations():
 
         return jsonify(result)
     except Exception as e:
-        return jsonify({"error": f"Error fetching fuel station data: {str(e)}"}), 500
+        return handle_api_error(e)
 
 
 # ! This is the route for storing fuel stations info from Frontend
@@ -440,59 +440,86 @@ def get_fuel_stations():
 def store_fuel_stations():
     try:
         data = request.get_json()
+        station = data.get('fuelStation')  # Expecting a single station object
 
-        fuel_stations = data.get('fuelStation', [])
+        if not station:
+            return jsonify({"error": "Fuel station data not provided"}), 400
 
-        fuel_station_data_list = []
+        # Create and save the location
+        location_data = station.get('location', {})
+        location = Location(latitude=location_data.get('latitude'),
+                            longitude=location_data.get('longitude'))
+        location.save()
 
-        # Create an instance of the FuelStationsCollection class
-        db = Database()
-        fuel_station_collection = FuelStationsCollection(db)
+        # Create the fuel station without saving it yet
+        new_station = FuelStation(
+            name=station.get('name'),
+            location=location,
+            is_charging_station=station.get('is_charging_station', False)
+        )
 
-        for station in fuel_stations:
-            fuel_station_data = {
-                "name": station.get('name'),
-                "location": station.get('location'),
-            }
-            fuel_station_data_list.append(fuel_station_data)
+        # Check for fuel price data
+        if 'fuelPrices' in station:
+            prices = station['fuelPrices']
+            fuel_prices = FuelPrices(
+                fuel_station=new_station,
+                petrol_price=prices.get('petrol_price'),
+                diesel_price=prices.get('diesel_price'),
+                electricity_price=prices.get('electricity_price'),
+                updated_at=datetime.utcnow()
+            )
+            fuel_prices.save()
 
-        # Insert the fuel station data into the MongoDB collection using FuelStationsCollection
-        for fuel_station_data in fuel_station_data_list:
-            fuel_station_collection.insert_fuel_station(fuel_station_data)
+            # Set charging_rates as a reference to FuelPrices
+            new_station.charging_rates = fuel_prices
 
-        return jsonify({"message": "Fuel stations stored successfully"})
+        new_station.save()
+
+        return jsonify({"message": "Fuel stations and prices stored successfully"})
     except Exception as e:
         return handle_api_error(e)
 
 
 # ! This is the route for storing petrol fuel prices info from Frontend
-@app.route('/store_petrol_fuel_prices', methods=['POST'])
-def store_petrol_fuel_prices():
+@app.route('/store_fuel_prices', methods=['POST'])
+def store_fuel_prices():
     try:
         data = request.get_json()
+        fuel_prices_data = data.get('fuelPrices', [])
 
-        petrol_prices = data.get('petrol_fuel_prices', [])
+        for price_data in fuel_prices_data:
+            station_id = price_data.get('station_id')
+            fuel_station = FuelStation.objects(id=station_id).first()
 
-        petrol_price_data_list = []
+            if not fuel_station:
+                continue  # Or handle the error as needed
 
-        # Create an instance of the PetrolPricesCollection class
-        db = Database()
-        petrol_price_collection = PetrolFuelPricesCollection(db)
+            # Check if there's an existing price record for this station
+            existing_price = FuelPrices.objects(
+                fuel_station=fuel_station).first()
 
-        for station in petrol_prices:
-            petrol_price_data = {
-                "station_id": station.get('station_id'),
-                "location": station.get('location'),
-                "price_per_liter": station.get('price_per_liter'),
-                "timestamp": station.get('timestamp')
-            }
-            petrol_price_data_list.append(petrol_price_data)
+            if existing_price:
+                # Update existing record
+                if 'petrol_price' in price_data:
+                    existing_price.petrol_price = price_data['petrol_price']
+                if 'diesel_price' in price_data:
+                    existing_price.diesel_price = price_data['diesel_price']
+                if 'electricity_price' in price_data:
+                    existing_price.electricity_price = price_data['electricity_price']
+                existing_price.updated_at = price_data.get('timestamp')
+                existing_price.save()
+            else:
+                # Create new price record
+                new_price = FuelPrices(
+                    fuel_station=fuel_station,
+                    petrol_price=price_data.get('petrol_price'),
+                    diesel_price=price_data.get('diesel_price'),
+                    electricity_price=price_data.get('electricity_price'),
+                    updated_at=price_data.get('timestamp')
+                )
+                new_price.save()
 
-        # using insert from PetrolFuelPricesCollection
-        for petrol_price_data in petrol_price_data_list:
-            petrol_price_collection.insert_fuel_price(petrol_price_data)
-
-        return jsonify({"message": "Petrol fuel prices stored successfully"})
+        return jsonify({"message": "Fuel prices stored successfully"})
     except Exception as e:
         return handle_api_error(e)
 
