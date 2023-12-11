@@ -13,7 +13,7 @@ import random
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from functools import wraps
-from models import FuelStation, Location, Users
+from models import FuelStation, Location, Users, FuelPrices
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
 import re
@@ -34,7 +34,7 @@ jwt = JWTManager(app)
 # Flask-Session Configuration
 app.config["SESSION_TYPE"] = "mongodb"
 app.config["SESSION_MONGODB"] = MongoClient(
-os.getenv('MONGO_URI'), server_api=ServerApi('1'))
+    os.getenv('MONGO_URI'), server_api=ServerApi('1'))
 app.config["SESSION_MONGODB_DB"] = os.getenv('MONGO_DB_NAME')
 app.config["SESSION_MONGODB_COLLECT"] = "flask_sessions"
 app.config["SESSION_USE_SIGNER"] = True
@@ -108,6 +108,11 @@ def handle_api_error(e):
         error_message = "Missing required data in the request."
     print(f"Error: {str(e)}")
     return jsonify({"error": error_message}), 500
+
+
+'''
+Login And Register Routes
+'''
 
 
 @app.route('/register', methods=['POST'])
@@ -217,8 +222,10 @@ def login():
             return jsonify({"error": "Invalid phone number format"}), 400
 
         login_code = str(random.randint(100000, 999999))
-        hashed_login_code_bytes = bcrypt.hashpw(login_code.encode('utf-8'), bcrypt.gensalt())
-        hashed_login_code_str = hashed_login_code_bytes.decode('utf-8')  # Convert bytes to string
+        hashed_login_code_bytes = bcrypt.hashpw(
+            login_code.encode('utf-8'), bcrypt.gensalt())
+        hashed_login_code_str = hashed_login_code_bytes.decode(
+            'utf-8')  # Convert bytes to string
 
         user = Users.objects(phone_number=standardized_phone_number).first()
 
@@ -267,7 +274,6 @@ def login_verify():
         if bcrypt.checkpw(code.encode('utf-8'), stored_login_code_bytes):
             user.update(unset__login_code=True)
 
-
             user_data_for_session = {
                 "username": user.username,
                 "phone_number": user.phone_number,
@@ -294,6 +300,11 @@ def protected():
     return jsonify(logged_in_as=current_user), 200
 
 
+'''
+User Account Routes
+'''
+
+
 @app.route('/account', methods=['POST'])
 @require_api_key
 def account():
@@ -311,7 +322,8 @@ def account():
             user_info_dict = user_info.to_mongo().to_dict()
 
             # Exclude some fields from the response if needed
-            excluded_fields = ['_id', 'verification_code', 'verified', 'login_code', 'updated_at']
+            excluded_fields = ['_id', 'verification_code',
+                               'verified', 'login_code', 'updated_at']
             for field in excluded_fields:
                 user_info_dict.pop(field, None)
 
@@ -349,63 +361,165 @@ def logout():
         return handle_api_error(e)
 
 
-# Neural Network Connection Commented out for now
-@app.route('/store_fuel_stations', methods=['POST'])
-def store_fuel_stations():
+@app.route('/edit_account', methods=['PATCH'])
+@require_api_key
+def edit_account():
     try:
+        username = session.get('username')
+
+        if not username:
+            return jsonify({"error": "User not logged in"}), 401
+
         data = request.get_json()
+        user = Users.objects(username=username).first()
 
-        fuel_stations = data.get('fuelStation', [])
+        if not user:
+            return jsonify({"error": "User not found"}), 404
 
-        fuel_station_data_list = []
+        # Update user fields if they are in the request
+        if 'full_name' in data:
+            user.full_name = data['full_name']
+        if 'phone_number' in data:
+            user.phone_number = data['phone_number']
+        if 'email' in data:
+            user.email = data['email']
 
-        # Create an instance of the FuelStationsCollection class
-        db = Database()
-        fuel_station_collection = FuelStationsCollection(db)
+        user.save()
 
-        for station in fuel_stations:
-            fuel_station_data = {
-                "name": station.get('name'),
-                "location": station.get('location'),
-            }
-            fuel_station_data_list.append(fuel_station_data)
+        return jsonify({"message": "Account updated successfully"}), 200
 
-        # Insert the fuel station data into the MongoDB collection using FuelStationsCollection
-        for fuel_station_data in fuel_station_data_list:
-            fuel_station_collection.insert_fuel_station(fuel_station_data)
-
-        return jsonify({"message": "Fuel stations stored successfully"})
     except Exception as e:
         return handle_api_error(e)
 
 
-@app.route('/store_petrol_fuel_prices', methods=['POST'])
-def store_petrol_fuel_prices():
+'''
+User Vehicle Routes
+'''
+
+
+# ! This is the route for sending fuel stations info to Frontend
+@app.route('/fuel_stations', methods=['GET'])
+def get_fuel_stations():
+    try:
+        stations = FuelStation.objects.all()
+        result = []
+
+        for station in stations:
+            # Serialize FuelStation data
+            station_data = {
+                'name': station.name,
+                'location': {
+                    'latitude': station.location.latitude,
+                    'longitude': station.location.longitude
+                },
+                'is_charging_station': station.is_charging_station,
+                'charging_rates': station.charging_rates
+            }
+
+            # Fetch and serialize FuelPrices data
+            prices = FuelPrices.objects(fuel_station=station).first()
+            if prices:
+                station_data['prices'] = {
+                    'petrol_price': prices.petrol_price,
+                    'diesel_price': prices.diesel_price,
+                    'electricity_price': prices.electricity_price,
+                    'updated_at': prices.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+                }
+            else:
+                station_data['prices'] = 'No prices available'
+
+            result.append(station_data)
+
+        return jsonify(result)
+    except Exception as e:
+        return handle_api_error(e)
+
+
+# ! This is the route for storing fuel stations info from Frontend
+@app.route('/store_fuel_stations', methods=['POST'])
+def store_fuel_stations():
     try:
         data = request.get_json()
+        station = data.get('fuelStation')  # Expecting a single station object
 
-        petrol_prices = data.get('petrol_fuel_prices', [])
+        if not station:
+            return jsonify({"error": "Fuel station data not provided"}), 400
 
-        petrol_price_data_list = []
+        # Create and save the location
+        location_data = station.get('location', {})
+        location = Location(latitude=location_data.get('latitude'),
+                            longitude=location_data.get('longitude'))
+        location.save()
 
-        # Create an instance of the PetrolPricesCollection class
-        db = Database()
-        petrol_price_collection = PetrolFuelPricesCollection(db)
+        # Create the fuel station without saving it yet
+        new_station = FuelStation(
+            name=station.get('name'),
+            location=location,
+            is_charging_station=station.get('is_charging_station', False)
+        )
 
-        for station in petrol_prices:
-            petrol_price_data = {
-                "station_id": station.get('station_id'),
-                "location": station.get('location'),
-                "price_per_liter": station.get('price_per_liter'),
-                "timestamp": station.get('timestamp')
-            }
-            petrol_price_data_list.append(petrol_price_data)
+        # Check for fuel price data
+        if 'fuelPrices' in station:
+            prices = station['fuelPrices']
+            fuel_prices = FuelPrices(
+                fuel_station=new_station,
+                petrol_price=prices.get('petrol_price'),
+                diesel_price=prices.get('diesel_price'),
+                electricity_price=prices.get('electricity_price'),
+                updated_at=datetime.utcnow()
+            )
+            fuel_prices.save()
 
-        # using insert from PetrolFuelPricesCollection
-        for petrol_price_data in petrol_price_data_list:
-            petrol_price_collection.insert_fuel_price(petrol_price_data)
+            # Set charging_rates as a reference to FuelPrices
+            new_station.charging_rates = fuel_prices
 
-        return jsonify({"message": "Petrol fuel prices stored successfully"})
+        new_station.save()
+
+        return jsonify({"message": "Fuel stations and prices stored successfully"})
+    except Exception as e:
+        return handle_api_error(e)
+
+
+# ! This is the route for storing petrol fuel prices info from Frontend
+@app.route('/store_fuel_prices', methods=['POST'])
+def store_fuel_prices():
+    try:
+        data = request.get_json()
+        fuel_prices_data = data.get('fuelPrices', [])
+
+        for price_data in fuel_prices_data:
+            station_id = price_data.get('station_id')
+            fuel_station = FuelStation.objects(id=station_id).first()
+
+            if not fuel_station:
+                continue  # Or handle the error as needed
+
+            # Check if there's an existing price record for this station
+            existing_price = FuelPrices.objects(
+                fuel_station=fuel_station).first()
+
+            if existing_price:
+                # Update existing record
+                if 'petrol_price' in price_data:
+                    existing_price.petrol_price = price_data['petrol_price']
+                if 'diesel_price' in price_data:
+                    existing_price.diesel_price = price_data['diesel_price']
+                if 'electricity_price' in price_data:
+                    existing_price.electricity_price = price_data['electricity_price']
+                existing_price.updated_at = price_data.get('timestamp')
+                existing_price.save()
+            else:
+                # Create new price record
+                new_price = FuelPrices(
+                    fuel_station=fuel_station,
+                    petrol_price=price_data.get('petrol_price'),
+                    diesel_price=price_data.get('diesel_price'),
+                    electricity_price=price_data.get('electricity_price'),
+                    updated_at=price_data.get('timestamp')
+                )
+                new_price.save()
+
+        return jsonify({"message": "Fuel prices stored successfully"})
     except Exception as e:
         return handle_api_error(e)
 
