@@ -393,7 +393,7 @@ def edit_account():
 
 
 '''
-User Vehicle Routes
+Gas Station Routes
 '''
 
 
@@ -405,18 +405,17 @@ def get_fuel_stations():
         result = []
 
         for station in stations:
-            # Serialize FuelStation data
             station_data = {
                 'name': station.name,
+                'address': station.address,
                 'location': {
-                    'latitude': station.location.latitude,
-                    'longitude': station.location.longitude
+                    'latitude': station.latitude,
+                    'longitude': station.longitude
                 },
                 'is_charging_station': station.is_charging_station,
-                'charging_rates': station.charging_rates
+                'is_fuel_station': station.is_fuel_station
             }
 
-            # Fetch and serialize FuelPrices data
             prices = FuelPrices.objects(fuel_station=station).first()
             if prices:
                 station_data['prices'] = {
@@ -440,42 +439,26 @@ def get_fuel_stations():
 def store_fuel_stations():
     try:
         data = request.get_json()
-        station = data.get('fuelStation')  # Expecting a single station object
+        station = data.get('fuelStation')
 
         if not station:
             return jsonify({"error": "Fuel station data not provided"}), 400
 
-        # Create and save the location
-        location_data = station.get('location', {})
-        location = Location(latitude=location_data.get('latitude'),
-                            longitude=location_data.get('longitude'))
+        location = Location(latitude=station['latitude'],
+                            longitude=station['longitude'])
         location.save()
 
-        # Create the fuel station without saving it yet
         new_station = FuelStation(
-            name=station.get('name'),
+            name=station['name'],
+            address=station['address'],
             location=location,
-            is_charging_station=station.get('is_charging_station', False)
+            is_charging_station=station.get('is_charging_station', False),
+            is_fuel_station=station.get(
+                'is_fuel_station', True)  # Default to True
         )
-
-        # Check for fuel price data
-        if 'fuelPrices' in station:
-            prices = station['fuelPrices']
-            fuel_prices = FuelPrices(
-                fuel_station=new_station,
-                petrol_price=prices.get('petrol_price'),
-                diesel_price=prices.get('diesel_price'),
-                electricity_price=prices.get('electricity_price'),
-                updated_at=datetime.utcnow()
-            )
-            fuel_prices.save()
-
-            # Set charging_rates as a reference to FuelPrices
-            new_station.charging_rates = fuel_prices
-
         new_station.save()
 
-        return jsonify({"message": "Fuel stations and prices stored successfully"})
+        return jsonify({"message": "Fuel station stored successfully"})
     except Exception as e:
         return handle_api_error(e)
 
@@ -494,28 +477,27 @@ def store_fuel_prices():
             if not fuel_station:
                 continue  # Or handle the error as needed
 
-            # Check if there's an existing price record for this station
             existing_price = FuelPrices.objects(
                 fuel_station=fuel_station).first()
 
             if existing_price:
-                # Update existing record
-                if 'petrol_price' in price_data:
-                    existing_price.petrol_price = price_data['petrol_price']
-                if 'diesel_price' in price_data:
-                    existing_price.diesel_price = price_data['diesel_price']
-                if 'electricity_price' in price_data:
-                    existing_price.electricity_price = price_data['electricity_price']
-                existing_price.updated_at = price_data.get('timestamp')
+                existing_price.petrol_price = price_data.get(
+                    'petrol_price', existing_price.petrol_price)
+                existing_price.diesel_price = price_data.get(
+                    'diesel_price', existing_price.diesel_price)
+                existing_price.electricity_price = price_data.get(
+                    'electricity_price', existing_price.electricity_price)
+                existing_price.updated_at = datetime.strptime(
+                    price_data.get('timestamp'), '%Y-%m-%d %H:%M:%S')
                 existing_price.save()
             else:
-                # Create new price record
                 new_price = FuelPrices(
                     fuel_station=fuel_station,
                     petrol_price=price_data.get('petrol_price'),
                     diesel_price=price_data.get('diesel_price'),
                     electricity_price=price_data.get('electricity_price'),
-                    updated_at=price_data.get('timestamp')
+                    updated_at=datetime.strptime(
+                        price_data.get('timestamp'), '%Y-%m-%d %H:%M:%S')
                 )
                 new_price.save()
 
