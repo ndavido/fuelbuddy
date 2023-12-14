@@ -18,6 +18,7 @@ from pymongo import MongoClient
 from pymongo.server_api import ServerApi
 import re
 from mongoengine.queryset.visitor import Q
+from mongoengine.errors import DoesNotExist, ValidationError
 # from updated_user_monthly_predictions import main as nn
 
 
@@ -372,6 +373,7 @@ def delete_account():
 
 
 @app.route('/logout', methods=['POST'])
+@require_api_key
 def logout():
     try:
         session.pop('username', None)
@@ -411,6 +413,36 @@ def edit_account():
         return handle_api_error(e)
 
 
+@app.route('/update_budget', methods=['POST'])
+@require_api_key
+@jwt_required()
+def update_budget():
+    try:
+        current_user_id = get_jwt_identity()
+        data = request.get_json()
+
+        if 'weekly_budget' not in data:
+            return jsonify({"error": "Weekly budget not provided"}), 400
+
+        try:
+            weekly_budget = float(data['weekly_budget'])
+        except ValueError:
+            return jsonify({"error": "Invalid budget format"}), 400
+
+        try:
+            user = Users.objects.get(id=current_user_id)
+            user.weekly_budget = weekly_budget
+            user.save()
+            return jsonify({"message": "Budget updated successfully"})
+        except DoesNotExist:
+            return jsonify({"error": "User not found"}), 404
+        except ValidationError as e:
+            return jsonify({"error": str(e)}), 400
+
+    except Exception as e:
+        return handle_api_error(e)
+
+
 '''
 Gas Station Routes
 '''
@@ -418,6 +450,7 @@ Gas Station Routes
 
 # ! This is the route for sending fuel stations info to Frontend
 @app.route('/fuel_stations', methods=['GET'])
+@require_api_key
 def get_fuel_stations():
     try:
         stations = FuelStation.objects.all()
@@ -455,6 +488,7 @@ def get_fuel_stations():
 
 # ! This is the route for storing fuel stations info from Frontend
 @app.route('/store_fuel_stations', methods=['POST'])
+@require_api_key
 def store_fuel_stations():
     try:
         data = request.get_json()
@@ -484,6 +518,7 @@ def store_fuel_stations():
 
 # ! This is the route for storing petrol fuel prices info from Frontend
 @app.route('/store_fuel_prices', methods=['POST'])
+@require_api_key
 def store_fuel_prices():
     try:
         data = request.get_json()
@@ -528,6 +563,7 @@ def store_fuel_prices():
 
 
 @app.route('/search_fuel_stations', methods=['GET'])
+@require_api_key
 def search_fuel_stations():
     try:
         query_params = request.args
