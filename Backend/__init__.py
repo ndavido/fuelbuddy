@@ -17,6 +17,8 @@ from models import FuelStation, Location, Users, FuelPrices
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
 import re
+from mongoengine.queryset.visitor import Q
+from mongoengine.errors import DoesNotExist, ValidationError
 # from updated_user_monthly_predictions import main as nn
 
 
@@ -64,6 +66,24 @@ def require_api_key(view_function):
         else:
             abort(401)
     return decorated_function
+
+
+def radius_logic(coord1, coord2):
+    # Haversine formula to calculate distance between two points on the Earth
+    import math
+
+    lat1, lon1 = coord1
+    lat2, lon2 = coord2
+    R = 6371  # Radius of the Earth in kilometers
+
+    dLat = math.radians(lat2 - lat1)
+    dLon = math.radians(lon2 - lon1)
+    a = math.sin(dLat/2) * math.sin(dLat/2) + math.cos(math.radians(lat1)) \
+        * math.cos(math.radians(lat2)) * math.sin(dLon/2) * math.sin(dLon/2)
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+    distance = R * c
+
+    return distance
 
 
 def standardize_irish_number(phone_number):
@@ -353,6 +373,7 @@ def delete_account():
 
 
 @app.route('/logout', methods=['POST'])
+@require_api_key
 def logout():
     try:
         session.pop('username', None)
@@ -392,31 +413,61 @@ def edit_account():
         return handle_api_error(e)
 
 
+@app.route('/update_budget', methods=['POST'])
+@require_api_key
+@jwt_required()
+def update_budget():
+    try:
+        current_user_id = get_jwt_identity()
+        data = request.get_json()
+
+        if 'weekly_budget' not in data:
+            return jsonify({"error": "Weekly budget not provided"}), 400
+
+        try:
+            weekly_budget = float(data['weekly_budget'])
+        except ValueError:
+            return jsonify({"error": "Invalid budget format"}), 400
+
+        try:
+            user = Users.objects.get(id=current_user_id)
+            user.weekly_budget = weekly_budget
+            user.save()
+            return jsonify({"message": "Budget updated successfully"})
+        except DoesNotExist:
+            return jsonify({"error": "User not found"}), 404
+        except ValidationError as e:
+            return jsonify({"error": str(e)}), 400
+
+    except Exception as e:
+        return handle_api_error(e)
+
+
 '''
-User Vehicle Routes
+Gas Station Routes
 '''
 
 
 # ! This is the route for sending fuel stations info to Frontend
 @app.route('/fuel_stations', methods=['GET'])
+@require_api_key
 def get_fuel_stations():
     try:
         stations = FuelStation.objects.all()
         result = []
 
         for station in stations:
-            # Serialize FuelStation data
             station_data = {
                 'name': station.name,
+                'address': station.address,
                 'location': {
-                    'latitude': station.location.latitude,
-                    'longitude': station.location.longitude
+                    'latitude': station.latitude,
+                    'longitude': station.longitude
                 },
                 'is_charging_station': station.is_charging_station,
-                'charging_rates': station.charging_rates
+                'is_fuel_station': station.is_fuel_station
             }
 
-            # Fetch and serialize FuelPrices data
             prices = FuelPrices.objects(fuel_station=station).first()
             if prices:
                 station_data['prices'] = {
@@ -437,51 +488,37 @@ def get_fuel_stations():
 
 # ! This is the route for storing fuel stations info from Frontend
 @app.route('/store_fuel_stations', methods=['POST'])
+@require_api_key
 def store_fuel_stations():
     try:
         data = request.get_json()
-        station = data.get('fuelStation')  # Expecting a single station object
+        station = data.get('fuelStation')
 
         if not station:
             return jsonify({"error": "Fuel station data not provided"}), 400
 
-        # Create and save the location
-        location_data = station.get('location', {})
-        location = Location(latitude=location_data.get('latitude'),
-                            longitude=location_data.get('longitude'))
+        location = Location(latitude=station['latitude'],
+                            longitude=station['longitude'])
         location.save()
 
-        # Create the fuel station without saving it yet
         new_station = FuelStation(
-            name=station.get('name'),
+            name=station['name'],
+            address=station['address'],
             location=location,
-            is_charging_station=station.get('is_charging_station', False)
+            is_charging_station=station.get('is_charging_station', False),
+            is_fuel_station=station.get(
+                'is_fuel_station', True)  # Default to True
         )
-
-        # Check for fuel price data
-        if 'fuelPrices' in station:
-            prices = station['fuelPrices']
-            fuel_prices = FuelPrices(
-                fuel_station=new_station,
-                petrol_price=prices.get('petrol_price'),
-                diesel_price=prices.get('diesel_price'),
-                electricity_price=prices.get('electricity_price'),
-                updated_at=datetime.utcnow()
-            )
-            fuel_prices.save()
-
-            # Set charging_rates as a reference to FuelPrices
-            new_station.charging_rates = fuel_prices
-
         new_station.save()
 
-        return jsonify({"message": "Fuel stations and prices stored successfully"})
+        return jsonify({"message": "Fuel station stored successfully"})
     except Exception as e:
         return handle_api_error(e)
 
 
 # ! This is the route for storing petrol fuel prices info from Frontend
 @app.route('/store_fuel_prices', methods=['POST'])
+@require_api_key
 def store_fuel_prices():
     try:
         data = request.get_json()
@@ -494,32 +531,74 @@ def store_fuel_prices():
             if not fuel_station:
                 continue  # Or handle the error as needed
 
-            # Check if there's an existing price record for this station
             existing_price = FuelPrices.objects(
                 fuel_station=fuel_station).first()
 
             if existing_price:
-                # Update existing record
-                if 'petrol_price' in price_data:
-                    existing_price.petrol_price = price_data['petrol_price']
-                if 'diesel_price' in price_data:
-                    existing_price.diesel_price = price_data['diesel_price']
-                if 'electricity_price' in price_data:
-                    existing_price.electricity_price = price_data['electricity_price']
-                existing_price.updated_at = price_data.get('timestamp')
+                existing_price.petrol_price = price_data.get(
+                    'petrol_price', existing_price.petrol_price)
+                existing_price.diesel_price = price_data.get(
+                    'diesel_price', existing_price.diesel_price)
+                existing_price.electricity_price = price_data.get(
+                    'electricity_price', existing_price.electricity_price)
+                existing_price.updated_at = datetime.strptime(
+                    price_data.get('timestamp'), '%Y-%m-%d %H:%M:%S')
                 existing_price.save()
             else:
-                # Create new price record
                 new_price = FuelPrices(
                     fuel_station=fuel_station,
                     petrol_price=price_data.get('petrol_price'),
                     diesel_price=price_data.get('diesel_price'),
                     electricity_price=price_data.get('electricity_price'),
-                    updated_at=price_data.get('timestamp')
+                    updated_at=datetime.strptime(
+                        price_data.get('timestamp'), '%Y-%m-%d %H:%M:%S')
                 )
                 new_price.save()
 
         return jsonify({"message": "Fuel prices stored successfully"})
+    except Exception as e:
+        return handle_api_error(e)
+
+# ! This is the route for searching fuel stations
+
+
+@app.route('/search_fuel_stations', methods=['GET'])
+@require_api_key
+def search_fuel_stations():
+    try:
+        query_params = request.args
+
+        name = query_params.get('name')
+        address = query_params.get('address')
+        latitude = query_params.get('latitude', type=float)
+        longitude = query_params.get('longitude', type=float)
+        radius = query_params.get('radius', default=5, type=float)
+
+        query = Q(is_fuel_station=True)
+
+        if name:
+            query &= Q(name__icontains=name)
+        if address:
+            query &= Q(address__icontains=address)
+
+        stations = FuelStation.objects(query)
+
+        if latitude is not None and longitude is not None:
+            near_stations = []
+            for station in stations:
+                if station.location:
+                    distance = radius_logic(
+                        (latitude, longitude),
+                        (station.location.latitude, station.location.longitude)
+                    )
+                    if distance <= radius:
+                        near_stations.append(station)
+            stations = near_stations
+
+        result = [{'name': station.name, 'address': station.address}
+                  for station in stations]
+
+        return jsonify(result)
     except Exception as e:
         return handle_api_error(e)
 
