@@ -17,6 +17,7 @@ from models import FuelStation, Location, Users, FuelPrices
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
 import re
+from mongoengine.queryset.visitor import Q
 # from updated_user_monthly_predictions import main as nn
 
 
@@ -502,6 +503,48 @@ def store_fuel_prices():
                 new_price.save()
 
         return jsonify({"message": "Fuel prices stored successfully"})
+    except Exception as e:
+        return handle_api_error(e)
+
+# ! This is the route for searching fuel stations
+
+
+@app.route('/search_fuel_stations', methods=['GET'])
+def search_fuel_stations():
+    try:
+        query_params = request.args
+
+        name = query_params.get('name')
+        address = query_params.get('address')
+        latitude = query_params.get('latitude', type=float)
+        longitude = query_params.get('longitude', type=float)
+        radius = query_params.get('radius', default=5, type=float)
+
+        query = Q(is_fuel_station=True)
+
+        if name:
+            query &= Q(name__icontains=name)
+        if address:
+            query &= Q(address__icontains=address)
+
+        stations = FuelStation.objects(query)
+
+        if latitude is not None and longitude is not None:
+            near_stations = []
+            for station in stations:
+                if station.location:
+                    distance = radius_logic(
+                        (latitude, longitude),
+                        (station.location.latitude, station.location.longitude)
+                    )
+                    if distance <= radius:
+                        near_stations.append(station)
+            stations = near_stations
+
+        result = [{'name': station.name, 'address': station.address}
+                  for station in stations]
+
+        return jsonify(result)
     except Exception as e:
         return handle_api_error(e)
 
