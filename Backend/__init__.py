@@ -67,6 +67,24 @@ def require_api_key(view_function):
     return decorated_function
 
 
+def radius_logic(coord1, coord2):
+    # Haversine formula to calculate distance between two points on the Earth
+    import math
+
+    lat1, lon1 = coord1
+    lat2, lon2 = coord2
+    R = 6371  # Radius of the Earth in kilometers
+
+    dLat = math.radians(lat2 - lat1)
+    dLon = math.radians(lon2 - lon1)
+    a = math.sin(dLat/2) * math.sin(dLat/2) + math.cos(math.radians(lat1)) \
+        * math.cos(math.radians(lat2)) * math.sin(dLon/2) * math.sin(dLon/2)
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+    distance = R * c
+
+    return distance
+
+
 def standardize_irish_number(phone_number):
     """
     Standardize Irish phone numbers to include the country code.
