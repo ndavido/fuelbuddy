@@ -1,4 +1,5 @@
 # models.py
+from datetime import datetime
 
 from mongoengine import Document, StringField, FloatField, IntField, ReferenceField, BooleanField, ListField, \
     DateTimeField, DecimalField
@@ -21,6 +22,27 @@ class Users(Document):
     created_at = DateTimeField()
     updated_at = DateTimeField()
     weekly_budget = DecimalField(precision=2)
+
+    def update_budget(self, new_budget):
+        # Record the old and new budget
+        BudgetHistory(
+            user=self,
+            old_budget=self.weekly_budget,
+            new_budget=new_budget,
+            change_date=datetime.now()
+        ).save()
+
+        self.weekly_budget = new_budget
+        self.save()
+
+class BudgetHistory(Document):
+    user = ReferenceField(Users, required=True)
+    old_budget = DecimalField(precision=2)
+    new_budget = DecimalField(precision=2)
+    change_date = DateTimeField(required=True)
+    meta = {
+        'collection': 'BudgetHistory'
+    }
 
 class Vehicle(Document):
     user = ReferenceField(Users, reverse_delete_rule='CASCADE')

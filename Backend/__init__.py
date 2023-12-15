@@ -13,7 +13,7 @@ import random
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from functools import wraps
-from models import FuelStation, Location, Users, FuelPrices
+from models import FuelStation, Location, Users, FuelPrices, BudgetHistory
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
 import re
@@ -431,8 +431,19 @@ def update_budget():
 
         try:
             user = Users.objects.get(id=current_user_id)
+            old_budget = user.weekly_budget  # Store the old budget value
+
+            # Update the user's budget
             user.weekly_budget = weekly_budget
             user.save()
+            # Record the budget change in BudgetHistory
+            BudgetHistory(
+                user=user,
+                old_budget=old_budget,
+                new_budget=weekly_budget,
+                change_date=datetime.now()
+            ).save()
+
             return jsonify({"message": "Budget updated successfully"})
         except DoesNotExist:
             return jsonify({"error": "User not found"}), 404
