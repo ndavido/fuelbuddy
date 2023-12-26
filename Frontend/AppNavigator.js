@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useState, useEffect} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
@@ -6,6 +6,8 @@ import {FontAwesome5} from '@expo/vector-icons'; // Import icons from Expo's vec
 import * as SecureStore from 'expo-secure-store';
 import {useAuth} from './AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {View, Text} from 'react-native';
+import * as Progress from 'react-native-progress';
 
 import Welcome from './Screens/WelcomeScreen';
 import Dashboard from './Screens/DashboardScreen';
@@ -54,33 +56,66 @@ const AccountNavigator = () => {
     );
 };
 
+function LoadingScreen() {
+    const [progress, setProgress] = useState(0);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setProgress(prevProgress => {
+                if (prevProgress < 1) {
+                    return prevProgress + 0.1;
+                }
+                clearInterval(interval);
+                return 1;
+            });
+        }, 150); // Adjust timing here
+
+        return () => clearInterval(interval);
+    }, []);
+
+    return (
+        <View style={{backgroundColor:'#6BFF91', flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+            <Progress.Bar color={'white'} borderColor={'transparent'} progress={progress} width={200}/>
+            <Text>fuelbuddy Alpha Loading</Text>
+        </View>
+    );
+}
 
 const AppNavigator = () => {
 
     const {state, dispatch} = useAuth();
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsLoading(false);
+        }, 2000);
         const checkAuthState = async () => {
-      try {
-        // Check if token exists in AsyncStorage
-        const token = await AsyncStorage.getItem('token');
+            try {
+                // Check if token exists in AsyncStorage
+                const token = await AsyncStorage.getItem('token');
 
-        if (token) {
-          // Dispatch action to set user as authenticated
-          dispatch({ type: 'LOGIN' });
+                if (token) {
+                    // Dispatch action to set user as authenticated
+                    dispatch({type: 'LOGIN'});
 
-        } else {
-            // Dispatch action to set user as not authenticated
-            dispatch({ type: 'LOGOUT' });
-        }
-      } catch (error) {
-        // Handle AsyncStorage or token retrieval errors
-      }
-    };
+                } else {
+                    // Dispatch action to set user as not authenticated
+                    dispatch({type: 'LOGOUT'});
+                }
+            } catch (error) {
+                // Handle AsyncStorage or token retrieval errors
+            }
+        };
 
-    checkAuthState();
-  }, [dispatch]);
+        checkAuthState();
 
+        return () => clearTimeout(timer);
+    }, [dispatch]);
+
+    if (isLoading) {
+        return <LoadingScreen/>;
+    }
     return (
         <NavigationContainer>
             {state.isUserAuthenticated ? (
