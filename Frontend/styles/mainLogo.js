@@ -2,10 +2,10 @@ import React from 'react';
 import styled from 'styled-components/native';
 
 const LogoContainer = styled.SafeAreaView`
-  height: 100px;
-  width: 100%
+  height: 85px;
+  width: 100%;
   background-color: #FFFFFF;
-  top 0;
+  top: 0;
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px; 
   z-index: 1000;
@@ -15,7 +15,7 @@ const LogoContainer = styled.SafeAreaView`
 
 const LogoInner = styled.SafeAreaView`
   height: 30px;
-  width:100%
+  width:100%;
   bottom: 15px;
   z-index: 1000;
   margin: auto;

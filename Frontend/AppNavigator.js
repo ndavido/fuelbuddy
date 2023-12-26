@@ -11,6 +11,7 @@ import Welcome from './Screens/WelcomeScreen';
 import Dashboard from './Screens/DashboardScreen';
 import Map from './Screens/MapScreen';
 import Account from './Screens/AccountScreen';
+import PersonalInfo from './Screens/PersonalInfoScreen';
 import Login from './Screens/LoginScreen';
 import LoginVerify from './Screens/LoginVerifyScreen';
 import Register from './Screens/RegisterScreen';
@@ -38,6 +39,17 @@ const LoginNavigator = () => {
         }}>
             <Stack.Screen name="Login" component={Login}/>
             <Stack.Screen name="LoginVerify" component={LoginVerify}/>
+        </Stack.Navigator>
+    );
+};
+
+const AccountNavigator = () => {
+    return (
+        <Stack.Navigator screenOptions={{
+            headerShown: false
+        }}>
+            <Stack.Screen name="Account" component={Account}/>
+            <Stack.Screen name="PersonalInfo" component={PersonalInfo}/>
         </Stack.Navigator>
     );
 };
@@ -100,7 +112,7 @@ const AppNavigator = () => {
                 >
                     <Tab.Screen name="Dashboard" component={Dashboard}/>
                     <Tab.Screen name="Map" component={Map}/>
-                    <Tab.Screen name="Account" component={Account}/>
+                    <Tab.Screen name="Account" component={AccountNavigator}/>
                 </Tab.Navigator>
             ) : (
                 <Stack.Navigator screenOptions={{

@@ -21,8 +21,13 @@
 import React from 'react';
 import { AuthProvider } from './AuthContext';
 import AppNavigator from './AppNavigator';
+import { useFonts, Poppins_500Medium } from '@expo-google-fonts/poppins';
 
 function App() {
+    let [fontsLoaded] = useFonts({
+    Poppins_500Medium,
+  });
+
   return (
     <AuthProvider>
       <AppNavigator />
