@@ -6,7 +6,7 @@ import {FontAwesome5} from '@expo/vector-icons'; // Import icons from Expo's vec
 import * as SecureStore from 'expo-secure-store';
 import {useAuth} from './AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {View, Text} from 'react-native';
+import {View, Text, StyleSheet} from 'react-native';
 import * as Progress from 'react-native-progress';
 
 import Welcome from './Screens/WelcomeScreen';
@@ -22,6 +22,20 @@ import RegisterVerify from './Screens/RegisterVerifyScreen';
 const Tab = createBottomTabNavigator();
 
 const Stack = createNativeStackNavigator();
+
+const styles = StyleSheet.create({
+    loadingContainer: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#6BFF91',
+        zIndex: 100,
+    },
+});
 
 const RegisterNavigator = () => {
     return (
@@ -56,7 +70,7 @@ const AccountNavigator = () => {
     );
 };
 
-function LoadingScreen() {
+function LoadingScreen({isVisible}) {
     const [progress, setProgress] = useState(0);
 
     useEffect(() => {
@@ -73,8 +87,12 @@ function LoadingScreen() {
         return () => clearInterval(interval);
     }, []);
 
+    if (!isVisible) {
+        return null;
+    }
+
     return (
-        <View style={{backgroundColor:'#6BFF91', flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+        <View style={styles.loadingContainer}>
             <Progress.Bar color={'white'} borderColor={'transparent'} progress={progress} width={200}/>
             <Text>fuelbuddy Alpha Loading</Text>
         </View>
@@ -113,53 +131,52 @@ const AppNavigator = () => {
         return () => clearTimeout(timer);
     }, [dispatch]);
 
-    if (isLoading) {
-        return <LoadingScreen/>;
-    }
     return (
-        <NavigationContainer>
-            {state.isUserAuthenticated ? (
-                <Tab.Navigator
-                    screenOptions={({route}) => ({
-                        headerShown: false,
-                        tabBarActiveTintColor: '#6BFF91',
-                        tabBarInactiveTintColor: 'black',
-                        tabBarStyle: {
-                            backgroundColor: '#FFFFFF',
-                        },
-                        tabBarLabelStyle: {
-                            fontSize: 16,
-                        },
-                        tabBarIcon: ({color, size}) => {
-                            let iconName;
+        <View style={{flex: 1}}>
+            <NavigationContainer>
+                {state.isUserAuthenticated ? (
+                    <Tab.Navigator
+                        screenOptions={({route}) => ({
+                            headerShown: false,
+                            tabBarActiveTintColor: '#6BFF91',
+                            tabBarInactiveTintColor: 'black',
+                            tabBarStyle: {
+                                backgroundColor: '#FFFFFF',
+                            },
+                            tabBarLabelStyle: {
+                                fontSize: 16,
+                            },
+                            tabBarIcon: ({color, size}) => {
+                                let iconName;
 
-                            if (route.name === 'Dashboard') {
-                                iconName = 'th-large';
-                            } else if (route.name === 'Map') {
-                                iconName = 'map';
-                            } else if (route.name === 'Account') {
-                                iconName = 'user';
-                            }
+                                if (route.name === 'Dashboard') {
+                                    iconName = 'th-large';
+                                } else if (route.name === 'Map') {
+                                    iconName = 'map';
+                                } else if (route.name === 'Account') {
+                                    iconName = 'user';
+                                }
 
-                            return <FontAwesome5 name={iconName} size={size} color="#6BFF91"/>; // Use FontAwesome5 from Expo
-                        },
-                    })}
-                >
-                    <Tab.Screen name="Dashboard" component={Dashboard}/>
-                    <Tab.Screen name="Map" component={Map}/>
-                    <Tab.Screen name="Account" component={AccountNavigator}/>
-                </Tab.Navigator>
-            ) : (
-                <Stack.Navigator screenOptions={{
-                    headerShown: false
-                }}>
-                    <Stack.Screen name="Welcome" component={Welcome}/>
-                    <Stack.Screen name="Login" component={LoginNavigator}/>
-                    <Stack.Screen name="Register" component={RegisterNavigator}/>
-                </Stack.Navigator>
-            )}
-        </NavigationContainer>
-
+                                return <FontAwesome5 name={iconName} size={size} color="#6BFF91"/>; // Use FontAwesome5 from Expo
+                            },
+                        })}
+                    >
+                        <Tab.Screen name="Dashboard" component={Dashboard}/>
+                        <Tab.Screen name="Map" component={Map}/>
+                        <Tab.Screen name="Account" component={AccountNavigator}/>
+                    </Tab.Navigator>
+                ) : (
+                    <Stack.Navigator screenOptions={{
+                        headerShown: false
+                    }}>
+                        <Stack.Screen name="Welcome" component={Welcome}/>
+                        <Stack.Screen name="Login" component={LoginNavigator}/>
+                        <Stack.Screen name="Register" component={RegisterNavigator}/>
+                    </Stack.Navigator>
+                )}
+            </NavigationContainer>
+            <LoadingScreen isVisible={isLoading}/>
+        </View>
     );
 };
 
