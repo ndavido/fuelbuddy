@@ -14,38 +14,46 @@ const applyMargins = props => {
   }
 };
 
+const getFontFamily = (weight) => {
+  switch(weight) {
+    case '400': return 'Poppins_400Regular';
+    case '500': return 'Poppins_500Medium';
+    default: return 'Poppins_500Medium'; // Default case
+  }
+};
+
 export const H1 = styled.Text`
   font-size: 32px;
-  font-family: 'Poppins_500Medium';
+  font-family: ${props => getFontFamily(props.weight)};
   ${applyMargins}
 `;
 
 export const H2 = styled.Text`
   font-size: 28px;
-  font-family: 'Poppins_500Medium';
+  font-family: ${props => getFontFamily(props.weight)};
   ${applyMargins}
 `;
 
 export const H3 = styled.Text`
   font-size: 22px;
-  font-family: 'Poppins_500Medium';
+  font-family: ${props => getFontFamily(props.weight)};
   ${applyMargins}
 `;
 
 export const H4 = styled.Text`
   font-size: 20px;
-  font-family: 'Poppins_500Medium';
+  font-family: ${props => getFontFamily(props.weight)};
   ${applyMargins}
 `;
 
 export const H5 = styled.Text`
   font-size: 16px;
-  font-family: 'Poppins_500Medium';
+  font-family: ${props => getFontFamily(props.weight)};
   ${applyMargins}
 `;
 
 export const H6 = styled.Text`
   font-size: 14px;
-  font-family: 'Poppins_500Medium';
+  font-family: ${props => getFontFamily(props.weight)};
   ${applyMargins}
 `;
