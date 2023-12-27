@@ -141,25 +141,27 @@ const AppNavigator = () => {
                         screenOptions={({route}) => ({
                             headerShown: false,
                             tabBarActiveTintColor: '#6BFF91',
-                            tabBarInactiveTintColor: 'black',
+                            tabBarInactiveTintColor: '#515151',
                             tabBarStyle: {
                                 backgroundColor: '#FFFFFF',
                             },
                             tabBarLabelStyle: {
                                 fontSize: 16,
                             },
-                            tabBarIcon: ({color, size}) => {
+                            tabBarIcon: ({color, size, focused}) => {
                                 let iconName;
 
                                 if (route.name === 'Dashboard') {
-                                    iconName = 'th-large';
+                                    iconName = 'chart-bar';
                                 } else if (route.name === 'Map') {
-                                    iconName = 'map';
+                                    iconName = 'map-marked-alt';
                                 } else if (route.name === 'Account') {
-                                    iconName = 'user';
+                                    iconName = 'user-alt';
                                 }
 
-                                return <FontAwesome5 name={iconName} size={size} color="#6BFF91"/>; // Use FontAwesome5 from Expo
+                                let iconColor = focused ? '#6BFF91' : '#515151';
+
+                                return <FontAwesome5 name={iconName} size={size} color={iconColor} />; // Use FontAwesome5 from Expo
                             },
                         })}
                     >
