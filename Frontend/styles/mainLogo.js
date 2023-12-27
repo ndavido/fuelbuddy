@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components/native';
+import {H6} from "../styles/text";
 
 const LogoContainer = styled.SafeAreaView`
   height: 85px;

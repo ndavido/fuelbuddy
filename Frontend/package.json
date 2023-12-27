@@ -16,6 +16,7 @@
     "@react-navigation/native-stack": "^6.9.16",
     "@teovilla/react-native-web-maps": "^0.9.3",
     "axios": "^1.6.0",
+    "crypto-js": "^4.2.0",
     "expo": "~49.0.15",
     "expo-font": "~11.4.0",
     "expo-secure-store": "~12.3.1",

@@ -96,7 +96,7 @@ const DeleteConfirmScreen = () => {
                             <H3 tmargin='20px' lmargin='20px' bmargin='10px'>Delete Account</H3>
                             <AccountTxtWrapper>
                                 <H5 tmargin='10px' bmargin='10px'>Are you Sure?</H5>
-                                <H6 weight='400'>This Account Will be deleted immediately. All your data will be removed from out servers.</H6>
+                                <H6 weight='400'>This Account Will be deleted immediately. All your data will be removed from our servers.</H6>
                                 <H6 bmargin='50px' weight='400'>This action is irreversible 😭.</H6>
                                 <MenuButton title='Delete My Account'
                                             bgColor='red'

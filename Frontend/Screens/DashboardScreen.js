@@ -3,6 +3,7 @@ import {View, Text, Button} from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { jwtDecode } from "jwt-decode";
+import { loadData } from '../Components/SecureStorage';
 
 // Styling
 import {
@@ -34,31 +35,11 @@ const DashboardScreen = () => {
         // Make an API request to fetch user account information from the backend
         const fetchUserInfo = async () => {
             try {
-                const apiKey = process.env.REACT_NATIVE_API_KEY;
-
-                // Add the API key to the request headers
-                const config = {
-                    headers: {
-                        'X-API-Key': apiKey,
-                    },
-                };
-
-                const storedToken = await AsyncStorage.getItem('token');
-                if (storedToken) {
-                  const decodedToken = jwtDecode(storedToken);
-                  console.log(decodedToken);
-
-                  const phone = decodedToken.sub;
-
-                  const response = await axios.post('http://127.0.0.1:5000/account', { phone_number: phone }, config);
-
-                  if (response.data && response.data.user) {
-                    setUserInfo(response.data.user); // Set the user info directly
-
-                    setLoading(false);
-                  }
-                }
-            } catch (error) {
+            const storedUserData = await loadData('userData');
+            if (storedUserData) {
+                setUserInfo(storedUserData);
+            }
+        } catch (error) {
                 console.error('Error fetching user account information:', error);
             }
         };

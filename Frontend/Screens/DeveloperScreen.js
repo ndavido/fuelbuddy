@@ -26,9 +26,8 @@ import MainLogo from '../styles/mainLogo';
 import AccountImg from '../styles/accountImg';
 import {MenuButton} from "../styles/accountButton";
 import {H3, H4, H5, H6} from "../styles/text";
-import {loadData} from "../Components/SecureStorage";
 
-const AccountScreen = () => {
+const DeveloperScreen = () => {
     const [userInfo, setUserInfo] = useState({});
     const [loading, setLoading] = useState(true);
 
@@ -42,9 +41,29 @@ const AccountScreen = () => {
         // Make an API request to fetch user account information from the backend
         const fetchUserInfo = async () => {
             try {
-                const storedUserData = await loadData('userData');
-                if (storedUserData) {
-                    setUserInfo(storedUserData);
+                const apiKey = process.env.REACT_NATIVE_API_KEY;
+
+                // Add the API key to the request headers
+                const config = {
+                    headers: {
+                        'X-API-Key': apiKey,
+                    },
+                };
+
+                const storedToken = await AsyncStorage.getItem('token');
+                if (storedToken) {
+                  const decodedToken = jwtDecode(storedToken);
+                  console.log(decodedToken);
+
+                  const phone = decodedToken.sub;
+
+                  const response = await axios.post('http://127.0.0.1:5000/account', { phone_number: phone }, config);
+
+                  if (response.data && response.data.user) {
+                    setUserInfo(response.data.user); // Set the user info directly
+
+                    setLoading(false);
+                  }
                 }
             } catch (error) {
                 console.error('Error fetching user account information:', error);
@@ -61,7 +80,7 @@ const AccountScreen = () => {
                 <AccountInner>
                     <AccountRegularInfo>
                         <AccountContent>
-                            <H3 tmargin='20px' lmargin='20px' bmargin='10px'>Account</H3>
+                            <H3 tmargin='20px' lmargin='20px' bmargin='10px'>Developer Screen</H3>
                             <AccountTxtWrapper>
                                 <H5 tmargin='10px' bmargin='10px'>Personal Information</H5>
                                 <H6 bmargin='5px'>Username</H6>
@@ -90,4 +109,4 @@ const AccountScreen = () => {
     );
 };
 
-export default AccountScreen;
+export default DeveloperScreen;

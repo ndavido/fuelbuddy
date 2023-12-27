@@ -86,12 +86,21 @@ const AccountScreen = () => {
         }
     };
 
-    const handleDev = async () => {
+    const handleVehicle = async () => {
         try {
-            navigate.navigate('DeveloperMenu');
+            navigate.navigate('Vehicle');
 
         } catch (error) {
-            console.error('Error Loading Information:', error);
+            console.error('Error Loading Vehicle Information:', error);
+        }
+    };
+
+    const handleDev = async () => {
+        try {
+            navigate.navigate('Developer');
+
+        } catch (error) {
+            console.error('Error Loading Dev Menu:', error);
         }
     };
 
@@ -158,7 +167,8 @@ const AccountScreen = () => {
                                     <MenuButtonBottom title='Vehicle'
                                                       bgColor='white'
                                                       txtColor='black'
-                                                      emoji="🚗"/>
+                                                      emoji="🚗"
+                                                      onPress={handleVehicle}/>
                                     <MenuButtonTop title='my routes'
                                                    bgColor='white'
                                                    txtColor='black'

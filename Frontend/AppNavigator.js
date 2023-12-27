@@ -4,6 +4,7 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {FontAwesome5} from '@expo/vector-icons'; // Import icons from Expo's vector-icons
 import * as SecureStore from 'expo-secure-store';
+import { saveData, loadData, updateData } from './Components/SecureStorage';
 import {useAuth} from './AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {View, Text, StyleSheet} from 'react-native';
@@ -15,10 +16,14 @@ import Map from './Screens/MapScreen';
 import Account from './Screens/AccountScreen';
 import PersonalInfo from './Screens/PersonalInfoScreen';
 import DeleteConfirm from './Screens/DeleteConfirmScreen';
+import Vehicle from './Screens/VehicleScreen';
+import Developer from './Screens/DeveloperScreen';
 import Login from './Screens/LoginScreen';
 import LoginVerify from './Screens/LoginVerifyScreen';
 import Register from './Screens/RegisterScreen';
 import RegisterVerify from './Screens/RegisterVerifyScreen';
+
+import {H5, H6} from './styles/text.js';
 
 const Tab = createBottomTabNavigator();
 
@@ -68,6 +73,8 @@ const AccountNavigator = () => {
             <Stack.Screen name="Account" component={Account}/>
             <Stack.Screen name="PersonalInfo" component={PersonalInfo}/>
             <Stack.Screen name="DeleteConfirm" component={DeleteConfirm}/>
+            <Stack.Screen name="Vehicle" component={Vehicle}/>
+            <Stack.Screen name="Developer" component={Developer}/>
         </Stack.Navigator>
     );
 };
@@ -119,6 +126,10 @@ const AppNavigator = () => {
                     // Dispatch action to set user as authenticated
                     dispatch({type: 'LOGIN'});
 
+                    const userData = {};
+                    await saveData('userData', userData);
+                    console.log(userData)
+
                 } else {
                     // Dispatch action to set user as not authenticated
                     dispatch({type: 'LOGOUT'});
@@ -134,7 +145,8 @@ const AppNavigator = () => {
     }, [dispatch]);
 
     return (
-        <View style={{flex: 1, overflow: 0}}>
+        <View style={{flex: 1, overflow: "hidden"}}>
+            <H6 color='rgb(81, 81, 81)' position='absolute' tmargin='10px' lmargin='10px'>This is a Dev build of the App some features are not implemented or finished.</H6>
             <NavigationContainer>
                 {state.isUserAuthenticated ? (
                     <Tab.Navigator
@@ -161,8 +173,21 @@ const AppNavigator = () => {
 
                                 let iconColor = focused ? '#6BFF91' : '#515151';
 
-                                return <FontAwesome5 name={iconName} size={size} color={iconColor} />; // Use FontAwesome5 from Expo
+                                return <FontAwesome5 name={iconName} size={size} color={iconColor}/>; // Use FontAwesome5 from Expo
                             },
+                            // tabBarLabel: ({focused, color}) => {
+                            //     let label;
+                            //     if (route.name === 'Dashboard') {
+                            //         label = 'Dashboard';
+                            //     } else if (route.name === 'Map') {
+                            //         label = 'Map';
+                            //     } else if (route.name === 'Account') {
+                            //         label = 'Account';
+                            //     }
+                            //
+                            //     // Use H4 component for the label
+                            //     return <H5 weight='400' style={{color}}>{label}</H5>;
+                            // },
                         })}
                     >
                         <Tab.Screen name="Dashboard" component={Dashboard}/>
