@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, TextInput, Button } from 'react-native';
 import axios from 'axios';
-import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
@@ -24,7 +23,6 @@ import PressableButton2 from '../styles/buttons2';
 import Logo from '../styles/logo';
 
 const LoginVerifyScreen = ({ route }) => {
-  const navigation = useNavigation();
 
   const { dispatch } = useAuth(); // Get the dispatch function from the AuthContext
 

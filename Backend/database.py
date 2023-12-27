@@ -53,6 +53,13 @@ class UserCollection:
             return True
         return False
 
+    def delete_user(self, query):
+        # Delete a user
+        user = Users.objects(**query).first()
+        if user:
+            user.delete()
+            return True
+        return False
 
 class FuelStationsCollection:
     def __init__(self, db):

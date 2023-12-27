@@ -14,6 +14,7 @@ import Dashboard from './Screens/DashboardScreen';
 import Map from './Screens/MapScreen';
 import Account from './Screens/AccountScreen';
 import PersonalInfo from './Screens/PersonalInfoScreen';
+import DeleteConfirm from './Screens/DeleteConfirmScreen';
 import Login from './Screens/LoginScreen';
 import LoginVerify from './Screens/LoginVerifyScreen';
 import Register from './Screens/RegisterScreen';
@@ -66,6 +67,7 @@ const AccountNavigator = () => {
         }}>
             <Stack.Screen name="Account" component={Account}/>
             <Stack.Screen name="PersonalInfo" component={PersonalInfo}/>
+            <Stack.Screen name="DeleteConfirm" component={DeleteConfirm}/>
         </Stack.Navigator>
     );
 };
@@ -82,7 +84,7 @@ function LoadingScreen({isVisible}) {
                 clearInterval(interval);
                 return 1;
             });
-        }, 150); // Adjust timing here
+        }, 50); // Adjust timing here
 
         return () => clearInterval(interval);
     }, []);
@@ -107,7 +109,7 @@ const AppNavigator = () => {
     useEffect(() => {
         const timer = setTimeout(() => {
             setIsLoading(false);
-        }, 2000);
+        }, 1000);
         const checkAuthState = async () => {
             try {
                 // Check if token exists in AsyncStorage
@@ -132,7 +134,7 @@ const AppNavigator = () => {
     }, [dispatch]);
 
     return (
-        <View style={{flex: 1}}>
+        <View style={{flex: 1, overflow: 0}}>
             <NavigationContainer>
                 {state.isUserAuthenticated ? (
                     <Tab.Navigator

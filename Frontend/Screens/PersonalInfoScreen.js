@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {View, Text, Button} from 'react-native';
 import axios from 'axios';
+import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { jwtDecode } from "jwt-decode";
 
@@ -30,13 +31,10 @@ const AccountScreen = () => {
     const [userInfo, setUserInfo] = useState({});
     const [loading, setLoading] = useState(true);
 
-    const handleDelete = async () => {
-        try {
+    const navigation = useNavigation();
 
-
-        } catch (error) {
-
-        }
+    const handleDelete = () => {
+        navigation.navigate('DeleteConfirm');
     };
 
     useEffect(() => {

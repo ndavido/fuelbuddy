@@ -30,15 +30,6 @@ const DashboardScreen = () => {
     const [userInfo, setUserInfo] = useState({});
     const [loading, setLoading] = useState(true);
 
-    const handleDelete = async () => {
-        try {
-
-
-        } catch (error) {
-
-        }
-    };
-
     useEffect(() => {
         // Make an API request to fetch user account information from the backend
         const fetchUserInfo = async () => {
