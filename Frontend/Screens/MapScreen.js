@@ -1,13 +1,13 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import MapView from '../Components/mymap';
-import MainLogo from '../styles/mainLogo';
+import Logo from '../styles/logo';
 const apiKey = process.env.googleMapsApiKey;
 
 const MapScreen = () => {
   return (
     <View style={{ flex: 1 }}>
-      <MainLogo/>
+      <Logo/>
       <MapView
         style={{ flex: 1 }}
         initialRegion={{
@@ -26,7 +26,7 @@ const MapScreen = () => {
         zoomEnabled={true}
         rotateEnabled={true}
         scrollEnabled={true}
-        apiKey="AIzaSyCcXAgwPsQHnVmSUu3qsmK-L5t0OOA2y9o"
+        googleMapsApiKey={apiKey}
       />
     </View>
   );

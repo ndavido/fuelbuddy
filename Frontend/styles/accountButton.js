@@ -46,11 +46,9 @@ const EmojiText = styled.Text`
 
 const ButtonText = styled.Text`
   font-size: 14px;
-  text-height: 14px;
   align-items: center;
-    justify-content: center;
+  justify-content: center;
   display: flex;
-  color: white;
   font-family: 'Poppins_500Medium';
   color: ${props => props.txtColor};
   margin-left: 10px; // Add some space between emoji and text

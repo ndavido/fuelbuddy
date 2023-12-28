@@ -4,7 +4,7 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {FontAwesome5} from '@expo/vector-icons'; // Import icons from Expo's vector-icons
 import * as SecureStore from 'expo-secure-store';
-import { saveData, loadData, updateData } from './Components/SecureStorage';
+import "core-js/stable/atob";
 import {useAuth} from './AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {View, Text, StyleSheet} from 'react-native';
@@ -126,10 +126,6 @@ const AppNavigator = () => {
                     // Dispatch action to set user as authenticated
                     dispatch({type: 'LOGIN'});
 
-                    const userData = {};
-                    await saveData('userData', userData);
-                    console.log(userData)
-
                 } else {
                     // Dispatch action to set user as not authenticated
                     dispatch({type: 'LOGOUT'});
@@ -146,7 +142,7 @@ const AppNavigator = () => {
 
     return (
         <View style={{flex: 1, overflow: "hidden"}}>
-            <H6 color='rgb(81, 81, 81)' position='absolute' tmargin='10px' lmargin='10px'>This is a Dev build of the App some features are not implemented or finished.</H6>
+            <H6 style={{opacity: 0.5, bottom: 60, left: 10}} position='absolute'>Release 0.4 - This is a Dev build of the App some features are not implemented or finished.</H6>
             <NavigationContainer>
                 {state.isUserAuthenticated ? (
                     <Tab.Navigator

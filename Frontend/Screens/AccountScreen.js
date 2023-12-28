@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {View, Text, Button, Animated} from 'react-native';
 import axios from 'axios';
-import {PanGestureHandler, State} from 'react-native-gesture-handler';
+import {PanGestureHandler, GestureHandlerRootView, State} from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {jwtDecode} from "jwt-decode";
 
@@ -123,7 +123,7 @@ const AccountScreen = () => {
 
                     const phone = decodedToken.sub;
 
-                    const response = await axios.post('http://127.0.0.1:5000/account', {phone_number: phone}, config);
+                    const response = await axios.post('http://ec2-54-172-255-239.compute-1.amazonaws.com/account', {phone_number: phone}, config);
 
                     if (response.data && response.data.user) {
                         setUserInfo(response.data.user); // Set the user info directly
@@ -152,6 +152,7 @@ const AccountScreen = () => {
                                 <DeveloperTick>🧑‍💻</DeveloperTick>}</AccountUsername>
                         </AccountContent>
                     </AccountTopInfo>
+                    <GestureHandlerRootView style={{flex: 1}}>
                     <PanGestureHandler
                         onGestureEvent={onGestureEvent}
                         onHandlerStateChange={onHandlerStateChange}
@@ -207,6 +208,7 @@ const AccountScreen = () => {
                             </AccountContent>
                         </AccountBottomInfo>
                     </PanGestureHandler>
+                        </GestureHandlerRootView>
                 </AccountInner>
             </AccountWrapper>
         </Main2>
