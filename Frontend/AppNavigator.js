@@ -5,10 +5,12 @@ import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {FontAwesome5} from '@expo/vector-icons'; // Import icons from Expo's vector-icons
 import * as SecureStore from 'expo-secure-store';
 import "core-js/stable/atob";
+import axios from 'axios';
 import {useAuth} from './AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {View, Text, StyleSheet} from 'react-native';
 import * as Progress from 'react-native-progress';
+import {jwtDecode} from "jwt-decode";
 
 import Welcome from './Screens/WelcomeScreen';
 import Dashboard from './Screens/DashboardScreen';
@@ -79,7 +81,7 @@ const AccountNavigator = () => {
     );
 };
 
-function LoadingScreen({isVisible}) {
+function LoadingScreen({ isVisible }) {
     const [progress, setProgress] = useState(0);
 
     useEffect(() => {
@@ -91,10 +93,51 @@ function LoadingScreen({isVisible}) {
                 clearInterval(interval);
                 return 1;
             });
-        }, 50); // Adjust timing here
+        }, 50);
 
         return () => clearInterval(interval);
     }, []);
+
+    useEffect(() => {
+        const loadOrFetchUserData = async () => {
+            try {
+                await fetchAndStoreUserInfo();
+            } catch (error) {
+                console.error('Error handling user data:', error);
+            }
+        };
+
+        if (isVisible) {
+            loadOrFetchUserData();
+        }
+    }, [isVisible]);
+
+    const fetchAndStoreUserInfo = async () => {
+        try {
+            const apiKey = process.env.REACT_NATIVE_API_KEY;
+            const storedToken = await AsyncStorage.getItem('token');
+
+            if (storedToken) {
+                const decodedToken = jwtDecode(storedToken);
+                const phone = decodedToken.sub;
+
+                const config = {
+                    headers: {
+                        'X-API-Key': apiKey,
+                    },
+                };
+
+                const response = await axios.post('http://ec2-54-172-255-239.compute-1.amazonaws.com/account', { phone_number: phone }, config);
+
+                if (response.data && response.data.user) {
+                    await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
+                    // Update state/context or perform other actions with the user data
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching user account information:', error);
+        }
+    };
 
     if (!isVisible) {
         return null;

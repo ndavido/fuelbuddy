@@ -38,7 +38,7 @@ const VehicleScreen = () => {
     };
 
     useEffect(() => {
-        // Make an API request to fetch user account information from the backend
+        // TODO Make an API request to fetch user account information from the backend
         const fetchUserInfo = async () => {
             try {
                 const apiKey = process.env.REACT_NATIVE_API_KEY;

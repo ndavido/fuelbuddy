@@ -38,32 +38,11 @@ const AccountScreen = () => {
     };
 
     useEffect(() => {
-        // Make an API request to fetch user account information from the backend
         const fetchUserInfo = async () => {
             try {
-                const apiKey = process.env.REACT_NATIVE_API_KEY;
-
-                // Add the API key to the request headers
-                const config = {
-                    headers: {
-                        'X-API-Key': apiKey,
-                    },
-                };
-
-                const storedToken = await AsyncStorage.getItem('token');
-                if (storedToken) {
-                    const decodedToken = jwtDecode(storedToken);
-                    console.log(decodedToken);
-
-                    const phone = decodedToken.sub;
-
-                    const response = await axios.post('http://ec2-54-172-255-239.compute-1.amazonaws.com/account', {phone_number: phone}, config);
-
-                    if (response.data && response.data.user) {
-                        setUserInfo(response.data.user); // Set the user info directly
-
-                        setLoading(false);
-                    }
+                const userDataJson = await AsyncStorage.getItem('userData');
+                if (userDataJson) {
+                    setUserInfo(JSON.parse(userDataJson));
                 }
             } catch (error) {
                 console.error('Error fetching user account information:', error);
