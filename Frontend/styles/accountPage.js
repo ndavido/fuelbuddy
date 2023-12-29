@@ -70,7 +70,7 @@ export const AccountRegularInfo = styled.ScrollView`
 
 export const AccountTxtWrapper = styled.View`
   margin: 20px;
-  height: 1500px;
+  height: auto;
 `;
 
 export const AccountTxt = styled.Text`

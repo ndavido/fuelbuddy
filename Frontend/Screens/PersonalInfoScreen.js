@@ -49,7 +49,6 @@ const AccountScreen = () => {
     const handleSave = async () => {
         try {
             const apiKey = process.env.REACT_NATIVE_API_KEY;
-            console.log(apiKey)
 
             // Add the API key to the request headers
             const config = {
@@ -103,10 +102,15 @@ const AccountScreen = () => {
                                 <H5 tmargin='10px' bmargin='10px'>Personal Information</H5>
                                 {editMode ? (
                                     <>
+                                        <H6 bmargin='5px'>Username</H6>
+                                        <AccountTxt bgColor='grey'>@{userInfo.username}</AccountTxt>
+                                        <H6 bmargin='5px'>Name</H6>
                                         <TextInput value={editedFullName} onChangeText={setEditedFullName}
                                                    placeholder="Full Name"/>
+                                        <H6 bmargin='5px'>Phone Number</H6>
                                         <TextInput value={editedPhoneNumber} onChangeText={setEditedPhoneNumber}
                                                    placeholder="Phone Number"/>
+                                        <H6 bmargin='5px'>Email</H6>
                                         <TextInput value={editedEmail} onChangeText={setEditedEmail}
                                                    placeholder="Email"/>
                                         <Button title="Save" onPress={handleSave}/>
@@ -124,7 +128,7 @@ const AccountScreen = () => {
                                     </>
                                 )}
                                 <Button title={editMode ? "Cancel" : "Edit"} onPress={handleEditToggle}/>
-                                <H5 tmargin='20px' bmargin='5px'>Delete Account</H5>
+                                <H5 tmargin='40px' bmargin='5px'>Delete Account</H5>
                                 <H6 style={{opacity: 0.6}} bmargin='20px' weight='400'>Not comfortable? Deleting your
                                     account will
                                     remove all data from our servers</H6>
