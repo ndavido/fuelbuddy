@@ -10,11 +10,8 @@ import {
     ContainerInner,
     ContainerContent,
     BttnDiv,
-    TxtWrapper,
-    WelcomeTxt,
     BttnDiv2,
     InputWrapper,
-    InputTxt,
     PhoneTxt,
     CCTxt
 } from '../styles/wrapper';
@@ -112,14 +109,14 @@ const LoginScreen = () => {
                             </PhoneContainer>
 
                             <Text>{message}</Text>
-                        </InputWrapper>
-                        <BttnDiv>
+                            <BttnDiv>
                             <PressableButton
                                 onPress={handleLogin}
                                 title='Send Login Code'
                                 bgColor='#6bff91'
                             />
                         </BttnDiv>
+                        </InputWrapper>
                     </ContainerContent>
                 </ContainerInner>
             </ContainerWrapper>

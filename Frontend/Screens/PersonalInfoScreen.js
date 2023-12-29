@@ -71,7 +71,7 @@ const AccountScreen = () => {
                                 <H6 bmargin='5px'>Email</H6>
                                 <AccountTxt bgColor='#FFFFFF'>{userInfo.email}</AccountTxt>
                                 <H5 tmargin='20px' bmargin='5px'>Delete Account</H5>
-                                <H6 bmargin='20px' weight='400'>Not comfortable? Deleting your account will
+                                <H6 style={{opacity: 0.6}} bmargin='20px' weight='400'>Not comfortable? Deleting your account will
                                     remove all data from our servers</H6>
                                 <MenuButton title='Delete Account'
                                             bgColor='red'
