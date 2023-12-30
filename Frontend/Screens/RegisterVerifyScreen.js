@@ -1,7 +1,6 @@
 import React, {useState} from 'react';
 import {View, Text, TextInput, Button} from 'react-native';
 import axios from 'axios';
-import {useNavigation} from '@react-navigation/native';
 import {useAuth} from '../AuthContext';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -24,7 +23,6 @@ import Logo from '../styles/logo';
 
 
 const RegisterVerifyScreen = ({route}) => {
-    const navigation = useNavigation();
     const {dispatch} = useAuth(); // Get the dispatch function from the AuthContext
 
     const [formData, setFormData] = useState({
@@ -51,7 +49,7 @@ const RegisterVerifyScreen = ({route}) => {
                 },
             };
 
-            const response = await axios.post('http://127.0.0.1:5000/register/verify', formData, config);
+            const response = await axios.post('http://ec2-54-172-255-239.compute-1.amazonaws.com/register/verify', formData, config);
             setMessage(response.data.message);
 
             // If verification is successful, update the authentication state
@@ -87,7 +85,7 @@ const RegisterVerifyScreen = ({route}) => {
                     },
                 };
 
-                const response = await axios.post('http://127.0.0.1:5000/register', {
+                const response = await axios.post('http://ec2-54-172-255-239.compute-1.amazonaws.com/register', {
                     full_name: route.params.full_name,
                     username: formData.username,
                     phone_number: route.params.phone_number

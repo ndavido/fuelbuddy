@@ -10,11 +10,8 @@ import {
     ContainerInner,
     ContainerContent,
     BttnDiv,
-    TxtWrapper,
-    WelcomeTxt,
     BttnDiv2,
     InputWrapper,
-    InputTxt,
     PhoneTxt,
     CCTxt
 } from '../styles/wrapper';
@@ -54,9 +51,10 @@ const LoginScreen = () => {
                 },
             };
 
+            /* TODO Remove!!! Dev Only */
             console.log(config);
 
-            const response = await axios.post('http://127.0.0.1:5000/login', {
+            const response = await axios.post('http://ec2-54-172-255-239.compute-1.amazonaws.com/login', {
                 ...formData,
                 phone_number: fullNum
             }, config);
@@ -111,14 +109,14 @@ const LoginScreen = () => {
                             </PhoneContainer>
 
                             <Text>{message}</Text>
-                        </InputWrapper>
-                        <BttnDiv>
+                            <BttnDiv>
                             <PressableButton
                                 onPress={handleLogin}
                                 title='Send Login Code'
                                 bgColor='#6bff91'
                             />
                         </BttnDiv>
+                        </InputWrapper>
                     </ContainerContent>
                 </ContainerInner>
             </ContainerWrapper>

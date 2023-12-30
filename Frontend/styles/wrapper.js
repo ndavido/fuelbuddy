@@ -4,6 +4,7 @@ import LogoSrc from '../assets/welcomeTemp.jpg';
 
 export const Main = styled.View`
   flex: 1;
+  overflow: hidden;
   background-color: white;
   align-items: center;
   justify-content: center;
@@ -11,6 +12,7 @@ export const Main = styled.View`
 
 export const Main2 = styled.View`
   flex: 1;
+  overflow: hidden;
   background-color: #6BFF91;
 `;
 

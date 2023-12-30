@@ -359,13 +359,14 @@ def account():
 @require_api_key
 def delete_account():
     try:
-        username = session.get('username')
+        data = request.get_json()
+        phone = data.get('phone_number')
 
-        if not username:
+        if not phone:
             return jsonify({"error": "User not found"}), 404
 
-        users_collection.delete_user({"username": username})
-        session.pop('username', None)
+        users_collection.delete_user({"phone_number": phone})
+        session.pop('phone_number', None)
 
         return jsonify({"message": "Account deleted successfully!"})
     except Exception as e:

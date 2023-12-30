@@ -2,20 +2,17 @@ import React from 'react';
 import styled from 'styled-components/native';
 
 const LogoContainer = styled.SafeAreaView`
-  top: 60px;
-  height: 140px;
-  width: 140px
-  background-color: #FFFFFF;
-  border-radius: 70px;
-  z-index: 1000;
-  margin: auto;
+  height: 80px;
+  width: 100%;
   position: relative;
 `;
 
 const LogoImg = styled.Image`
   flex: 1;
-  width: 100%;
-  border-radius: 70px;
+  width: 80px;
+  height: 80px;
+  margin: auto;
+  border-radius: 40px;
 `;
 
 const AccountImg = () => (
