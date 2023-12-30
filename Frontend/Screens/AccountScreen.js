@@ -22,7 +22,7 @@ import {
     AccountUsername,
     DeveloperTick
 } from '../styles/accountPage';
-import {H1, H3Txt, H2, H3, H4, H5, H6} from '../styles/text.js';
+import {H1, H2, H3, H4, H5, H6} from '../styles/text.js';
 import {MenuButton, MenuButtonTop, MenuButtonMiddle, MenuButtonBottom} from "../styles/accountButton";
 import MainLogo from '../styles/mainLogo';
 import AccountImg from '../styles/accountImg';
@@ -151,7 +151,7 @@ const AccountScreen = () => {
                                                       txtColor='black'
                                                       emoji="🚗"
                                                       onPress={handleVehicle}/>
-                                    <MenuButtonTop title='my routes'
+                                    <MenuButtonTop title='my routes (NA)'
                                                    bgColor='white'
                                                    txtColor='black'
                                                    emoji="📍"/>
@@ -159,7 +159,7 @@ const AccountScreen = () => {
                                                       bgColor='white'
                                                       txtColor='black'
                                                       emoji="⛽"/>
-                                    <MenuButtonBottom title='Friends (NA)'
+                                    <MenuButtonBottom title='my friends (NA)'
                                                       bgColor='white'
                                                       txtColor='black'
                                                       emoji="🧑‍🤝‍🧑"/>
@@ -167,10 +167,10 @@ const AccountScreen = () => {
                                                       bgColor='white'
                                                       txtColor='black'
                                                       emoji="🔏"/>
-                                    <MenuButton title='Report Bug (NA)'
+                                    <MenuButton title='Support (NA)'
                                                 bgColor='white'
                                                 txtColor='black'
-                                                emoji="🪰"/>
+                                                emoji="👷‍♂️"/>
 
                                     {/*Display the Developer button only if the user is a developer*/}
                                     {userInfo.roles && userInfo.roles.includes("Developer") &&

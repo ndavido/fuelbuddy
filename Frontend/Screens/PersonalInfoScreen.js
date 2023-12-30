@@ -92,7 +92,7 @@ const AccountScreen = () => {
 
     return (
         <Main2>
-            <MainLogo/>
+            <MainLogo bButton={true} />
             <AccountWrapper>
                 <AccountInner>
                     <AccountRegularInfo>
