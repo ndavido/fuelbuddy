@@ -387,13 +387,8 @@ def logout():
 @require_api_key
 def edit_account():
     try:
-        username = session.get('username')
-
-        if not username:
-            return jsonify({"error": "User not logged in"}), 401
-
         data = request.get_json()
-        user = Users.objects(username=username).first()
+        user = data.get('username')
 
         if not user:
             return jsonify({"error": "User not found"}), 404
