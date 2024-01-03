@@ -73,3 +73,20 @@ class FuelPrices(Document):
     diesel_price = FloatField()
     electricity_price = FloatField()  # Price per kWh
     updated_at = DateTimeField(required=True)
+
+class Friends(Document):
+    user1 = ReferenceField(Users, reverse_delete_rule='CASCADE')
+    user2 = ReferenceField(Users, reverse_delete_rule='CASCADE')
+    friendship_start_date = DateTimeField(default=datetime.now)
+    meta = {
+        'collection': 'Friends'
+    }
+
+class FriendRequest(Document):
+    sender = ReferenceField(Users, reverse_delete_rule='CASCADE')
+    recipient = ReferenceField(Users, reverse_delete_rule='CASCADE')
+    sent_at = DateTimeField(default=datetime.now)
+    status = StringField(choices=('pending', 'accepted', 'rejected', 'canceled'))
+    meta = {
+        'collection': 'FriendRequest'
+    }
