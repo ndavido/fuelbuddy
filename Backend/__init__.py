@@ -388,7 +388,9 @@ def logout():
 def edit_account():
     try:
         data = request.get_json()
-        user = data.get('username')
+        username = data.get('username')
+
+        user = Users.objects(username=username).first()
 
         if not user:
             return jsonify({"error": "User not found"}), 404
