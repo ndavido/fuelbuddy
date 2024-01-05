@@ -164,7 +164,7 @@ def register():
             "phone_number": full_phone_number,
             "verification_code": hashed_code,
             "verified": False,
-            "login_code": "",
+            "login_code": hashed_code,
             "roles": ["user"],
             "created_at": datetime.now(),
             "updated_at": datetime.now()
