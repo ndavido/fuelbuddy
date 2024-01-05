@@ -74,6 +74,7 @@ class FuelPrices(Document):
     electricity_price = FloatField()  # Price per kWh
     updated_at = DateTimeField(required=True)
 
+# Models for friends and friend requests
 class Friends(Document):
     user1 = ReferenceField(Users, reverse_delete_rule='CASCADE')
     user2 = ReferenceField(Users, reverse_delete_rule='CASCADE')
@@ -86,7 +87,19 @@ class FriendRequest(Document):
     sender = ReferenceField(Users, reverse_delete_rule='CASCADE')
     recipient = ReferenceField(Users, reverse_delete_rule='CASCADE')
     sent_at = DateTimeField(default=datetime.now)
+    message = StringField()
     status = StringField(choices=('pending', 'accepted', 'rejected', 'canceled'))
     meta = {
         'collection': 'FriendRequest'
+    }
+
+# Notification for friend request sent, friend request accepted, friend request rejected
+class Notification(Document):
+    user = ReferenceField(Users, reverse_delete_rule='CASCADE')
+    message = StringField()
+    created_at = DateTimeField(default=datetime.now)
+    type = StringField(choices=('friend_request_sent', 'friend_request_accepted', 'friend_request_rejected'))
+
+    meta = {
+        'collection': 'Notifications'
     }
