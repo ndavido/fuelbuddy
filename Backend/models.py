@@ -103,3 +103,11 @@ class Notification(Document):
     meta = {
         'collection': 'Notifications'
     }
+
+def create_notification(user, message, notification_type):
+    notification = Notification(
+        user=user,
+        message=message,
+        type=notification_type
+    )
+    notification.save()
