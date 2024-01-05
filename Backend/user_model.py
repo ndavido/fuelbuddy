@@ -20,17 +20,17 @@ def make_prediction(model, scaler, last_weeks_data):
     return predicted_price[0, 0]
 
 # Example usage
-model_path = 'Backend/user_model.h5'
+model_path = 'user_model.h5'
 model = load_saved_model(model_path)
 
 # Assuming you have the same scaler used during training
 scaler = MinMaxScaler(feature_range=(0, 1))
-df = pd.read_csv('linear_weekly_fuel_budget_dataset.csv')
-data = df['Weekly_Fuel_Budget'].values
+df = pd.read_csv('fuel_prices_reversed.csv')
+data = df['Fuel Price'].values
 data = data.reshape(-1, 1)
 scaler.fit(data)
 
 # Replace the next line with the actual last weeks' data
-last_weeks_data = np.array([60.0])
+last_weeks_data = np.array([75.0])
 predicted_price = make_prediction(model, scaler, last_weeks_data)
 print("Predicted price for next week:", predicted_price)

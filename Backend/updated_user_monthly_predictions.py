@@ -1,115 +1,106 @@
 import pandas as pd
-import numpy as np
-from keras.models import Sequential
-from keras.layers import LSTM, Dense, Dropout
-from keras.optimizers import Adam
-from sklearn.preprocessing import MinMaxScaler, StandardScaler
+import matplotlib.pyplot as plt
+from sklearn.metrics import mean_squared_error, mean_absolute_error
+from math import sqrt
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error
-
-np.random.seed(0)
+from keras.models import Sequential
+from keras.layers import Dense, LSTM, Bidirectional
+from keras.optimizers import Adam
+from sklearn.preprocessing import MinMaxScaler
+import numpy as np
+from sklearn.metrics import mean_squared_error, mean_absolute_error
+from math import sqrt
 
 
 def main():
-    # Main Execution
-    time_step = 5  # Experiment with different time steps
-    (X_train, X_test, y_train, y_test), scaler, df = preprocess_data(
-        'fuelbuddy_user_spending.csv', 'Total', time_step)
-    model = create_model(time_step)
-    trained_model = train_model(model, X_train, y_train)
+    file_path = 'fuel_prices_reversed.csv'
+    column_name = 'Fuel Price'
 
-    # Invert normalization for actual RMSE calculation
-    y_train_inv = scaler.inverse_transform([y_train])
-    y_test_inv = scaler.inverse_transform([y_test])
+    data, scaler = load_and_preprocess_data(file_path, column_name)
+    X, y = prepare_data_for_lstm(data)
+    X_train, X_test, y_train, y_test = split_data(X, y)
 
-    train_predict = make_predictions(trained_model, X_train, scaler)
-    test_predict = make_predictions(trained_model, X_test, scaler)
+    # Reshape input to be [samples, time steps, features]
+    X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], 1))
+    X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
 
-    train_rmse = evaluate_performance(y_train_inv[0], train_predict[:, 0])
-    test_rmse = evaluate_performance(y_test_inv[0], test_predict[:, 0])
-    print(f'Train RMSE: {train_rmse}, Test RMSE: {test_rmse}')
-
-    # Predict next week's expenditure
-    last_weeks_data = scaler.transform(
-        df['Total'].values[-time_step:].reshape(-1, 1))
-    next_week_expenditure = predict_next_week(
-        trained_model, last_weeks_data, scaler)
-    print(f"Predicted expenditure for next week: {next_week_expenditure}")
-    print(f"Actual expenditure for next week: {df['Total'].values[-1]}")
-    print(
-        f"Accuracy: {accuracy(next_week_expenditure, df['Total'].values[-1])}")
-
-# Data Preprocessing Function
+    model = build_bilstm_model((X_train.shape[1], 1))
+    train_and_evaluate_model(model, X_train, y_train, X_test, y_test)
+    save_model(model)
 
 
-def preprocess_data(filename, target_column, time_step):
-    df = pd.read_csv(filename)
-    data = df[target_column].values
+def load_and_preprocess_data(file_path, column_name):
+    # Load data
+    df = pd.read_csv(file_path)
+    data = df[column_name].values
     data = data.reshape(-1, 1)
-    scaler = StandardScaler()  # Switched to StandardScaler
-    data_normalized = scaler.fit_transform(data)
 
-    # Convert to supervised learning format
-    X, y = create_dataset(data_normalized, time_step)
-    X = X.reshape(X.shape[0], X.shape[1], 1)  # Reshape for LSTM
-    return train_test_split(X, y, test_size=0.2, random_state=42,), scaler, df
+    # Normalize data
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    data = scaler.fit_transform(data)
 
-# Create Dataset Function
+    return data, scaler
 
 
-def create_dataset(dataset, time_step=1):
-    dataX, dataY = [], []
-    for i in range(len(dataset) - time_step - 1):
-        a = dataset[i:(i + time_step), 0]
-        dataX.append(a)
-        dataY.append(dataset[i + time_step, 0])
-    return np.array(dataX), np.array(dataY)
-
-# Model Creation Function
+def prepare_data_for_lstm(data, look_back=1):
+    X, y = [], []
+    for i in range(len(data)-look_back):
+        X.append(data[i:(i + look_back), 0])
+        y.append(data[i + look_back, 0])
+    return np.array(X), np.array(y)
 
 
-def create_model(time_step):
+def split_data(X, y, test_size=0.2):
+    return train_test_split(X, y, test_size=test_size, random_state=42)
+
+
+def build_bilstm_model(input_shape):
     model = Sequential()
-    model.add(LSTM(50, return_sequences=True, input_shape=(time_step, 1)))
-    model.add(Dropout(0.2))  # Added dropout layer
-    model.add(LSTM(50, return_sequences=False))
-    model.add(Dense(25, activation='relu'))
+    model.add(Bidirectional(LSTM(50, activation='relu'), input_shape=input_shape))
     model.add(Dense(1))
     model.compile(Adam(learning_rate=0.01), loss='mean_squared_error')
     return model
 
-# Model Training Function
 
+def train_and_evaluate_model(model, X_train, y_train, X_test, y_test, epochs=100, batch_size=32):
+    # Train the model and save history
+    history = model.fit(X_train, y_train, validation_split=0.2, epochs=epochs, batch_size=batch_size, verbose=2)
 
-def train_model(model, X_train, y_train):
-    model.fit(X_train, y_train, batch_size=32, epochs=150)  # Increased epochs
-    return model
+    # Plot training history
+    plt.figure(figsize=(12, 4))
+    plt.subplot(1, 2, 1)
+    plt.plot(history.history['loss'], label='Train Loss')
+    plt.plot(history.history['val_loss'], label='Validation Loss')
+    plt.title('Model Loss')
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
+    plt.legend()
 
-# Prediction Function
+    # Evaluate the model
+    predicted = model.predict(X_test)
+    mse = mean_squared_error(y_test, predicted)
+    mae = mean_absolute_error(y_test, predicted)
+    rmse = sqrt(mse)
+    accuracy = 100 - mae
 
+    # Plot predictions
+    plt.subplot(1, 2, 2)
+    plt.scatter(y_test, predicted)
+    plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'k--', lw=2)
+    plt.title('Predictions vs Actual')
+    plt.xlabel('Actual')
+    plt.ylabel('Predicted')
 
-def make_predictions(model, X, scaler):
-    predictions = model.predict(X)
-    predictions = scaler.inverse_transform(predictions)
-    return predictions
+    plt.show()
 
-# Performance Evaluation Function
+    print(f'Model MSE: {mse}')
+    print(f'Model MAE: {mae}')
+    print(f'Model RMSE: {rmse}')
+    print(f'Model Accuracy: {accuracy}')
+    
+def save_model(model):
+    model.save('user_model.h5')
+    print('Model saved successfully.')
 
-
-def evaluate_performance(y_true, predictions):
-    return np.sqrt(mean_squared_error(y_true, predictions))
-
-# Predict Next Week's Expenditure Function
-
-
-def predict_next_week(model, last_weeks_data, scaler):
-    last_weeks_data = last_weeks_data.reshape((1, len(last_weeks_data), 1))
-    prediction = model.predict(last_weeks_data)
-    return scaler.inverse_transform(prediction)[0][0]
-
-
-def accuracy(predictions, actual):
-    return np.mean(np.abs(predictions - actual) / actual) * 100
-
-
-main()
+if __name__ == '__main__':
+    main()
