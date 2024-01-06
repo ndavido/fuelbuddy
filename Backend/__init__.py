@@ -19,6 +19,8 @@ from pymongo.server_api import ServerApi
 import re
 from mongoengine.queryset.visitor import Q
 from mongoengine.errors import DoesNotExist, ValidationError
+import hashlib
+
 # from updated_user_monthly_predictions import main as nn
 
 
@@ -116,6 +118,8 @@ def validate_verification_code(code):
     """
     return code.isdigit() and len(code) == 6
 
+def hash_phone_number(phone_number):
+    return hashlib.sha256(phone_number.encode()).hexdigest()
 
 def handle_api_error(e):
     """
@@ -148,9 +152,11 @@ def register():
         if not validate_phone_number(full_phone_number):
             return jsonify({"error": "Invalid phone number format"}), 400
 
+        hashed_phone_number = hash_phone_number(full_phone_number)
+
         if Users.objects(username=username).first():
             return jsonify({"error": "Username already exists"}), 409
-        if Users.objects(phone_number=full_phone_number).first():
+        if Users.objects(phone_number=hashed_phone_number).first():
             return jsonify({"error": "Phone number is already associated with another account"}), 409
 
         verification_code = str(random.randint(100000, 999999))
@@ -161,7 +167,7 @@ def register():
         session['new_user'] = {
             "full_name": full_name,
             "username": username,
-            "phone_number": full_phone_number,
+            "phone_number": hashed_phone_number,
             "verification_code": hashed_code,
             "verified": False,
             "login_code": hashed_code,
@@ -247,7 +253,9 @@ def login():
         hashed_login_code_str = hashed_login_code_bytes.decode(
             'utf-8')  # Convert bytes to string
 
-        user = Users.objects(phone_number=standardized_phone_number).first()
+        hashed_input_phone = hash_phone_number(standardized_phone_number)
+
+        user = Users.objects(phone_number=hashed_input_phone).first()
 
         if user:
             user.update(set__login_code=str(hashed_login_code_str))
@@ -285,7 +293,11 @@ def login_verify():
         if not validate_phone_number(standardized_phone_number) or not validate_verification_code(code):
             return jsonify({"error": "Invalid phone number or code format"}), 400
 
-        user = Users.objects(phone_number=standardized_phone_number).first()
+        # Hash the phone number before querying the database
+        hashed_phone_number = hash_phone_number(standardized_phone_number)
+
+        # Use the hashed phone number to find the user
+        user = Users.objects(phone_number=hashed_phone_number).first()
 
         if not user:
             return jsonify({"error": "User not found"}), 404
@@ -324,7 +336,7 @@ def protected():
 User Account Routes
 '''
 
-
+# TODO Display issue with phone numbers on account screen
 @app.route('/account', methods=['POST'])
 @require_api_key
 def account():
