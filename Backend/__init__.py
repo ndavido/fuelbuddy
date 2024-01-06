@@ -807,6 +807,71 @@ def remove_friend():
         return handle_api_error(e)
 
 
+#! This route is for searching friends
+@app.route('/search_users', methods=['GET'])
+@require_api_key
+@jwt_required()
+def search_users():
+    try:
+        current_user_id = get_jwt_identity()
+        search_term = request.args.get('search_term')
+
+        if not search_term:
+            return jsonify({"error": "Search term is required"}), 400
+
+        # Exclude the current user and search for others
+        users = Users.objects(
+            (Q(username__icontains=search_term) | Q(phone_number__icontains=search_term)) &
+            Q(id__ne=current_user_id)
+        )
+
+        users_list = [{'user_id': str(user.id), 'username': user.username, 'phone_number': user.phone_number}
+                      for user in users]
+
+        return jsonify({"users": users_list}), 200
+
+    except Exception as e:
+        return handle_api_error(e)
+
+#! This route is for sending friend requests
+
+
+@app.route('/send_friend_request', methods=['POST'])
+@require_api_key
+@jwt_required()
+def send_friend_request():
+    try:
+        current_user_id = get_jwt_identity()
+        data = request.get_json()
+        recipient_id = data.get('recipient_id')
+
+        if not recipient_id:
+            return jsonify({"error": "Recipient ID is required"}), 400
+
+        sender = Users.objects.get(id=current_user_id)
+        recipient = Users.objects(id=recipient_id).first()
+
+        if not recipient:
+            return jsonify({"error": "Recipient not found"}), 404
+
+        # Check for existing friend request
+        existing_request = FriendRequest.objects(
+            (Q(sender=sender) & Q(recipient=recipient)) |
+            (Q(sender=recipient) & Q(recipient=sender))
+        ).first()
+
+        if existing_request:
+            return jsonify({"error": "Friend request already sent or exists"}), 400
+
+        friend_request = FriendRequest(
+            sender=sender, recipient=recipient, status='pending').save()
+
+        return jsonify({"message": "Friend request sent successfully"}), 200
+
+    except Exception as e:
+        return handle_api_error(e)
+
+
 @app.route('/user_spending', methods=['POST'])
 @require_api_key
 def user_spending():
@@ -815,3 +880,13 @@ def user_spending():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+
+@app.route('/register', methods=['POST'])
+@require_api_key
+def register():
+    # ... [code omitted for brevity]
+    verification_code = str(random.randint(100000, 999999))
+    hashed_code = bcrypt.hashpw(
+        verification_code.encode('utf-8'), bcrypt.gensalt())
+    # ... [code omitted for brevity]
