@@ -851,7 +851,7 @@ def search_users():
 @app.route('/send_friend_request', methods=['POST'])
 @require_api_key
 @jwt_required()
-def send_friend_request():
+def sending_friend_request():
     try:
         current_user_id = get_jwt_identity()
         data = request.get_json()
@@ -892,13 +892,3 @@ def user_spending():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
-@app.route('/register', methods=['POST'])
-@require_api_key
-def register():
-    # ... [code omitted for brevity]
-    verification_code = str(random.randint(100000, 999999))
-    hashed_code = bcrypt.hashpw(
-        verification_code.encode('utf-8'), bcrypt.gensalt())
-    # ... [code omitted for brevity]
