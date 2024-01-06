@@ -13,7 +13,7 @@ import random
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from functools import wraps
-from models import FuelStation, Location, Users, FuelPrices, BudgetHistory
+from models import FuelStation, Location, Users, FuelPrices, BudgetHistory, FriendRequest, Friends, Notification
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
 import re
@@ -608,6 +608,164 @@ def search_fuel_stations():
                   for station in stations]
 
         return jsonify(result)
+    except Exception as e:
+        return handle_api_error(e)
+
+
+'''
+Friends Routes
+'''
+#! This is the route for sending friend requests to Frontend
+
+
+@app.route('/send_friend_request', methods=['POST'])
+@require_api_key
+@jwt_required()
+def send_friend_request():
+    try:
+        current_user_id = get_jwt_identity()
+        data = request.get_json()
+        recipient_id = data['recipient_id']
+        message = data.get('message', '')
+
+        sender = Users.objects.get(id=current_user_id)
+        recipient = Users.objects.get(id=recipient_id)
+
+        if not recipient:
+            return jsonify({"error": "Recipient not found"}), 404
+
+        existing_request = FriendRequest.objects(
+            sender=sender, recipient=recipient).first()
+        if existing_request:
+            return jsonify({"error": "Friend request already sent"}), 400
+
+        friend_request = FriendRequest(
+            sender=sender,
+            recipient=recipient,
+            message=message,
+            status='pending'
+        )
+        friend_request.save()
+
+        Notification(
+            user=recipient,
+            message=f"You have a new friend request from {sender.full_name}",
+            type='friend_request_sent',
+            related_document=friend_request
+        ).save()
+
+        return jsonify({"message": "Friend request sent successfully"}), 200
+
+    except Exception as e:
+        return handle_api_error(e)
+
+#! This route is for displaying user's friends
+
+
+@app.route('/list_friends', methods=['GET'])
+@require_api_key
+@jwt_required()
+def list_friends():
+    try:
+        current_user_id = get_jwt_identity()
+        user = Users.objects.get(id=current_user_id)
+
+        friends = Friends.objects(Q(user1=user) | Q(user2=user))
+
+        friends_list = []
+        for friend in friends:
+            friend_user = friend.user1 if friend.user2.id == current_user_id else friend.user2
+            friends_list.append({
+                'friend_id': str(friend_user.id),
+                'friend_name': friend_user.full_name
+            })
+
+        return jsonify({"friends": friends_list}), 200
+
+    except Exception as e:
+        return handle_api_error(e)
+
+#! This route is for accepting or rejecting friend requests
+
+
+@app.route('/respond_friend_request', methods=['POST'])
+@require_api_key
+@jwt_required()
+def respond_friend_request():
+    try:
+        current_user_id = get_jwt_identity()
+        data = request.get_json()
+        request_id = data['request_id']
+        action = data['action']
+
+        if action not in ['accept', 'reject']:
+            return jsonify({"error": "Invalid action"}), 400
+
+        friend_request = FriendRequest.objects.get(id=request_id)
+
+        if friend_request.recipient.id != current_user_id:
+            return jsonify({"error": "Unauthorized action"}), 403
+
+        if action == 'accept':
+            friend_request.change_status('accepted')
+            Friends(
+                user1=friend_request.sender,
+                user2=friend_request.recipient
+            ).save()
+
+            Notification(
+                user=friend_request.sender,
+                message=f"Your friend request to {friend_request.recipient.full_name} has been accepted.",
+                type='friend_request_accepted',
+                related_document=friend_request
+            ).save()
+
+            message = "Friend request accepted"
+        else:
+            friend_request.change_status('rejected')
+
+            Notification(
+                user=friend_request.sender,
+                message=f"Your friend request to {friend_request.recipient.full_name} has been rejected.",
+                type='friend_request_rejected',
+                related_document=friend_request
+            ).save()
+
+            message = "Friend request rejected"
+
+        return jsonify({"message": message}), 200
+
+    except DoesNotExist:
+        return jsonify({"error": "Friend request not found"}), 404
+    except Exception as e:
+        return handle_api_error(e)
+
+
+@app.route('/cancel_friend_request', methods=['POST'])
+@require_api_key
+@jwt_required()
+def cancel_friend_request():
+    try:
+        current_user_id = get_jwt_identity()
+        data = request.get_json()
+        request_id = data['request_id']
+
+        friend_request = FriendRequest.objects.get(id=request_id)
+
+        if friend_request.sender.id != current_user_id:
+            return jsonify({"error": "Unauthorized action"}), 403
+
+        friend_request.update(status='canceled')
+
+        Notification(
+            user=friend_request.recipient,
+            message=f"Friend request from {friend_request.sender.full_name} has been canceled",
+            type='friend_request_canceled',
+            related_document=friend_request
+        ).save()
+
+        return jsonify({"message": "Friend request canceled"}), 200
+
     except Exception as e:
         return handle_api_error(e)
 
