@@ -740,6 +740,8 @@ def respond_friend_request():
     except Exception as e:
         return handle_api_error(e)
 
+#! This route is for canceling friend requests
+
 
 @app.route('/cancel_friend_request', methods=['POST'])
 @require_api_key
@@ -766,6 +768,41 @@ def cancel_friend_request():
 
         return jsonify({"message": "Friend request canceled"}), 200
 
+    except Exception as e:
+        return handle_api_error(e)
+
+#! This route is for removing friends
+
+
+@app.route('/remove_friend', methods=['POST'])
+@require_api_key
+@jwt_required()
+def remove_friend():
+    try:
+        current_user_id = get_jwt_identity()
+        data = request.get_json()
+        friend_id = data['friend_id']
+
+        current_user = Users.objects.get(id=current_user_id)
+        friend_user = Users.objects.get(id=friend_id)
+
+        if not friend_user:
+            return jsonify({"error": "Friend not found"}), 404
+
+        friendship = Friends.objects(
+            (Q(user1=current_user) & Q(user2=friend_user)) |
+            (Q(user1=friend_user) & Q(user2=current_user))
+        ).first()
+
+        if not friendship:
+            return jsonify({"error": "Friendship does not exist"}), 404
+
+        friendship.delete()
+
+        return jsonify({"message": "Friend removed successfully"}), 200
+
+    except DoesNotExist:
+        return jsonify({"error": "User not found"}), 404
     except Exception as e:
         return handle_api_error(e)
 
