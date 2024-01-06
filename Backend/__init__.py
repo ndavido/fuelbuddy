@@ -366,20 +366,28 @@ User Account Routes
 def account():
     try:
         data = request.get_json()
-        phone = data.get('phone_number')
+        encrypted_phone = data.get('phone_number')
 
-        if not phone:
+        if not encrypted_phone:
             return jsonify({"error": "Phone number not provided"}), 400
 
-        user_info = Users.objects(phone_number=phone).first()
+        try:
+            decrypted_phone = aes_decrypt(encrypted_phone, encryption_key)
+            print("Decrypted Phone Number:", decrypted_phone)
+        except Exception as e:
+            return jsonify({"error": f"Error decrypting phone number: {str(e)}"}), 500
+
+        user_info = Users.objects(phone_number=encrypted_phone).first()
 
         if user_info:
             # Convert the user_info to a Python dictionary
             user_info_dict = user_info.to_mongo().to_dict()
 
+            # Replace the encrypted phone number with the decrypted one
+            user_info_dict['phone_number'] = decrypted_phone
+
             # Exclude some fields from the response if needed
-            excluded_fields = ['_id', 'verification_code',
-                               'verified', 'login_code', 'updated_at']
+            excluded_fields = ['_id', 'verification_code', 'verified', 'login_code', 'updated_at']
             for field in excluded_fields:
                 user_info_dict.pop(field, None)
 
@@ -389,6 +397,7 @@ def account():
 
     except Exception as e:
         return jsonify({"error": f"Error fetching user account information: {str(e)}"}), 500
+
 
 
 @app.route('/delete_account', methods=['POST'])
