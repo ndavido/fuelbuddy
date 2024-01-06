@@ -19,15 +19,16 @@ from pymongo.server_api import ServerApi
 import re
 from mongoengine.queryset.visitor import Q
 from mongoengine.errors import DoesNotExist, ValidationError
-import hashlib
+import binascii
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad, unpad
 
 # from updated_user_monthly_predictions import main as nn
-
 
 load_dotenv()
 app = Flask(__name__)
 CORS(app, resources={
-     r"/*": {"origins": "http://localhost:19006"}}, supports_credentials=True)
+    r"/*": {"origins": "http://localhost:19006"}}, supports_credentials=True)
 app.secret_key = "production"  # os.random(24)
 api_key = os.getenv('API_KEY')
 
@@ -67,6 +68,7 @@ def require_api_key(view_function):
             return view_function(*args, **kwargs)
         else:
             abort(401)
+
     return decorated_function
 
 
@@ -80,9 +82,9 @@ def radius_logic(coord1, coord2):
 
     dLat = math.radians(lat2 - lat1)
     dLon = math.radians(lon2 - lon1)
-    a = math.sin(dLat/2) * math.sin(dLat/2) + math.cos(math.radians(lat1)) \
-        * math.cos(math.radians(lat2)) * math.sin(dLon/2) * math.sin(dLon/2)
-    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+    a = math.sin(dLat / 2) * math.sin(dLat / 2) + math.cos(math.radians(lat1)) \
+        * math.cos(math.radians(lat2)) * math.sin(dLon / 2) * math.sin(dLon / 2)
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
     distance = R * c
 
     return distance
@@ -118,8 +120,28 @@ def validate_verification_code(code):
     """
     return code.isdigit() and len(code) == 6
 
-def hash_phone_number(phone_number):
-    return hashlib.sha256(phone_number.encode()).hexdigest()
+
+def get_aes_key():
+    key_hex = os.environ.get('ENCRYPTION_KEY')
+    iv_hex = os.environ.get('AES_FIXED_IV')
+
+    key = binascii.unhexlify(key_hex)
+    iv = binascii.unhexlify(iv_hex)
+
+    return key, iv
+
+
+encryption_key, fixed_iv = get_aes_key()
+
+def aes_encrypt(plaintext, key):
+    cipher = AES.new(key, AES.MODE_CBC, fixed_iv)
+    padded_text = pad(plaintext.encode(), AES.block_size)
+    return cipher.encrypt(padded_text).hex()
+def aes_decrypt(ciphertext, key):
+    cipher = AES.new(key, AES.MODE_CBC, fixed_iv)
+    decrypted_data = unpad(cipher.decrypt(bytes.fromhex(ciphertext)), AES.block_size)
+    return decrypted_data.decode()
+
 
 def handle_api_error(e):
     """
@@ -152,11 +174,11 @@ def register():
         if not validate_phone_number(full_phone_number):
             return jsonify({"error": "Invalid phone number format"}), 400
 
-        hashed_phone_number = hash_phone_number(full_phone_number)
+        encrypted_phone_number = aes_encrypt(full_phone_number, encryption_key)
 
         if Users.objects(username=username).first():
             return jsonify({"error": "Username already exists"}), 409
-        if Users.objects(phone_number=hashed_phone_number).first():
+        if Users.objects(phone_number=encrypted_phone_number).first():
             return jsonify({"error": "Phone number is already associated with another account"}), 409
 
         verification_code = str(random.randint(100000, 999999))
@@ -167,7 +189,7 @@ def register():
         session['new_user'] = {
             "full_name": full_name,
             "username": username,
-            "phone_number": hashed_phone_number,
+            "phone_number": encrypted_phone_number,
             "verification_code": hashed_code,
             "verified": False,
             "login_code": hashed_code,
@@ -253,9 +275,10 @@ def login():
         hashed_login_code_str = hashed_login_code_bytes.decode(
             'utf-8')  # Convert bytes to string
 
-        hashed_input_phone = hash_phone_number(standardized_phone_number)
+        encrypted_phone_number = aes_encrypt(standardized_phone_number, encryption_key)
+        print("Encrypted Phone Number:", encrypted_phone_number)
 
-        user = Users.objects(phone_number=hashed_input_phone).first()
+        user = Users.objects(phone_number=encrypted_phone_number).first()
 
         if user:
             user.update(set__login_code=str(hashed_login_code_str))
@@ -294,10 +317,10 @@ def login_verify():
             return jsonify({"error": "Invalid phone number or code format"}), 400
 
         # Hash the phone number before querying the database
-        hashed_phone_number = hash_phone_number(standardized_phone_number)
+        encrypted_phone_number = aes_encrypt(standardized_phone_number, encryption_key)
 
         # Use the hashed phone number to find the user
-        user = Users.objects(phone_number=hashed_phone_number).first()
+        user = Users.objects(phone_number=encrypted_phone_number).first()
 
         if not user:
             return jsonify({"error": "User not found"}), 404
@@ -335,6 +358,7 @@ def protected():
 '''
 User Account Routes
 '''
+
 
 # TODO Display issue with phone numbers on account screen
 @app.route('/account', methods=['POST'])
@@ -395,6 +419,7 @@ def logout():
         return handle_api_error(e)
 
 
+# TODO Fix standardising phone number/ hashing phone number
 @app.route('/edit_account', methods=['PATCH'])
 @require_api_key
 def edit_account():
@@ -580,6 +605,7 @@ def store_fuel_prices():
     except Exception as e:
         return handle_api_error(e)
 
+
 # ! This is the route for searching fuel stations
 
 
@@ -627,7 +653,9 @@ def search_fuel_stations():
 '''
 Friends Routes
 '''
-#! This is the route for sending friend requests to Frontend
+
+
+# ! This is the route for sending friend requests to Frontend
 
 
 @app.route('/send_friend_request', methods=['POST'])
@@ -671,7 +699,8 @@ def send_friend_request():
     except Exception as e:
         return handle_api_error(e)
 
-#! This route is for displaying user's friends
+
+# ! This route is for displaying user's friends
 
 
 @app.route('/list_friends', methods=['GET'])
@@ -697,7 +726,8 @@ def list_friends():
     except Exception as e:
         return handle_api_error(e)
 
-#! This route is for accepting or rejecting friend requests
+
+# ! This route is for accepting or rejecting friend requests
 
 
 @app.route('/respond_friend_request', methods=['POST'])
@@ -752,7 +782,8 @@ def respond_friend_request():
     except Exception as e:
         return handle_api_error(e)
 
-#! This route is for canceling friend requests
+
+# ! This route is for canceling friend requests
 
 
 @app.route('/cancel_friend_request', methods=['POST'])
@@ -783,7 +814,8 @@ def cancel_friend_request():
     except Exception as e:
         return handle_api_error(e)
 
-#! This route is for removing friends
+
+# ! This route is for removing friends
 
 
 @app.route('/remove_friend', methods=['POST'])
