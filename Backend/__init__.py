@@ -336,7 +336,7 @@ def login_verify():
             }
             session['current_user'] = user_data_for_session
             access_token = create_access_token(
-                identity=standardized_phone_number)
+                identity=encrypted_phone_number)
             return jsonify({
                 "message": "Login successful!",
                 "access_token": access_token
@@ -367,6 +367,8 @@ def account():
     try:
         data = request.get_json()
         encrypted_phone = data.get('phone_number')
+
+        print("Encrypted Phone Number:", encrypted_phone)
 
         if not encrypted_phone:
             return jsonify({"error": "Phone number not provided"}), 400
@@ -405,12 +407,12 @@ def account():
 def delete_account():
     try:
         data = request.get_json()
-        phone = data.get('phone_number')
+        encrypted_phone = data.get('phone_number')
 
-        if not phone:
+        if not encrypted_phone:
             return jsonify({"error": "User not found"}), 404
 
-        users_collection.delete_user({"phone_number": phone})
+        users_collection.delete_user({"phone_number": encrypted_phone})
         session.pop('phone_number', None)
 
         return jsonify({"message": "Account deleted successfully!"})
@@ -441,11 +443,13 @@ def edit_account():
         if not user:
             return jsonify({"error": "User not found"}), 404
 
+        if 'phone_number' in data:
+            decrypted_phone = aes_encrypt(data['phone_number'], encryption_key)
+            user.phone_number = decrypted_phone
+
         # Update user fields if they are in the request
         if 'full_name' in data:
             user.full_name = data['full_name']
-        if 'phone_number' in data:
-            user.phone_number = data['phone_number']
         if 'email' in data:
             user.email = data['email']
 

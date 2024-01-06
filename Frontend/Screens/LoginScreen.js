@@ -110,12 +110,12 @@ const LoginScreen = () => {
 
                             <Text>{message}</Text>
                             <BttnDiv>
-                            <PressableButton
-                                onPress={handleLogin}
-                                title='Send Login Code'
-                                bgColor='#6bff91'
-                            />
-                        </BttnDiv>
+                                <PressableButton
+                                    onPress={handleLogin}
+                                    title='Send Login Code'
+                                    bgColor='#6bff91'
+                                />
+                            </BttnDiv>
                         </InputWrapper>
                     </ContainerContent>
                 </ContainerInner>

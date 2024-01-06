@@ -117,9 +117,16 @@ function LoadingScreen({ isVisible }) {
             const apiKey = process.env.REACT_NATIVE_API_KEY;
             const storedToken = await AsyncStorage.getItem('token');
 
+            console.log("Testing")
+
             if (storedToken) {
                 const decodedToken = jwtDecode(storedToken);
+
+                console.log(decodedToken)
+
                 const phone = decodedToken.sub;
+
+                console.log(phone)
 
                 const config = {
                     headers: {
@@ -131,7 +138,7 @@ function LoadingScreen({ isVisible }) {
 
                 if (response.data && response.data.user) {
                     await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
-                    // Update state/context or perform other actions with the user data
+
                 }
             }
         } catch (error) {
@@ -185,7 +192,7 @@ const AppNavigator = () => {
 
     return (
         <View style={{flex: 1, overflow: "hidden"}}>
-            <H6 style={{opacity: 0.5, bottom: 60, left: 10}} position='absolute'>Release 0.4 - This is a Dev build of the App some features are not implemented or finished.</H6>
+            <H6 pointerEvents="none" style={{opacity: 0.5, bottom: 60, left: 10}} position='absolute'>Release 0.4 - This is a Dev build of the App some features are not implemented or finished.</H6>
             <NavigationContainer>
                 {state.isUserAuthenticated ? (
                     <Tab.Navigator

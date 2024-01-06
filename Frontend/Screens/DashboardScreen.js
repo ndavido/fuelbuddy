@@ -47,6 +47,8 @@ const DashboardScreen = () => {
                 const storedToken = await AsyncStorage.getItem('token');
                 if (storedToken) {
                     const decodedToken = jwtDecode(storedToken);
+
+                    // TODO - Remove this console.log DEV only!!!
                     console.log(decodedToken);
 
                     const phone = decodedToken.sub;
