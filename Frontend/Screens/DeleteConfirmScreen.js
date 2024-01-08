@@ -69,7 +69,7 @@ const DeleteConfirmScreen = () => {
 
                     const phone = decodedToken.sub;
 
-                    const response = await axios.post('http://127.0.0.1:5000/delete_account', {phone_number: phone}, config);
+                    const response = await axios.post('ec2-54-172-255-239.compute-1.amazonaws.com/delete_account', {phone_number: phone}, config);
 
                     if (response.data.message === 'Account deleted successfully!') {
                         try {
