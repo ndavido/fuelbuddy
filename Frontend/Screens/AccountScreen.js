@@ -159,6 +159,10 @@ const AccountScreen = () => {
                                                       bgColor='white'
                                                       txtColor='black'
                                                       emoji="⛽"/>
+                                    <MenuButtonMiddle title='my savings (NA)'
+                                                    bgColor='white'
+                                                    txtColor='black'
+                                                    emoji="💵"/>
                                     <MenuButtonBottom title='my friends (NA)'
                                                       bgColor='white'
                                                       txtColor='black'
