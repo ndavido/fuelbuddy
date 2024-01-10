@@ -64,22 +64,31 @@ class FuelStation(Document):
     address = StringField(required=True)
     latitude = FloatField(required=True)
     longitude = FloatField(required=True)
-    is_charging_station = BooleanField(required=True)
     is_fuel_station = BooleanField(required=True)
     meta = {
         'collection': 'FuelStation'
     }
-    # charging_price = FloatField()
-    # petrol_price = FloatField()
-    # diesel_price = FloatField()
-
+class ChargingStation(Document):
+    name = StringField(required=True)
+    address = StringField(required=True)
+    latitude = FloatField(required=True)
+    longitude = FloatField(required=True)
+    is_charging_station = BooleanField(required=True)
+    is_fast_charging = BooleanField(required=True)
+    charging_price = FloatField()
+    updated_at = DateTimeField(required=True)
+    meta = {
+        'collection': 'ChargingStation'
+    }
 
 class FuelPrices(Document):
-    fuel_station = ReferenceField(FuelStation, reverse_delete_rule='CASCADE')
+    fuel_station = StringField(required=True)
     petrol_price = FloatField()
     diesel_price = FloatField()
-    electricity_price = FloatField()  # Price per kWh
     updated_at = DateTimeField(required=True)
+    meta = {
+        'collection': 'FuelPrices'
+    }
 
 # Models for friends and friend requests
 
@@ -156,7 +165,7 @@ class Notification(Document):
         self.read_at = datetime.now()
         self.save()
 
-
+# helper function to create a notification
 def create_notification(user, message, notification_type):
     notification = Notification(
         user=user,
