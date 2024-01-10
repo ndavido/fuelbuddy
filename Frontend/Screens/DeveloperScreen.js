@@ -57,8 +57,8 @@ const DeveloperScreen = () => {
 
                   const phone = decodedToken.sub;
 
-                  const response = await axios.post('ec2-54-172-255-239.compute-1.amazonaws.com/account', { phone_number: phone }, config);
-
+                  const response = await axios.post('http://127.0.0.1:5000/account', { phone_number: phone }, config);
+                  
                   if (response.data && response.data.user) {
                     setUserInfo(response.data.user); // Set the user info directly
 
