@@ -34,7 +34,7 @@ export const Container = styled.View`
 export const ButtonDiv = styled.View`
   height: auto;
   width: 100%;
-  margin-bottom: 115px;
+  margin-bottom: 100px;
   bottom: 0;
   padding: 20px;
   position: absolute;
@@ -57,20 +57,11 @@ export const WelcomeMain = styled.View`
   justify-content: center;
 `;
 
-export const WelcomeButtonDiv = styled.View`
-  height: auto;
-  width: 100%;
-  margin-bottom: 115px;
-  bottom: 0;
-  padding: 20px;
-  position: absolute;
-`;
-
 const LogoContainer = styled.SafeAreaView`
   height: 20%;
   width: 100%;
   margin-top: 225px;
-  margin-bottom: 50px;
+  margin-bottom: 40px;
   z-index: 1000;
   position: relative;
 `;
