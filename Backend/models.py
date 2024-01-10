@@ -90,6 +90,13 @@ class FuelPrices(Document):
         'collection': 'FuelPrices'
     }
 
+class EVPrices(Document):
+    charging_station = StringField(required=True)  # Use the name or a unique identifier of the charging station
+    charging_price = FloatField()
+    updated_at = DateTimeField(required=True)
+    meta = {
+        'collection': 'EVPrices'
+    }
 # Models for friends and friend requests
 
 
