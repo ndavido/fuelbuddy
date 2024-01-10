@@ -13,7 +13,8 @@ import random
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from functools import wraps
-from models import FuelStation, Location, Users, FuelPrices, BudgetHistory, FriendRequest, Friends, Notification
+from models import FuelStation, Location, Users, FuelPrices, BudgetHistory, FriendRequest, Friends, Notification, \
+    ChargingStation, EVPrices
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
 import re
@@ -28,7 +29,7 @@ from Crypto.Util.Padding import pad, unpad
 load_dotenv()
 app = Flask(__name__)
 CORS(app, resources={
-    r"/*": {"origins": "http://localhost:19006"}}, supports_credentials=True)
+    r"/*": {"origins": "http://ec2-54-172-255-239.compute-1.amazonaws.com/"}}, supports_credentials=True)
 app.secret_key = "production"  # os.random(24)
 api_key = os.getenv('API_KEY')
 
@@ -49,7 +50,6 @@ app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
 
 Session(app)
-session = {}
 
 account_sid = os.getenv('TWILIO_SID')
 auth_token = os.getenv('TWILIO_AUTH_TOKEN')
@@ -598,8 +598,6 @@ def store_fuel_prices():
                     'petrol_price', existing_price.petrol_price)
                 existing_price.diesel_price = price_data.get(
                     'diesel_price', existing_price.diesel_price)
-                existing_price.electricity_price = price_data.get(
-                    'electricity_price', existing_price.electricity_price)
                 existing_price.updated_at = datetime.strptime(
                     price_data.get('timestamp'), '%Y-%m-%d %H:%M:%S')
                 existing_price.save()
@@ -608,13 +606,47 @@ def store_fuel_prices():
                     fuel_station=fuel_station,
                     petrol_price=price_data.get('petrol_price'),
                     diesel_price=price_data.get('diesel_price'),
-                    electricity_price=price_data.get('electricity_price'),
                     updated_at=datetime.strptime(
                         price_data.get('timestamp'), '%Y-%m-%d %H:%M:%S')
                 )
                 new_price.save()
 
         return jsonify({"message": "Fuel prices stored successfully"})
+    except Exception as e:
+        return handle_api_error(e)
+@app.route('/store_ev_prices', methods=['POST'])
+@require_api_key
+def store_ev_prices():
+    try:
+        data = request.get_json()
+        ev_prices_data = data.get('evPrices', [])
+
+        for price_data in ev_prices_data:
+            station_id = price_data.get('station_id')
+            charging_station = ChargingStation.objects(id=station_id).first()
+
+            if not charging_station:
+                continue
+
+            existing_price = EVPrices.objects(
+                charging_station=charging_station).first()
+
+            if existing_price:
+                existing_price.charging_price = price_data.get(
+                    'charging_price', existing_price.charging_price)
+                existing_price.updated_at = datetime.strptime(
+                    price_data.get('timestamp'), '%Y-%m-%d %H:%M:%S')
+                existing_price.save()
+            else:
+                new_price = EVPrices(
+                    charging_station=charging_station,
+                    charging_price=price_data.get('charging_price'),
+                    updated_at=datetime.strptime(
+                        price_data.get('timestamp'), '%Y-%m-%d %H:%M:%S')
+                )
+                new_price.save()
+
+        return jsonify({"message": "EV charging prices stored successfully"})
     except Exception as e:
         return handle_api_error(e)
 
