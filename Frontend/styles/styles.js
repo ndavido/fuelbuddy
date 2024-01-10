@@ -135,7 +135,7 @@ export const CCTxt = styled.TextInput`
 export const LRButtonDiv = styled.View`
   height: auto;
   width: 100%;
-  margin-top: 500px;
+  margin-top: 520px;
   padding: 20px;
   position: absolute;
 `;
