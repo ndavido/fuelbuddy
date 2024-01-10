@@ -58,7 +58,7 @@ const DeveloperScreen = () => {
                   const phone = decodedToken.sub;
 
                   const response = await axios.post('http://127.0.0.1:5000/account', { phone_number: phone }, config);
-                  
+
                   if (response.data && response.data.user) {
                     setUserInfo(response.data.user); // Set the user info directly
 
@@ -77,7 +77,6 @@ const DeveloperScreen = () => {
         <Main2>
             <MainLogo/>
             <AccountWrapper>
-                <AccountInner>
                     <AccountRegularInfo>
                         <AccountContent>
                             <H3 tmargin='20px' lmargin='20px' bmargin='10px'>Developer Screen</H3>
@@ -103,7 +102,6 @@ const DeveloperScreen = () => {
 
                         </AccountContent>
                     </AccountRegularInfo>
-                </AccountInner>
             </AccountWrapper>
         </Main2>
     );

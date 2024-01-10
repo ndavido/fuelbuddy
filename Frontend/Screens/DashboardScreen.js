@@ -1,96 +1,119 @@
-import React, {useState, useEffect} from 'react';
-import {View, Text, Button} from 'react-native';
-import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React from 'react';
+import {View, Text} from 'react-native';
+import styled from 'styled-components/native';
+import {LineChart, PieChart} from 'react-native-chart-kit'; // Assuming you're using chart-kit for charts
 
-import {jwtDecode} from "jwt-decode";
-
-// Styling
+//Styling
+import {
+    Main,
+    Wrapper,
+    Content,
+    DashboardContainer,
+    Card,
+    CardTitle,
+    BudgetText,
+    TitleContainer
+} from '../styles/styles.js';
 import {
     Main2,
+    ContainerWrapper,
+    ContainerInner,
+    ContainerContent,
+    BttnDiv,
+    TxtWrapper,
+    WelcomeTxt,
+    BttnDiv2,
+    InputWrapper,
+    InputTxt
 } from '../styles/wrapper';
-import {
-    AccountWrapper,
-    AccountInner,
-    AccountContent,
-    AccountTopInfo,
-    AccountBottomInfo,
-    AccountTitle,
-    AccountRegularInfo,
-    AccountTxt,
-    AccountTxtWrapper,
-    AccountUsername,
-    DeveloperTick
-} from '../styles/accountPage';
+import PressableButton from '../styles/buttons';
+import PressableButton2 from '../styles/buttons2';
+import Logo from '../styles/logo';
 import MainLogo from '../styles/mainLogo';
-import AccountImg from '../styles/accountImg';
-import {MenuButton} from "../styles/accountButton";
-import {H3, H4, H5, H6} from "../styles/text";
+import {AccountContent, AccountTopInfo, AccountUsername, DeveloperTick} from "../styles/accountPage";
+import {H3} from "../styles/text";
+import AccountImg from "../styles/accountImg";
 
+// Your dashboard component
 const DashboardScreen = () => {
-    const [userInfo, setUserInfo] = useState({});
-    const [loading, setLoading] = useState(true);
+    // Define the data for your charts (placeholders for now)
+    const lineChartData = {
+        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+        datasets: [
+            {
+                data: [20, 45, 28, 80, 99],
+                strokeWidth: 2,
+            },
+        ],
+    };
 
-    useEffect(() => {
-        // Make an API request to fetch user account information from the backend
-        const fetchUserInfo = async () => {
-            try {
-                const apiKey = process.env.REACT_NATIVE_API_KEY;
+    const pieChartData = [
+        {name: '', amount: 40, color: 'green', legendFontColor: '#7F7F7F', legendFontSize: 15},
+        {name: '', amount: 20, color: '#F00', legendFontColor: '#7F7F7F', legendFontSize: 15},
+    ];
 
-                // Add the API key to the request headers
-                const config = {
-                    headers: {
-                        'X-API-Key': apiKey,
-                    },
-                };
-
-                const storedToken = await AsyncStorage.getItem('token');
-                if (storedToken) {
-                    const decodedToken = jwtDecode(storedToken);
-
-                    // TODO - Remove this console.log DEV only!!!
-                    console.log(decodedToken);
-
-                    const phone = decodedToken.sub;
-
-                    const response = await axios.post('http://127.0.0.1:5000/account', {phone_number: phone}, config);
-
-                    if (response.data && response.data.user) {
-                        setUserInfo(response.data.user); // Set the user info directly
-
-                        setLoading(false);
-                    }
-                }
-            } catch (error) {
-                console.error('Error fetching user account information:', error);
-            }
-        };
-
-        fetchUserInfo();
-    }, []);
-
+    // Render the components
     return (
-        <Main2>
+        <Main>
             <MainLogo/>
-            <AccountWrapper>
-                <AccountInner>
-                    <AccountTopInfo>
-                        <AccountContent>
-                            <H3 tmargin='20px' lmargin='20px' bmargin='10px'>Dashboard</H3>
-                        </AccountContent>
-                    </AccountTopInfo>
-                    <AccountRegularInfo>
-                        <AccountContent>
-                            <AccountTxtWrapper>
-                                <H6 bmargin='5px'>Username</H6>
-                                <H3>@{userInfo.username}</H3>
-                            </AccountTxtWrapper>
+            <Wrapper>
+                <TitleContainer>
+                        <H3 tmargin='20px' lmargin='20px' bmargin='10px'>My Dashboard</H3>
+                </TitleContainer>
+                <DashboardContainer>
+                    <Card>
+                        <CardTitle>Total Budget Spending</CardTitle>
+                        {/* Render the line chart here */}
+                        <LineChart
+                            data={lineChartData}
+                            width={320} // from react-native
+                            height={220}
+                            yAxisLabel={'$'}
+                            chartConfig={{
+                                backgroundColor: '#e26a00',
+                                backgroundGradientFrom: '#fb8c00',
+                                backgroundGradientTo: '#ffa726',
+                                decimalPlaces: 2,
+                                color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                                style: {
+                                    borderRadius: 16,
+                                },
+                            }}
+                            style={{
+                                marginVertical: 8,
+                                borderRadius: 16,
+                            }}
+                        />
+                    </Card>
 
-                        </AccountContent>
-                    </AccountRegularInfo>
-                </AccountInner>
-            </AccountWrapper>
-        </Main2>
+                    <Card>
+                        <CardTitle>Total Budget Breakdown</CardTitle>
+                        {/* Render the pie chart here */}
+                        <PieChart
+                            data={pieChartData}
+                            width={320}
+                            height={220}
+                            chartConfig={{
+                                backgroundColor: '#022173',
+                                backgroundGradientFrom: '#022173',
+                                backgroundGradientTo: '#1b3fa0',
+                                decimalPlaces: 2,
+                                color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                                style: {
+                                    borderRadius: 16,
+                                },
+                            }}
+                            accessor={'amount'}
+                            backgroundColor={'transparent'}
+                            paddingLeft={'15'}
+                            center={[10, 10]}
+                            absolute
+                        />
+                        <BudgetText>£40/£60</BudgetText>
+                    </Card>
+                </DashboardContainer>
+            </Wrapper>
+        </Main>
     );
 };
 

@@ -192,7 +192,6 @@ const AppNavigator = () => {
 
     return (
         <View style={{flex: 1, overflow: "hidden"}}>
-            <H6 pointerEvents="none" style={{opacity: 0.5, bottom: 60, left: 10}} position='absolute'>Release 0.4 - This is a Dev build of the App some features are not implemented or finished.</H6>
             <NavigationContainer>
                 {state.isUserAuthenticated ? (
                     <Tab.Navigator

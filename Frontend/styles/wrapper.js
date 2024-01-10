@@ -1,6 +1,5 @@
 import styled from 'styled-components/native';
 import { Dimensions } from 'react-native';
-import LogoSrc from '../assets/welcomeTemp.jpg';
 
 export const Main = styled.View`
   flex: 1;
@@ -43,7 +42,8 @@ export const TxtWrapper = styled.View`
   position: absolute;
   top: 50%;
   text-align: center;
-  display: inline-block;
+  width: 100%;
+  display: block;
 `;
 
 export const WelcomeTxt = styled.Text`
@@ -55,53 +55,12 @@ export const WelcomeTxt = styled.Text`
 
 export const BttnDiv = styled.View`
   height: auto;
-  width: 100%;
+  width: calc(100% - 40px);
+  margin-bottom: 115px;
+  margin-left: 20px;
+  margin-right: 20px;
   display: inline-block;
-  margin: auto;
-  bottom: 40;
+  bottom: 0;
   position: absolute;
 `;
 
-export const BttnDiv2 = styled.View`
-  height: auto;
-  padding: 20px;
-  width: 100%;
-  flex-direction: row;
-  margin: auto;
-  top: 100;
-  position: absolute;
-`;
-
-export const InputWrapper = styled.View`
-  height: auto;
-  width: 100%;
-  padding-top: 100px;
-  margin: auto;
-  position: relative;
-`;
-
-export const InputTxt = styled.TextInput`
-  margin-bottom: 10px;
-  padding: 10px;
-  height: 30px;
-  background-color: #E1E1E1;
-  border-radius: 10px;
-`;
-
-export const PhoneTxt = styled.TextInput`
-  flex: 4;
-  margin-bottom: 10px;
-  padding: 10px;
-  height: 30px;
-  background-color: #E1E1E1;
-  border-radius: 10px;
-`;
-
-export const CCTxt = styled.TextInput`
-  flex: 1;
-  margin-bottom: 10px;
-  padding: 10px;
-  height: 30px;
-  background-color: #E1E1E1;
-  border-radius: 10px;
-`;

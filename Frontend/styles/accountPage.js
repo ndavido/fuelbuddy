@@ -1,16 +1,10 @@
 import styled from 'styled-components/native';
 import {Dimensions, Animated} from 'react-native';
-import LogoSrc from '../assets/welcomeTemp.jpg';
 
 export const AccountWrapper = styled.View`
   height: 100%;
   width: 100%;
   margin: auto;
-`;
-
-export const AccountInner = styled.View`
-  position: relative;
-  flex: 1 1 auto;
 `;
 
 export const AccountContent = styled.View`

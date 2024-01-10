@@ -34,6 +34,16 @@ const applyPosition = props => {
   }
 };
 
+const applyWidth = props => {
+    if (props.width) {
+        return `width: ${props.width};`;
+    } else {
+        return `
+        
+        `;
+    }
+}
+
 const getFontFamily = (weight) => {
   switch(weight) {
     case '400': return 'Poppins_400Regular';
@@ -48,6 +58,7 @@ export const H1 = styled.Text`
   ${applyMargins}
   ${applyColor}
   ${applyPosition}
+  ${applyWidth}
 `;
 
 export const H2 = styled.Text`
@@ -56,6 +67,7 @@ export const H2 = styled.Text`
   ${applyMargins}
   ${applyColor}
   ${applyPosition}
+  ${applyWidth}
 `;
 
 export const H3 = styled.Text`
@@ -64,6 +76,7 @@ export const H3 = styled.Text`
   ${applyMargins}
   ${applyColor}
   ${applyPosition}
+  ${applyWidth}
 `;
 
 export const H4 = styled.Text`
@@ -71,6 +84,7 @@ export const H4 = styled.Text`
   font-family: ${props => getFontFamily(props.weight)};
   ${applyMargins}
   ${applyPosition}
+  ${applyWidth}
 `;
 
 export const H5 = styled.Text`
@@ -79,6 +93,7 @@ export const H5 = styled.Text`
   ${applyMargins}
   ${applyColor}
   ${applyPosition}
+  ${applyWidth}
 `;
 
 export const H6 = styled.Text`
@@ -87,5 +102,17 @@ export const H6 = styled.Text`
   ${applyMargins}
   ${applyColor}
   ${applyPosition}
+  ${applyWidth}
   z-index: 100;
+`;
+
+export const Img = styled.Image`
+  height: 160px;
+`;
+
+export const Txt = styled.View`
+  position: relative;
+  text-align: center;
+  width: 100%;
+  display: block;
 `;

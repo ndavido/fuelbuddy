@@ -34,7 +34,6 @@ const LogoImg = styled.Image`
 const MainLogo = ({ bButton }) => (
   <LogoContainer>
     <LogoInner>
-
       <LogoImg source={require('../assets/fuelbuddyLogoShort.png')}/>
     </LogoInner>
   </LogoContainer>

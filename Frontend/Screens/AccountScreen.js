@@ -124,16 +124,16 @@ const AccountScreen = () => {
         <Main2>
             <MainLogo/>
             <AccountWrapper>
-                <AccountInner>
-                    <AccountTopInfo>
-                        <AccountContent>
-                            <H3 tmargin='20px' lmargin='20px' bmargin='10px'>Account</H3>
-                            <AccountImg/>
-                            <AccountUsername>@{userInfo.username} {userInfo.roles && userInfo.roles.includes("Developer") &&
-                                <DeveloperTick>🧑‍💻</DeveloperTick>}</AccountUsername>
-                        </AccountContent>
-                    </AccountTopInfo>
-                    <GestureHandlerRootView style={{flex: 1}}>
+
+                <AccountTopInfo>
+                    <AccountContent>
+                        <H3 tmargin='20px' lmargin='20px' bmargin='10px'>Account</H3>
+                        <AccountImg/>
+                        <AccountUsername>@{userInfo.username} {userInfo.roles && userInfo.roles.includes("Developer") &&
+                            <DeveloperTick>🧑‍💻</DeveloperTick>}</AccountUsername>
+                    </AccountContent>
+                </AccountTopInfo>
+                <GestureHandlerRootView style={{flex: 1}}>
                     <PanGestureHandler
                         onGestureEvent={onGestureEvent}
                         onHandlerStateChange={onHandlerStateChange}
@@ -160,17 +160,17 @@ const AccountScreen = () => {
                                                       txtColor='black'
                                                       emoji="⛽"/>
                                     <MenuButtonMiddle title='my savings (NA)'
-                                                    bgColor='white'
-                                                    txtColor='black'
-                                                    emoji="💵"/>
+                                                      bgColor='white'
+                                                      txtColor='black'
+                                                      emoji="💵"/>
                                     <MenuButtonBottom title='my friends (NA)'
                                                       bgColor='white'
                                                       txtColor='black'
                                                       emoji="🧑‍🤝‍🧑"/>
                                     <MenuButton title='Privacy Settings (NA)'
-                                                      bgColor='white'
-                                                      txtColor='black'
-                                                      emoji="🔏"/>
+                                                bgColor='white'
+                                                txtColor='black'
+                                                emoji="🔏"/>
                                     <MenuButton title='Support (NA)'
                                                 bgColor='white'
                                                 txtColor='black'
@@ -193,8 +193,8 @@ const AccountScreen = () => {
                             </AccountContent>
                         </AccountBottomInfo>
                     </PanGestureHandler>
-                        </GestureHandlerRootView>
-                </AccountInner>
+                </GestureHandlerRootView>
+
             </AccountWrapper>
         </Main2>
     );
