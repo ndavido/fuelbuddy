@@ -57,7 +57,7 @@ const AccountScreen = () => {
                 },
             };
 
-            await axios.patch('ec2-54-172-255-239.compute-1.amazonaws.com/edit_account', {
+            await axios.patch('http://127.0.0.1:5000/edit_account', {
                 username: userInfo.username,
                 full_name: editedFullName,
                 phone_number: editedPhoneNumber,

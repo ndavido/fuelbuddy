@@ -54,7 +54,7 @@ const LoginScreen = () => {
             /* TODO Remove!!! Dev Only */
             console.log(config);
 
-            const response = await axios.post('ec2-54-172-255-239.compute-1.amazonaws.com/login', {
+            const response = await axios.post('http://127.0.0.1:5000/login', {
                 ...formData,
                 phone_number: fullNum
             }, config);
