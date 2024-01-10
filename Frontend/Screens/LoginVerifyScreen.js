@@ -87,14 +87,7 @@ const LoginVerifyScreen = ({route}) => {
                     },
                 };
 
-                // Replace the placeholder with your actual code to resend the verification code
-                const response = await axios.post(
-                    'ec2-54-172-255-239.compute-1.amazonaws.com/login', // Replace with your endpoint URL
-                    {
-                        phone_number: formData.phone_number,
-                    },
-                    config
-                );
+                const response = await axios.post('http://127.0.0.1:5000/login', { phone_number: formData.phone_number, }, config );
 
                 // Check the response status or message to confirm code resent successfully
                 if (response && response.data) {
