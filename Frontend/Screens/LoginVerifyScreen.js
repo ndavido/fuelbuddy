@@ -3,6 +3,7 @@ import {View, Text, TextInput, Button} from 'react-native';
 import axios from 'axios';
 import {useAuth} from '../AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
 import * as SecureStore from 'expo-secure-store';
 
 //Styling
@@ -23,8 +24,8 @@ import Logo from '../styles/logo';
 import {H1, H2, H3, H4, H5, H6, Img, Txt} from '../styles/text.js';
 
 const LoginVerifyScreen = ({route}) => {
-
-    const {dispatch} = useAuth(); // Get the dispatch function from the AuthContext
+    const navigation = useNavigation();
+    const {login} = useAuth(); // Get the dispatch function from the AuthContext
 
     const [formData, setFormData] = useState({
         phone_number: route.params.phone,
@@ -62,7 +63,8 @@ const LoginVerifyScreen = ({route}) => {
                 // Attach the access token to the request headers for subsequent requests
                 axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access_token}`;
 
-                navigation.navigate('Dashboard');
+                await login(response.data.access_token);
+                
             } else {
                 console.log("Uh Oh")
             }

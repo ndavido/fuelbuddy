@@ -4,6 +4,7 @@ import axios from 'axios';
 import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {jwtDecode} from "jwt-decode";
+import * as Updates from 'expo-updates';
 
 // Styling
 import {
@@ -34,6 +35,7 @@ const AccountScreen = () => {
     const [editedFullName, setEditedFullName] = useState('');
     const [editedPhoneNumber, setEditedPhoneNumber] = useState('');
     const [editedEmail, setEditedEmail] = useState('');
+    const [message, setMessage] = useState('');
     const navigation = useNavigation();
 
     const handleEditToggle = () => {
@@ -46,26 +48,44 @@ const AccountScreen = () => {
         }
     };
 
+    async function reloadApp() {
+        await Updates.reloadAsync();
+
+        /*TODO Remove DEV ONLY!!*/
+        console.log("Reloaded")
+    }
+
     const handleSave = async () => {
         try {
             const apiKey = process.env.REACT_NATIVE_API_KEY;
-
-            // Add the API key to the request headers
             const config = {
                 headers: {
                     'X-API-Key': apiKey,
                 },
             };
 
-            await axios.patch('http://127.0.0.1:5000/edit_account', {
-                username: userInfo.username,
+            // Prepare the updated user data
+            const updatedUserData = {
+                ...userInfo,
                 full_name: editedFullName,
                 phone_number: editedPhoneNumber,
                 email: editedEmail
-            }, config);
-            // Update local user info state and exit edit mode
-            setUserInfo({...userInfo, full_name: editedFullName, phone_number: editedPhoneNumber, email: editedEmail});
-            setEditMode(false);
+            };
+
+            // API call to update user information
+            const response = await axios.patch('http://127.0.0.1:5000/edit_account', updatedUserData, config);
+
+            if (response.data && response.data.message === 'Account updated successfully') {
+                // Update local user info state and exit edit mode
+                setUserInfo(updatedUserData);
+                setEditMode(false);
+
+                // Update the user data in AsyncStorage
+                await AsyncStorage.setItem('userData', JSON.stringify(updatedUserData));
+            } else {
+                // Handle unsuccessful update
+                console.log("Update unsuccessful");
+            }
         } catch (error) {
             console.error('Error updating account:', error);
         }
@@ -109,12 +129,11 @@ const AccountScreen = () => {
                                 <>
                                     <H6 bmargin='5px'>Username</H6>
                                     <AccountTxt bgColor='grey'>@{userInfo.username}</AccountTxt>
+                                    <H6 bmargin='5px'>Phone Number</H6>
+                                    <AccountTxt bgColor='grey'>@{userInfo.phone_number}</AccountTxt>
                                     <H6 bmargin='5px'>Name</H6>
                                     <TextInput value={editedFullName} onChangeText={setEditedFullName}
                                                placeholder="Full Name"/>
-                                    <H6 bmargin='5px'>Phone Number</H6>
-                                    <TextInput value={editedPhoneNumber} onChangeText={setEditedPhoneNumber}
-                                               placeholder="Phone Number"/>
                                     <H6 bmargin='5px'>Email</H6>
                                     <TextInput value={editedEmail} onChangeText={setEditedEmail}
                                                placeholder="Email"/>
@@ -124,15 +143,16 @@ const AccountScreen = () => {
                                 <>
                                     <H6 bmargin='5px'>Username</H6>
                                     <AccountTxt bgColor='grey'>@{userInfo.username}</AccountTxt>
+                                    <H6 bmargin='5px'>Phone Number</H6>
+                                    <AccountTxt bgColor='grey'>{userInfo.phone_number}</AccountTxt>
                                     <H6 bmargin='5px'>Name</H6>
                                     <AccountTxt bgColor='#FFFFFF'>{userInfo.full_name}</AccountTxt>
-                                    <H6 bmargin='5px'>Phone Number</H6>
-                                    <AccountTxt bgColor='#FFFFFF'>{userInfo.phone_number}</AccountTxt>
                                     <H6 bmargin='5px'>Email</H6>
                                     <AccountTxt bgColor='#FFFFFF'>{userInfo.email}</AccountTxt>
                                 </>
                             )}
                             <Button title={editMode ? "Cancel" : "Edit"} onPress={handleEditToggle}/>
+                            <H6 tmargin='10px' bmargin='10px'>{message}</H6>
                             <H5 tmargin='40px' bmargin='5px'>Delete Account</H5>
                             <H6 style={{opacity: 0.6}} bmargin='20px' weight='400'>Not comfortable? Deleting your
                                 account will

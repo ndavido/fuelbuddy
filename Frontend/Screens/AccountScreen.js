@@ -1,10 +1,11 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {View, Text, Button, Animated} from 'react-native';
 import axios from 'axios';
 import {PanGestureHandler, GestureHandlerRootView, State} from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {jwtDecode} from "jwt-decode";
+import { useAuth } from '../AuthContext';
 
 // Styling
 import {
@@ -31,6 +32,7 @@ const AccountScreen = () => {
     const navigate = useNavigation();
     const [userInfo, setUserInfo] = useState({});
     const [loading, setLoading] = useState(true);
+    const { logout } = useAuth();
 
     const translateY = new Animated.Value(0);
 
@@ -70,7 +72,7 @@ const AccountScreen = () => {
 
             delete axios.defaults.headers.common['Authorization'];
 
-            navigation.navigate('Welcome');
+           await logout();
 
         } catch (error) {
             console.error('Error logging out:', error);

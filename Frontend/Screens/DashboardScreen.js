@@ -1,7 +1,11 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 import {View, Text} from 'react-native';
 import styled from 'styled-components/native';
 import {LineChart, PieChart} from 'react-native-chart-kit'; // Assuming you're using chart-kit for charts
+import {jwtDecode} from "jwt-decode";
 
 //Styling
 import {
@@ -31,12 +35,15 @@ import PressableButton2 from '../styles/buttons2';
 import Logo from '../styles/logo';
 import MainLogo from '../styles/mainLogo';
 import {AccountContent, AccountTopInfo, AccountUsername, DeveloperTick} from "../styles/accountPage";
-import {H3} from "../styles/text";
+import {H3, H6} from "../styles/text";
 import AccountImg from "../styles/accountImg";
 
 // Your dashboard component
 const DashboardScreen = () => {
-    // Define the data for your charts (placeholders for now)
+    const [userInfo, setUserInfo] = useState({});
+    const [loading, setLoading] = useState(true);
+
+    // Define the data for charts (placeholders for now)
     const lineChartData = {
         labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
         datasets: [
@@ -52,13 +59,37 @@ const DashboardScreen = () => {
         {name: '', amount: 20, color: '#F00', legendFontColor: '#7F7F7F', legendFontSize: 15},
     ];
 
+    const fetchUserInfo = async () => {
+        setLoading(true);
+        try {
+            const userDataJson = await AsyncStorage.getItem('userData');
+            if (userDataJson) {
+                setUserInfo(JSON.parse(userDataJson));
+            }
+        } catch (error) {
+            console.error('Error fetching user account information:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useFocusEffect(
+        React.useCallback(() => {
+            fetchUserInfo();
+            // Return a cleanup function if needed
+            return () => {
+                // Cleanup code goes here
+            };
+        }, [])
+    );
+
     // Render the components
     return (
         <Main>
             <MainLogo/>
             <Wrapper>
                 <TitleContainer>
-                        <H3 tmargin='20px' lmargin='20px' bmargin='10px'>My Dashboard</H3>
+                    <H3 tmargin='20px' lmargin='20px' bmargin='10px'>My Dashboard</H3>
                 </TitleContainer>
                 <DashboardContainer>
                     <Card>
@@ -85,7 +116,10 @@ const DashboardScreen = () => {
                             }}
                         />
                     </Card>
-
+                    <H6 bmargin='5px'>Username</H6>
+                    <H3>@{userInfo.username}</H3>
+                    <H6 bmargin='5px'>Name</H6>
+                    <H3>{userInfo.full_name}</H3>
                     <Card>
                         <CardTitle>Total Budget Breakdown</CardTitle>
                         {/* Render the pie chart here */}

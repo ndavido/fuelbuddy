@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {View, Text, TextInput, Button} from 'react-native';
 import axios from 'axios';
-import {useAuth} from '../AuthContext';
+import { useAuth } from '../AuthContext';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 //Styling
@@ -23,7 +23,7 @@ import {H1, H2, H3, H4, H5, H6, Img, Txt} from '../styles/text.js';
 
 
 const RegisterVerifyScreen = ({route}) => {
-    const {dispatch} = useAuth(); // Get the dispatch function from the AuthContext
+    const { login } = useAuth();
 
     const [formData, setFormData] = useState({
         username: route.params.username,
@@ -60,7 +60,7 @@ const RegisterVerifyScreen = ({route}) => {
                 // Attach the access token to the request headers for subsequent requests
                 axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access_token}`;
 
-                navigation.navigate('Dashboard');
+                await login(response.data.access_token);
             } else {
                 console.log("Uh Oh")
             }
