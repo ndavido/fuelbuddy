@@ -106,6 +106,15 @@ export const H6 = styled.Text`
   z-index: 100;
 `;
 
+export const H7 = styled.Text`
+    font-size: 12px;
+    font-family: ${props => getFontFamily(props.weight)};
+    ${applyMargins}
+    ${applyColor}
+    ${applyPosition}
+    ${applyWidth}
+`;
+
 export const Img = styled.Image`
   height: 160px;
 `;

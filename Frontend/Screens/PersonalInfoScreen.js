@@ -27,6 +27,7 @@ import MainLogo from '../styles/mainLogo';
 import AccountImg from '../styles/accountImg';
 import {MenuButton} from "../styles/accountButton";
 import {H3, H4, H5, H6} from "../styles/text";
+import {InputTxt} from "../styles/styles";
 
 const AccountScreen = () => {
     const [userInfo, setUserInfo] = useState({});
@@ -130,12 +131,12 @@ const AccountScreen = () => {
                                     <H6 bmargin='5px'>Username</H6>
                                     <AccountTxt bgColor='grey'>@{userInfo.username}</AccountTxt>
                                     <H6 bmargin='5px'>Phone Number</H6>
-                                    <AccountTxt bgColor='grey'>@{userInfo.phone_number}</AccountTxt>
+                                    <AccountTxt bgColor='grey'>{userInfo.phone_number}</AccountTxt>
                                     <H6 bmargin='5px'>Name</H6>
-                                    <TextInput value={editedFullName} onChangeText={setEditedFullName}
+                                    <InputTxt value={editedFullName} onChangeText={setEditedFullName}
                                                placeholder="Full Name"/>
                                     <H6 bmargin='5px'>Email</H6>
-                                    <TextInput value={editedEmail} onChangeText={setEditedEmail}
+                                    <InputTxt value={editedEmail} onChangeText={setEditedEmail}
                                                placeholder="Email"/>
                                     <Button title="Save" onPress={handleSave}/>
                                 </>

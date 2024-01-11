@@ -11,31 +11,20 @@ import {jwtDecode} from "jwt-decode";
 import {
     Main,
     Wrapper,
+    WrapperScroll,
     Content,
     DashboardContainer,
     Card,
     CardTitle,
     BudgetText,
-    TitleContainer
+    TitleContainer, Cardsml, Cardlrg,
+    CardOverlap, DashboardLegal, CardContainer
 } from '../styles/styles.js';
-import {
-    Main2,
-    ContainerWrapper,
-    ContainerInner,
-    ContainerContent,
-    BttnDiv,
-    TxtWrapper,
-    WelcomeTxt,
-    BttnDiv2,
-    InputWrapper,
-    InputTxt
-} from '../styles/wrapper';
 import PressableButton from '../styles/buttons';
 import PressableButton2 from '../styles/buttons2';
-import Logo from '../styles/logo';
 import MainLogo from '../styles/mainLogo';
 import {AccountContent, AccountTopInfo, AccountUsername, DeveloperTick} from "../styles/accountPage";
-import {H3, H6} from "../styles/text";
+import {H3, H5, H6, H7} from "../styles/text";
 import AccountImg from "../styles/accountImg";
 
 // Your dashboard component
@@ -87,66 +76,46 @@ const DashboardScreen = () => {
     return (
         <Main>
             <MainLogo/>
-            <Wrapper>
+            <WrapperScroll>
                 <TitleContainer>
-                    <H3 tmargin='20px' lmargin='20px' bmargin='10px'>My Dashboard</H3>
+                    <H3 tmargin='100px' lmargin='20px' bmargin='10px'>My Dashboard</H3>
                 </TitleContainer>
                 <DashboardContainer>
-                    <Card>
-                        <CardTitle>Total Budget Spending</CardTitle>
-                        {/* Render the line chart here */}
-                        <LineChart
-                            data={lineChartData}
-                            width={320} // from react-native
-                            height={220}
-                            yAxisLabel={'$'}
-                            chartConfig={{
-                                backgroundColor: '#e26a00',
-                                backgroundGradientFrom: '#fb8c00',
-                                backgroundGradientTo: '#ffa726',
-                                decimalPlaces: 2,
-                                color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-                                style: {
-                                    borderRadius: 16,
-                                },
-                            }}
-                            style={{
-                                marginVertical: 8,
-                                borderRadius: 16,
-                            }}
-                        />
-                    </Card>
-                    <H6 bmargin='5px'>Username</H6>
-                    <H3>@{userInfo.username}</H3>
-                    <H6 bmargin='5px'>Name</H6>
-                    <H3>{userInfo.full_name}</H3>
-                    <Card>
-                        <CardTitle>Total Budget Breakdown</CardTitle>
-                        {/* Render the pie chart here */}
-                        <PieChart
-                            data={pieChartData}
-                            width={320}
-                            height={220}
-                            chartConfig={{
-                                backgroundColor: '#022173',
-                                backgroundGradientFrom: '#022173',
-                                backgroundGradientTo: '#1b3fa0',
-                                decimalPlaces: 2,
-                                color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-                                style: {
-                                    borderRadius: 16,
-                                },
-                            }}
-                            accessor={'amount'}
-                            backgroundColor={'transparent'}
-                            paddingLeft={'15'}
-                            center={[10, 10]}
-                            absolute
-                        />
-                        <BudgetText>£40/£60</BudgetText>
-                    </Card>
+                    <CardOverlap>
+                        <CardContainer>
+                            <Cardsml>
+                                <H7 style={{opacity: 0.5}}>Total Budget</H7>
+                                <H5>Spending</H5>
+
+                            </Cardsml>
+                            <Cardsml>
+                                <H7 style={{opacity: 0.5}}>Routes</H7>
+                                <H5>Saved Routes</H5>
+
+
+                            </Cardsml>
+                        </CardContainer>
+                        <Cardlrg>
+                            <H7 style={{opacity: 0.5}}>Total Budget</H7>
+                            <H5>Breakdown</H5>
+
+                        </Cardlrg>
+                        <Cardlrg>
+                            <H7 style={{opacity: 0.5}}>Vehicle</H7>
+                            <H5>My Car</H5>
+
+                        </Cardlrg>
+                        <Cardlrg>
+                            <H7 style={{opacity: 0.5}}>News</H7>
+                            <H5>Trending Stories</H5>
+
+                        </Cardlrg>
+                    </CardOverlap>
                 </DashboardContainer>
-            </Wrapper>
+                <DashboardLegal>
+                    <H6 bmargin='5px' style={{textAlign: 'center', display: 'block'}}>Made with 💖 by Team fuelbuddy</H6>
+                </DashboardLegal>
+            </WrapperScroll>
         </Main>
     );
 };

@@ -14,6 +14,12 @@ export const Wrapper = styled.View`
   margin: auto;
 `;
 
+export const WrapperScroll = styled.ScrollView`
+  height: 100%;
+  width: 100%;
+  margin: auto;
+`;
+
 export const Content = styled.View`
   flex: 1 1 auto;
   position: relative;
@@ -42,9 +48,17 @@ export const ButtonDiv = styled.View`
 
 export const TitleContainer = styled.View`
   position: relative;
-  background-color: purple;
-  height: 150px;
+  height: 200px;
   width: 100%;
+`;
+
+export const InputTxt = styled.TextInput`
+  margin-bottom: 10px;
+  padding: 10px;
+  height: auto;
+  line-height: 18px;
+  background-color: #FFFFFF;
+  border-radius: 10px;
 `;
 
 
@@ -93,14 +107,6 @@ export const LRContainer = styled.View`
   margin-right: 10px;
   position: relative;
 `;
-export const InputTxt = styled.TextInput`
-  margin-bottom: 10px;
-  padding: 10px;
-  height: auto;
-  line-height: 18px;
-  background-color: #F7F7F7;
-  border-radius: 10px;
-`;
 
 export const PhoneTxt = styled.TextInput`
   width: 82%;
@@ -137,14 +143,43 @@ export const DashboardContainer = styled.View`
   background-color: #F7F7F7;
   position: relative;
   display: inline-block;
-  opacity: 0.5;
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
   padding: 20px;
-  box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.25);
 `;
-export const Card = styled.View`
+
+export const DashboardLegal = styled.View`
+  background-color: #F7F7F7;
+  position: relative;
+  height: 50px;
+  display: block;
+  padding: 20px;
+`;
+
+export const CardOverlap = styled.View`
+  margin-top: -50px;
+  display: flex;
+`;
+
+export const CardContainer = styled.View`
+  display: flex;
+  flex-direction: row;
+`;
+
+export const Cardlrg = styled.View`
   background-color: #ffffff;
+  width: calc(100% - 20px);
+  min-height: 300px;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 10px;
+`;
+
+export const Cardsml = styled.View`
+  background-color: #ffffff;
+  width: calc(50% - 20px);
+  display: inline-block;
+  min-height: 180px;
   border-radius: 8px;
   padding: 20px;
   margin: 10px;
@@ -155,13 +190,6 @@ export const CardTitle = styled.Text`
   font-weight: bold;
   color: #333;
   margin-bottom: 10px;
-`;
-
-export const BudgetText = styled.Text`
-  font-size: 32px;
-  color: green;
-  font-weight: bold;
-  text-align: center;
 `;
 
 
