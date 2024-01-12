@@ -388,11 +388,11 @@ def delete_account():
             return jsonify({"error": "User not found"}), 404
 
         users_collection.delete_user({"phone_number": encrypted_phone})
-        session.pop('phone_number', None)
 
         return jsonify({"message": "Account deleted successfully!"})
     except Exception as e:
         return handle_api_error(e)
+
 
 
 @app.route('/logout', methods=['POST'])
