@@ -399,7 +399,6 @@ def delete_account():
 @require_api_key
 def logout():
     try:
-        session.pop('username', None)
         return jsonify({"message": "Logout successful!"})
     except Exception as e:
         return handle_api_error(e)
