@@ -2,8 +2,7 @@
 import os
 
 from bson import json_util
-from flask import Flask, request, jsonify, session, abort
-from flask_session import Session
+from flask import Flask, request, jsonify, abort
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from flask_cors import CORS
 from database import Database, UserCollection, FuelStationsCollection, PetrolFuelPricesCollection
@@ -29,27 +28,13 @@ from Crypto.Util.Padding import pad, unpad
 load_dotenv()
 app = Flask(__name__)
 CORS(app, resources={
-    r"/*": {"origins": "http://ec2-54-172-255-239.compute-1.amazonaws.com/"}}, supports_credentials=True)
+    r"/*": {"origins": "http://localhost:19006"}}, supports_credentials=True)
 app.secret_key = "production"  # os.random(24)
 api_key = os.getenv('API_KEY')
 
 # Change this to a secure secret key
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 jwt = JWTManager(app)
-
-# Flask-Session Configuration
-app.config["SESSION_TYPE"] = "mongodb"
-app.config["SESSION_MONGODB"] = MongoClient(
-    os.getenv('MONGO_URI'), server_api=ServerApi('1'))
-app.config["SESSION_MONGODB_DB"] = os.getenv('MONGO_DB_NAME')
-app.config["SESSION_MONGODB_COLLECT"] = "flask_sessions"
-app.config["SESSION_USE_SIGNER"] = True
-app.config["SESSION_PERMANENT"] = False
-app.config['SESSION_COOKIE_SECURE'] = True
-app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
-
-Session(app)
 
 account_sid = os.getenv('TWILIO_SID')
 auth_token = os.getenv('TWILIO_AUTH_TOKEN')
@@ -58,7 +43,7 @@ twilio_client = Client(account_sid, auth_token)
 
 db = Database()
 users_collection = UserCollection()
-new_user = None
+new_user_session = {}
 
 
 def require_api_key(view_function):
@@ -133,13 +118,17 @@ def get_aes_key():
 
 encryption_key, fixed_iv = get_aes_key()
 
+
 def aes_encrypt(plaintext, key):
     cipher = AES.new(key, AES.MODE_CBC, fixed_iv)
     padded_text = pad(plaintext.encode(), AES.block_size)
     return cipher.encrypt(padded_text).hex()
+
+
 def aes_decrypt(ciphertext, key):
     cipher = AES.new(key, AES.MODE_CBC, fixed_iv)
-    decrypted_data = unpad(cipher.decrypt(bytes.fromhex(ciphertext)), AES.block_size)
+    decrypted_data = unpad(cipher.decrypt(
+        bytes.fromhex(ciphertext)), AES.block_size)
     return decrypted_data.decode()
 
 
@@ -183,16 +172,14 @@ def register():
 
         verification_code = str(random.randint(100000, 999999))
         hashed_code = bcrypt.hashpw(
-            verification_code.encode('utf-8'), bcrypt.gensalt()
-        )
+            verification_code.encode('utf-8'), bcrypt.gensalt())
 
-        session['new_user'] = {
+        new_user_session[username] = {
             "full_name": full_name,
             "username": username,
             "phone_number": encrypted_phone_number,
             "verification_code": hashed_code,
             "verified": False,
-            "login_code": hashed_code,
             "roles": ["user"],
             "created_at": datetime.now(),
             "updated_at": datetime.now()
@@ -221,26 +208,18 @@ def verify():
         if not validate_verification_code(code):
             return jsonify({"error": "Invalid code format"}), 400
 
-        new_user = session.get('new_user')
-        if not new_user or new_user['username'] != username:
+        if username not in new_user_session:
             return jsonify({"error": "User data not found or session expired"}), 404
 
-        if bcrypt.checkpw(code.encode('utf-8'), new_user['verification_code']):
-            new_user_data = session.pop('new_user', None)
-            if not new_user_data:
-                return jsonify({"error": "User data not found or session expired"}), 404
+        user_data = new_user_session[username]
 
-            new_user_data.pop('verification_code', None)
-            new_user = Users(**new_user_data)
+        if bcrypt.checkpw(code.encode('utf-8'), user_data['verification_code']):
+            new_user = Users(**user_data)
             new_user.save()  # Save the verified user to the database
-            session['current_user'] = {
-                "username": new_user.username,
-                "phone_number": new_user.phone_number
-            }
 
-            session.pop('new_user', None)
             access_token = create_access_token(
                 identity=new_user["phone_number"])
+            new_user_session.pop(username, None)  # Clear the session data
             return jsonify({
                 "message": "Verification successful!",
                 "access_token": access_token
@@ -275,7 +254,8 @@ def login():
         hashed_login_code_str = hashed_login_code_bytes.decode(
             'utf-8')  # Convert bytes to string
 
-        encrypted_phone_number = aes_encrypt(standardized_phone_number, encryption_key)
+        encrypted_phone_number = aes_encrypt(
+            standardized_phone_number, encryption_key)
         print("Encrypted Phone Number:", encrypted_phone_number)
 
         user = Users.objects(phone_number=encrypted_phone_number).first()
@@ -317,7 +297,8 @@ def login_verify():
             return jsonify({"error": "Invalid phone number or code format"}), 400
 
         # Hash the phone number before querying the database
-        encrypted_phone_number = aes_encrypt(standardized_phone_number, encryption_key)
+        encrypted_phone_number = aes_encrypt(
+            standardized_phone_number, encryption_key)
 
         # Use the hashed phone number to find the user
         user = Users.objects(phone_number=encrypted_phone_number).first()
@@ -329,12 +310,6 @@ def login_verify():
         if bcrypt.checkpw(code.encode('utf-8'), stored_login_code_bytes):
             user.update(unset__login_code=True)
 
-            user_data_for_session = {
-                "username": user.username,
-                "phone_number": user.phone_number,
-                # add other necessary fields here
-            }
-            session['current_user'] = user_data_for_session
             access_token = create_access_token(
                 identity=encrypted_phone_number)
             return jsonify({
@@ -389,7 +364,8 @@ def account():
             user_info_dict['phone_number'] = decrypted_phone
 
             # Exclude some fields from the response if needed
-            excluded_fields = ['_id', 'verification_code', 'verified', 'login_code', 'updated_at']
+            excluded_fields = ['_id', 'verification_code',
+                               'verified', 'login_code', 'updated_at']
             for field in excluded_fields:
                 user_info_dict.pop(field, None)
 
@@ -399,7 +375,6 @@ def account():
 
     except Exception as e:
         return jsonify({"error": f"Error fetching user account information: {str(e)}"}), 500
-
 
 
 @app.route('/delete_account', methods=['POST'])
@@ -614,6 +589,8 @@ def store_fuel_prices():
         return jsonify({"message": "Fuel prices stored successfully"})
     except Exception as e:
         return handle_api_error(e)
+
+
 @app.route('/store_ev_prices', methods=['POST'])
 @require_api_key
 def store_ev_prices():
