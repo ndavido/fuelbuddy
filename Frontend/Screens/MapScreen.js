@@ -3,6 +3,7 @@ import {View, Text, StyleSheet, Platform, Animated, Dimensions, Button} from "re
 import MapView from "../Components/mymap";
 import MyMarker from '../Components/mymarker';
 import * as Location from "expo-location";
+import {Easing} from "react-native-reanimated";
 import {PanResponder} from "react-native-web"; // For user location
 import {PanGestureHandler, State} from 'react-native-gesture-handler';
 
@@ -20,14 +21,13 @@ const MapScreen = () => {
     const apiKey = process.env.googleMapsApiKey;
 
     const handleSheetClose = () => {
-        Animated.spring(bottomSheetTranslation, {
-            toValue: smallSheetHeight,
-            useNativeDriver: false,
-            tension: 10,
-            friction: 4,
-            speed: 1, // Adjust the speed for a slower animation
-        }).start();
-    };
+    Animated.timing(bottomSheetTranslation, {
+        toValue: smallSheetHeight,
+        duration: 1000,
+        useNativeDriver: false,
+        easing: Easing.ease,
+    }).start();
+};
 
     const onGestureEvent = Animated.event(
         [{nativeEvent: {translationY: bottomSheetTranslation}}],

@@ -1,5 +1,5 @@
 {
-  "webpackServerPort": null,
+  "webpackServerPort": 19006,
   "expoServerPort": 19000,
   "packagerPort": 19000,
   "packagerPid": null,
