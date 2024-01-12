@@ -133,10 +133,10 @@ const AccountScreen = () => {
                                     <H6 bmargin='5px'>Phone Number</H6>
                                     <AccountTxt bgColor='grey'>{userInfo.phone_number}</AccountTxt>
                                     <H6 bmargin='5px'>Name</H6>
-                                    <InputTxt value={editedFullName} onChangeText={setEditedFullName}
+                                    <InputTxt bcolor='white' value={editedFullName} onChangeText={setEditedFullName}
                                                placeholder="Full Name"/>
                                     <H6 bmargin='5px'>Email</H6>
-                                    <InputTxt value={editedEmail} onChangeText={setEditedEmail}
+                                    <InputTxt bcolor='white' value={editedEmail} onChangeText={setEditedEmail}
                                                placeholder="Email"/>
                                     <Button title="Save" onPress={handleSave}/>
                                 </>

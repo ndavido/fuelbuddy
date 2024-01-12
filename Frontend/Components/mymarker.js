@@ -1,3 +1,3 @@
 import { Marker } from 'react-native-maps';
-
-export default Marker
+const MyMarker = (props) => <Marker {...props} />;
+export default MyMarker;

@@ -57,7 +57,7 @@ export const InputTxt = styled.TextInput`
   padding: 10px;
   height: auto;
   line-height: 18px;
-  background-color: #FFFFFF;
+  background-color: ${props => props.bcolor || '#F7F7F7'};
   border-radius: 10px;
 `;
 
