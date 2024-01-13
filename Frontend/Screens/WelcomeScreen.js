@@ -18,12 +18,12 @@ const WelcomeScreen = () => {
                 <Content>
                     <WelcomeImg/>
                     <Txt>
-                        <H1 style={{textAlign: 'center', display: 'block'}}>
+                        <H1 width="100%" style={{textAlign: 'center'}}>
                             Welcome
                         </H1>
 
-                        <H6 weight="400" style={{opacity: 0.5, textAlign: 'center', display: 'block'}}>Find it. Route it. fuelbuddy.</H6>
-                        <H6 weight="400" style={{opacity: 0.5, textAlign: 'center', display: 'block'}}>The Friend Your Tank Deserves.</H6>
+                        <H6 weight="400" width="100%" style={{opacity: 0.5, textAlign: 'center'}}>Find it. Route it. fuelbuddy.</H6>
+                        <H6 weight="400" width="100%" style={{opacity: 0.5, textAlign: 'center'}}>The Friend Your Tank Deserves.</H6>
                     </Txt>
                     <ButtonDiv>
                         <PressableButton

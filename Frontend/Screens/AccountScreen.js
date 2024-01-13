@@ -9,8 +9,8 @@ import { useAuth } from '../AuthContext';
 
 // Styling
 import {
-    Main2,
-} from '../styles/wrapper';
+    Main,
+} from '../styles/styles.js';
 import {
     AccountWrapper,
     AccountInner,
@@ -123,7 +123,7 @@ const AccountScreen = () => {
     }, []);
 
     return (
-        <Main2>
+        <Main>
             <MainLogo/>
             <AccountWrapper>
 
@@ -198,7 +198,7 @@ const AccountScreen = () => {
                 </GestureHandlerRootView>
 
             </AccountWrapper>
-        </Main2>
+        </Main>
     );
 };
 

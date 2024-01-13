@@ -113,7 +113,7 @@ const DashboardScreen = () => {
                     </CardOverlap>
                 </DashboardContainer>
                 <DashboardLegal>
-                    <H6 bmargin='5px' style={{textAlign: 'center', display: 'block'}}>Made with 💖 by Team fuelbuddy</H6>
+                    <H6 bmargin='5px'>Made with 💖 by Team fuelbuddy</H6>
                 </DashboardLegal>
             </WrapperScroll>
         </Main>

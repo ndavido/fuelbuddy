@@ -7,8 +7,8 @@ import { jwtDecode } from "jwt-decode";
 
 // Styling
 import {
-    Main2,
-} from '../styles/wrapper';
+    Main,
+} from '../styles/styles';
 import {
     AccountWrapper,
     AccountInner,
@@ -74,7 +74,7 @@ const DeveloperScreen = () => {
     }, []);
 
     return (
-        <Main2>
+        <Main>
             <MainLogo/>
             <AccountWrapper>
                     <AccountRegularInfo>
@@ -103,7 +103,7 @@ const DeveloperScreen = () => {
                         </AccountContent>
                     </AccountRegularInfo>
             </AccountWrapper>
-        </Main2>
+        </Main>
     );
 };
 

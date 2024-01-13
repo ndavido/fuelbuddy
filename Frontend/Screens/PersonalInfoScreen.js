@@ -8,9 +8,6 @@ import * as Updates from 'expo-updates';
 
 // Styling
 import {
-    Main2,
-} from '../styles/wrapper';
-import {
     AccountWrapper,
     AccountInner,
     AccountContent,
@@ -27,7 +24,7 @@ import MainLogo from '../styles/mainLogo';
 import AccountImg from '../styles/accountImg';
 import {MenuButton} from "../styles/accountButton";
 import {H3, H4, H5, H6} from "../styles/text";
-import {InputTxt} from "../styles/styles";
+import {InputTxt, Main} from "../styles/styles";
 
 const AccountScreen = () => {
     const [userInfo, setUserInfo] = useState({});
@@ -118,7 +115,7 @@ const AccountScreen = () => {
     }, []);
 
     return (
-        <Main2>
+        <Main>
             <MainLogo bButton={true}/>
             <AccountWrapper>
                 <AccountRegularInfo>
@@ -167,7 +164,7 @@ const AccountScreen = () => {
                     </AccountContent>
                 </AccountRegularInfo>
             </AccountWrapper>
-        </Main2>
+        </Main>
     );
 };
 

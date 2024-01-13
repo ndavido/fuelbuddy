@@ -20,9 +20,6 @@ import PressableButton from '../styles/buttons';
 import PressableButton2 from '../styles/buttons2';
 import Logo from '../styles/logo';
 import {H1, H2, H3, H4, H5, H6, Img, Txt} from '../styles/text.js';
-import {
-    BttnDiv2,
-} from '../styles/wrapper';
 
 
 const PhoneContainer = styled(View)`

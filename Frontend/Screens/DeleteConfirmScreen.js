@@ -6,8 +6,8 @@ import {jwtDecode} from "jwt-decode";
 
 // Styling
 import {
-    Main2,
-} from '../styles/wrapper';
+    Main,
+} from '../styles/styles.js';
 import {
     AccountWrapper,
     AccountInner,
@@ -87,7 +87,7 @@ const DeleteConfirmScreen = () => {
     };
 
     return (
-        <Main2>
+        <Main>
             <MainLogo bButton={true}/>
             <AccountWrapper>
                 <AccountRegularInfo>
@@ -112,7 +112,7 @@ const DeleteConfirmScreen = () => {
                     </AccountContent>
                 </AccountRegularInfo>
             </AccountWrapper>
-        </Main2>
+        </Main>
     );
 };
 

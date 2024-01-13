@@ -178,7 +178,6 @@ export const Cardlrg = styled.View`
 export const Cardsml = styled.View`
   background-color: #ffffff;
   width: calc(50% - 20px);
-  display: inline-block;
   min-height: 180px;
   border-radius: 8px;
   padding: 20px;
