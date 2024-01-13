@@ -872,13 +872,13 @@ def remove_friend():
 
 
 #! This route is for searching friends
-@app.route('/search_users', methods=['GET'])
+@app.route('/search_users', methods=['GET', 'POST'])
 @require_api_key
-@jwt_required()
 def search_users():
     try:
-        current_user_id = get_jwt_identity()
-        search_term = request.args.get('search_term')
+        data = request.get_json()
+        phone_number = data.get('phone_number')
+        search_term = data.get('search_term')
 
         if not search_term:
             return jsonify({"error": "Search term is required"}), 400
@@ -886,7 +886,7 @@ def search_users():
         # Exclude the current user and search for others
         users = Users.objects(
             (Q(username__icontains=search_term) | Q(phone_number__icontains=search_term)) &
-            Q(id__ne=current_user_id)
+            Q(phone_number__ne=phone_number)
         )
 
         users_list = [{'user_id': str(user.id), 'username': user.username, 'phone_number': user.phone_number}

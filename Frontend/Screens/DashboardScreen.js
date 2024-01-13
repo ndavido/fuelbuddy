@@ -1,8 +1,8 @@
 import React, {useState, useEffect} from 'react';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useFocusEffect } from '@react-navigation/native';
-import {View, Text} from 'react-native';
+import {useFocusEffect} from '@react-navigation/native';
+import {View, Image, Text} from 'react-native';
 import styled from 'styled-components/native';
 import {LineChart, PieChart} from 'react-native-chart-kit'; // Assuming you're using chart-kit for charts
 import {jwtDecode} from "jwt-decode";
@@ -10,27 +10,81 @@ import {jwtDecode} from "jwt-decode";
 //Styling
 import {
     Main,
-    Wrapper,
     WrapperScroll,
     Content,
     DashboardContainer,
-    Card,
-    CardTitle,
-    BudgetText,
     TitleContainer, Cardsml, Cardlrg,
     CardOverlap, DashboardLegal, CardContainer
 } from '../styles/styles.js';
-import PressableButton from '../styles/buttons';
-import PressableButton2 from '../styles/buttons2';
 import MainLogo from '../styles/mainLogo';
-import {AccountContent, AccountTopInfo, AccountUsername, DeveloperTick} from "../styles/accountPage";
-import {H3, H5, H6, H7} from "../styles/text";
-import AccountImg from "../styles/accountImg";
+import {H3, H4, H5, H6, H7} from "../styles/text";
 
 // Your dashboard component
 const DashboardScreen = () => {
     const [userInfo, setUserInfo] = useState({});
     const [loading, setLoading] = useState(true);
+
+    const [newsData, setNewsData] = useState([]);
+    const [loadingNews, setLoadingNews] = useState(true);
+
+    const fetchNews = async () => {
+        try {
+            const apiKey = '0bb3fc60c42a4da1b01faacdcd5041ba'; // Replace with your actual API key
+            const newsApiUrl = 'https://newsapi.org/v2/everything';
+            const carResponse = await axios.get(newsApiUrl, {
+                params: {
+                    apiKey,
+                    q: 'car fuel', // Add keywords related to petrol
+                    language: 'en',
+                    sortBy: 'publishedAt',
+                    pageSize: 50, // Adjust the number of articles as needed
+                },
+            });
+
+            const petrolResponse = await axios.get(newsApiUrl, {
+                params: {
+                    apiKey,
+                    q: 'petrol', // Add keywords related to petrol
+                    language: 'en',
+                    sortBy: 'publishedAt',
+                    pageSize: 50, // Adjust the number of articles as needed
+                },
+            });
+
+            const dieselResponse = await axios.get(newsApiUrl, {
+                params: {
+                    apiKey,
+                    q: 'road', // Add keywords related to petrol
+                    language: 'en',
+                    sortBy: 'publishedAt',
+                    pageSize: 50, // Adjust the number of articles as needed
+                },
+            });
+
+
+            // Combine the results from all categories
+            const combinedNews = [
+                ...filterRemovedArticles(carResponse.data.articles),
+                ...filterRemovedArticles(petrolResponse.data.articles),
+                ...filterRemovedArticles(dieselResponse.data.articles),
+            ].filter(article => containsUKOrIreland(article));
+
+            setNewsData(combinedNews);
+        } catch (error) {
+            console.error('Error fetching news:', error);
+        } finally {
+            setLoadingNews(false);
+        }
+    };
+
+    const filterRemovedArticles = (articles) => {
+        return articles.filter(article => !article.title.includes('[Removed]') && !article.description.includes('[Removed]'));
+    };
+
+    const containsUKOrIreland = (article) => {
+        const content = `${article.title} ${article.description}`; // Add other fields as needed
+        return content.toLowerCase().includes('uk') || content.toLowerCase().includes('ireland');
+    };
 
     // Define the data for charts (placeholders for now)
     const lineChartData = {
@@ -65,6 +119,7 @@ const DashboardScreen = () => {
     useFocusEffect(
         React.useCallback(() => {
             fetchUserInfo();
+            fetchNews();
             // Return a cleanup function if needed
             return () => {
                 // Cleanup code goes here
@@ -72,7 +127,6 @@ const DashboardScreen = () => {
         }, [])
     );
 
-    // Render the components
     return (
         <Main>
             <MainLogo/>
@@ -108,12 +162,30 @@ const DashboardScreen = () => {
                         <Cardlrg>
                             <H7 style={{opacity: 0.5}}>News</H7>
                             <H5>Trending Stories</H5>
-
+                            {loadingNews ? (
+                                <H4>Loading news...</H4>
+                            ) : (
+                                <View>
+                                    {newsData.map((article, index) => (
+                                        <View key={index}>
+                                            {article.urlToImage && (
+                                                <Image
+                                                    source={{uri: article.urlToImage}}
+                                                    style={{width: 200, height: 150, resizeMode: 'cover'}}
+                                                />
+                                            )}
+                                            <H5>{article.title}</H5>
+                                            <H6 style={{opacity: 0.5}}>{article.description}</H6>
+                                            <H7 style={{opacity: 0.3}}>{article.source?.name} - {new Date(article.publishedAt).toLocaleString('en-GB', { timeZone: 'GMT', dateStyle: 'short', timeStyle: 'short' })}</H7>
+                                        </View>
+                                    ))}
+                                </View>
+                            )}
                         </Cardlrg>
                     </CardOverlap>
                 </DashboardContainer>
                 <DashboardLegal>
-                    <H6 bmargin='5px'>Made with 💖 by Team fuelbuddy</H6>
+                    <H6 bmargin='5px' width='100%' style={{textAlign: 'center'}}>Made with 💖 by Team fuelbuddy</H6>
                 </DashboardLegal>
             </WrapperScroll>
         </Main>

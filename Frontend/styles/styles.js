@@ -151,8 +151,8 @@ export const DashboardContainer = styled.View`
 export const DashboardLegal = styled.View`
   background-color: #F7F7F7;
   position: relative;
+  text-align: center;
   height: 50px;
-  display: block;
   padding: 20px;
 `;
 

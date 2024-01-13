@@ -19,6 +19,7 @@ import Account from './Screens/AccountScreen';
 import PersonalInfo from './Screens/PersonalInfoScreen';
 import DeleteConfirm from './Screens/DeleteConfirmScreen';
 import Vehicle from './Screens/VehicleScreen';
+import Friends from './Screens/FriendsScreen';
 import Developer from './Screens/DeveloperScreen';
 import Login from './Screens/LoginScreen';
 import LoginVerify from './Screens/LoginVerifyScreen';
@@ -76,6 +77,7 @@ const AccountNavigator = () => {
             <Stack.Screen name="PersonalInfo" component={PersonalInfo}/>
             <Stack.Screen name="DeleteConfirm" component={DeleteConfirm}/>
             <Stack.Screen name="Vehicle" component={Vehicle}/>
+            <Stack.Screen name="Friends" component={Friends}/>
             <Stack.Screen name="Developer" component={Developer}/>
         </Stack.Navigator>
     );
