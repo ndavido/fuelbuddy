@@ -683,13 +683,14 @@ Friends Routes
 @jwt_required()
 def send_friend_request():
     try:
-        current_user_id = get_jwt_identity()
         data = request.get_json()
+        current_user_id = data['current_user_id']
         recipient_id = data['recipient_id']
         message = data.get('message', '')
 
         sender = Users.objects.get(id=current_user_id)
         recipient = Users.objects.get(id=recipient_id)
+        phone_number = data.get('phone_number')
 
         if not recipient:
             return jsonify({"error": "Recipient not found"}), 404
