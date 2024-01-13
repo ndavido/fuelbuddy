@@ -684,13 +684,12 @@ Friends Routes
 def send_friend_request():
     try:
         data = request.get_json()
-        current_user_id = data['current_user_id']
-        recipient_id = data['recipient_id']
+        current_user = data['phone_number']
+        recipient_user = data['friend_number']
         message = data.get('message', '')
 
-        sender = Users.objects.get(id=current_user_id)
-        recipient = Users.objects.get(id=recipient_id)
-        phone_number = data.get('phone_number')
+        sender = Users.objects.get(phone_number=current_user)
+        recipient = Users.objects.get(phone_number=recipient_user)
 
         if not recipient:
             return jsonify({"error": "Recipient not found"}), 404
