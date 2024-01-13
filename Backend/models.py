@@ -68,6 +68,8 @@ class FuelStation(Document):
     meta = {
         'collection': 'FuelStation'
     }
+
+
 class ChargingStation(Document):
     name = StringField(required=True)
     address = StringField(required=True)
@@ -81,6 +83,7 @@ class ChargingStation(Document):
         'collection': 'ChargingStation'
     }
 
+
 class FuelPrices(Document):
     fuel_station = StringField(required=True)
     petrol_price = FloatField()
@@ -90,8 +93,10 @@ class FuelPrices(Document):
         'collection': 'FuelPrices'
     }
 
+
 class EVPrices(Document):
-    charging_station = StringField(required=True)  # Use the name or a unique identifier of the charging station
+    # Use the name or a unique identifier of the charging station
+    charging_station = StringField(required=True)
     charging_price = FloatField()
     updated_at = DateTimeField(required=True)
     meta = {
@@ -173,6 +178,8 @@ class Notification(Document):
         self.save()
 
 # helper function to create a notification
+
+
 def create_notification(user, message, notification_type):
     notification = Notification(
         user=user,
@@ -180,3 +187,13 @@ def create_notification(user, message, notification_type):
         type=notification_type
     )
     notification.save()
+
+
+class Trip(Document):
+    user = ReferenceField(Users, reverse_delete_rule='CASCADE')
+    start_location = ReferenceField(Location)
+    end_location = ReferenceField(Location)
+    distance = FloatField()
+    meta = {
+        'collection': 'Trip'
+    }
