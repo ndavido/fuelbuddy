@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components/native';
-import BackButton from './backButton'; // Import your BackButton component
+import BackButton from './backButton';
 
 const LogoContainer = styled.SafeAreaView`
   height: 85px;
@@ -35,6 +35,7 @@ const LogoImg = styled.Image`
 const MainLogo = ({ bButton }) => (
   <LogoContainer>
     <LogoInner>
+        {bButton ? <BackButton /> : null}
       <LogoImg source={require('../assets/fuelbuddyLogoShort.png')}/>
     </LogoInner>
   </LogoContainer>

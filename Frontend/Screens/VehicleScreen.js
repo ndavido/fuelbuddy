@@ -74,8 +74,8 @@ const VehicleScreen = () => {
     }, []);
 
     return (
-        <Main2>
-            <MainLogo/>
+        <Main>
+            <MainLogo bButton={true}/>
             <AccountWrapper>
                 <AccountRegularInfo>
                     <AccountContent>
@@ -92,7 +92,7 @@ const VehicleScreen = () => {
                     </AccountContent>
                 </AccountRegularInfo>
             </AccountWrapper>
-        </Main2>
+        </Main>
     );
 };
 

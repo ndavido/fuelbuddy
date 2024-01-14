@@ -20,27 +20,62 @@ const apiKey = process.env.REACT_NATIVE_API_KEY;
 
 const FriendsScreen = () => {
     const [friends, setFriends] = useState([]);
+    const [requestedFriends, setRequestedFriends] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    const navigation = useNavigation();
-
     const fetchFriends = async () => {
         try {
-
-
             const token = await AsyncStorage.getItem('token');
+            const user1 = jwtDecode(token).sub;
 
-            const response = await axios.get('http://127.0.0.1:5000/list_friends', {
+            const config = {
                 headers: {
                     'X-API-Key': apiKey,
                 },
-            });
+            };
 
-            setFriends(response.data.friends);
+            const response = await axios.post(
+                'http://127.0.0.1:5000/list_friends',
+                {phone_number: user1},
+                config
+            );
+
+            if (response.data && response.data.friends) {
+                setFriends(response.data.friends);
+            }
+
         } catch (error) {
             console.error('Error fetching friends:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchRequestedFriends = async () => {
+        try {
+            const token = await AsyncStorage.getItem('token');
+            const user1 = jwtDecode(token).sub;
+
+            const config = {
+                headers: {
+                    'X-API-Key': apiKey,
+                },
+            };
+
+            const response = await axios.post(
+                'http://127.0.0.1:5000/requested_friends',
+                {phone_number: user1},
+                config
+            );
+
+            if (response.data && response.data.requested_friends) {
+                setRequestedFriends(response.data.requested_friends);
+            }
+
+        } catch (error) {
+            console.error('Error fetching requested friends:', error);
         } finally {
             setLoading(false);
         }
@@ -74,10 +109,64 @@ const FriendsScreen = () => {
 
     useEffect(() => {
         fetchFriends();
+        fetchRequestedFriends()
     }, []);
 
     const handleDeleteFriend = (friendId) => {
         console.log(`Deleting friend with ID: ${friendId}`);
+    };
+
+    const handleMakeFriend = async (friendId) => {
+        try {
+            console.log(`Making friend with ID: ${friendId}`);
+            const token = await AsyncStorage.getItem('token');
+
+            const phone = jwtDecode(token).sub;
+
+            const response = await axios.post(
+                'http://127.0.0.1:5000/send_friend_request',
+                {
+                    phone_number: phone,
+                    friend_number: friendId,
+                },
+                {
+                    headers: {
+                        'X-API-Key': apiKey,
+                    },
+                }
+            );
+
+        } catch (error) {
+            console.error('Error searching users:', error);
+        }
+    };
+
+    const decideFriend = async (requestId, action) => {
+        try {
+            const token = await AsyncStorage.getItem('token');
+            const phone = jwtDecode(token).sub;
+
+            const response = await axios.post(
+                'http://127.0.0.1:5000/respond_friend_request',
+                {
+                    phone_number: phone,
+                    request_id: requestId,
+                    action: action,
+                },
+                {
+                    headers: {
+                        'X-API-Key': apiKey,
+                    },
+                }
+            );
+
+            console.log(response.data.message);
+            // Handle the response as needed, for example, update UI or show a notification
+
+        } catch (error) {
+            console.error('Error responding to friend request:', error);
+            // Handle errors as needed
+        }
     };
 
     return (
@@ -88,6 +177,42 @@ const FriendsScreen = () => {
                     <AccountContent>
                         <Text>Friends</Text>
                         <AccountTxtWrapper>
+                            <Text>Friends</Text>
+                            <FlatList
+                                data={friends}
+                                keyExtractor={(item) => item.friend_id.toString()} // Assuming friend_id is a number
+                                renderItem={({item}) => (
+                                    <View style={styles.friendItem} key={item.friend_id}>
+                                        <Text>{item.friend_name}</Text>
+                                    </View>
+                                )}
+                            />
+                            <Text>Requested</Text>
+                            <FlatList
+                                data={searchTerm ? searchResults : requestedFriends}
+                                keyExtractor={(item) => item.friend_id}
+                                renderItem={({item}) => (
+                                    <View style={styles.friendItem}>
+                                        <Text>{item.friend_name}</Text>
+                                        <View style={styles.buttonContainer}>
+                                            <TouchableOpacity
+                                                style={styles.acceptButton}
+                                                onPress={() => decideFriend(item.request_id, 'accept')}
+                                            >
+                                                <Text style={styles.buttonText}>Accept</Text>
+                                            </TouchableOpacity>
+                                            <TouchableOpacity
+                                                style={styles.rejectButton}
+                                                onPress={() => decideFriend(item.request_id, 'reject')}
+                                            >
+                                                <Text style={styles.buttonText}>Reject</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>
+                                )}
+                            />
+
+
                             <Text>Search Friends</Text>
                             <TextInput
                                 style={styles.searchInput}
@@ -102,8 +227,8 @@ const FriendsScreen = () => {
                                 renderItem={({item}) => (
                                     <View style={styles.friendItem}>
                                         <Text>{item.username}</Text>
-                                        <TouchableOpacity onPress={() => handleDeleteFriend(item.user_id)}>
-                                            <Text style={styles.deleteButton}>Delete</Text>
+                                        <TouchableOpacity onPress={() => handleMakeFriend(item.phone_number)}>
+                                            <Text style={styles.deleteButton}>Friend</Text>
                                         </TouchableOpacity>
                                     </View>
                                 )}
@@ -112,13 +237,6 @@ const FriendsScreen = () => {
                     </AccountContent>
                 </AccountRegularInfo>
             </AccountWrapper>
-            <MenuButton
-                title="Back to Account"
-                bgColor="blue"
-                txtColor="white"
-                onPress={() => navigation.navigate('Account')}
-                emoji="⬅️"
-            />
         </Main>
     );
 };
@@ -140,7 +258,7 @@ const styles = StyleSheet.create({
         paddingVertical: 8,
     },
     deleteButton: {
-        color: 'red',
+        color: 'green',
     },
 });
 
