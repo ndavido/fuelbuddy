@@ -29,7 +29,7 @@ const DashboardScreen = () => {
 
     const fetchNews = async () => {
         try {
-            const apiKey = '0bb3fc60c42a4da1b01faacdcd5041ba'; // Replace with your actual API key
+            const apiKey = process.env.NEWSAPI_KEY; // Replace with your actual API key
             const newsApiUrl = 'https://newsapi.org/v2/everything';
             const carResponse = await axios.get(newsApiUrl, {
                 params: {
