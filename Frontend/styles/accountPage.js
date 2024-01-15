@@ -11,7 +11,7 @@ export const AccountContent = styled.View`
   flex: 1 1 auto;
   position: relative;
   min-width: 1px;
-  max-width: 800px;
+  max-width: 600px;
   margin: 0 auto;
   width: 100%;
 `;

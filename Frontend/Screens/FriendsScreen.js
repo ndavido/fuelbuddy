@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, TextInput, FlatList, TouchableOpacity, Button, StyleSheet, Modal} from 'react-native';
+import {View, Text, TextInput, FlatList, TouchableOpacity, Button, StyleSheet} from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNavigation} from '@react-navigation/native';
@@ -15,7 +15,6 @@ import {
     AccountTxt,
 } from '../styles/accountPage';
 import {jwtDecode} from "jwt-decode";
-import {H3, H5, H6} from "../styles/text";
 
 const apiKey = process.env.REACT_NATIVE_API_KEY;
 
@@ -24,9 +23,7 @@ const FriendsScreen = () => {
     const [requestedFriends, setRequestedFriends] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState([]);
-    const [isSearchModalVisible, setSearchModalVisible] = useState(false);
     const [loading, setLoading] = useState(true);
-    const hasRequestedFriends = requestedFriends.length > 0;
 
     const fetchFriends = async () => {
         try {
@@ -84,14 +81,6 @@ const FriendsScreen = () => {
         }
     };
 
-    const openSearchModal = () => {
-        setSearchModalVisible(true);
-    };
-
-    const closeSearchModal = () => {
-        setSearchModalVisible(false);
-    };
-
     const searchUsers = async () => {
         try {
             const token = await AsyncStorage.getItem('token');
@@ -117,9 +106,11 @@ const FriendsScreen = () => {
         }
     };
 
-    const handleSearch = async () => {
-        searchUsers();
-    };
+
+    useEffect(() => {
+        fetchFriends();
+        fetchRequestedFriends()
+    }, []);
 
     const handleDeleteFriend = (friendId) => {
         console.log(`Deleting friend with ID: ${friendId}`);
@@ -178,91 +169,67 @@ const FriendsScreen = () => {
         }
     };
 
-    useEffect(() => {
-        fetchFriends();
-        fetchRequestedFriends()
-    }, []);
-
     return (
         <Main>
             <MainLogo bButton={true}/>
             <AccountWrapper>
                 <AccountRegularInfo>
                     <AccountContent>
-                        <H3 tmargin='20px' lmargin='20px' bmargin='5px'>Friends</H3>
-                        <H5 tmargin='10px' bmargin='5px' onPress={openSearchModal}>Add Friends</H5>
+                        <Text>Friends</Text>
                         <AccountTxtWrapper>
-
-                            <Modal
-                                animationType="fade"
-                                transparent={true}
-                                visible={isSearchModalVisible}
-                                onRequestClose={closeSearchModal}
-                            >
-                                <View style={styles.modalContainer}>
-                                    <View style={styles.modalContent}>
-                                        <Text style={styles.modalTitle}>Search Friends</Text>
-                                        <TextInput
-                                            style={styles.searchInput}
-                                            placeholder="Search Friends"
-                                            value={searchTerm}
-                                            onChangeText={(text) => setSearchTerm(text)}
-                                        />
-                                        <Button title="Search" onPress={handleSearch}/>
-                                        <Button title="Close" onPress={closeSearchModal}/>
-                                        <FlatList
-                                            data={searchTerm ? searchResults : friends}
-                                            keyExtractor={(item) => item.user_id}
-                                            renderItem={({item}) => (
-                                                <View style={styles.friendItem}>
-                                                    <H6 weight="400" bmargin='5px'
-                                                        style={{opacity: 0.5}}>{item.username}</H6>
-                                                    <TouchableOpacity
-                                                        onPress={() => handleMakeFriend(item.phone_number)}>
-                                                        <Text style={styles.deleteButton}>Friend</Text>
-                                                    </TouchableOpacity>
-                                                </View>
-                                            )}
-                                        />
-                                    </View>
-                                </View>
-                            </Modal>
-                            {hasRequestedFriends && (
-                                <>
-                                    <H5 tmargin='10px' bmargin='10px'>Requested</H5>
-                                    <FlatList
-                                        data={searchTerm ? searchResults : requestedFriends}
-                                        keyExtractor={(item) => item.friend_id}
-                                        renderItem={({item}) => (
-                                            <View style={styles.friendItem}>
-                                                <H6 weight="400" bmargin='5px'
-                                                    style={{opacity: 0.5}}>{item.friend_name}</H6>
-                                                <View style={styles.buttonContainer}>
-                                                    <TouchableOpacity
-                                                        style={styles.acceptButton}
-                                                        onPress={() => decideFriend(item.request_id, 'accept')}
-                                                    >
-                                                        <Text style={styles.buttonText}>Accept</Text>
-                                                    </TouchableOpacity>
-                                                    <TouchableOpacity
-                                                        style={styles.rejectButton}
-                                                        onPress={() => decideFriend(item.request_id, 'reject')}
-                                                    >
-                                                        <Text style={styles.buttonText}>Reject</Text>
-                                                    </TouchableOpacity>
-                                                </View>
-                                            </View>
-                                        )}
-                                    />
-                                </>
-                            )}
-                            <H5 tmargin='10px' bmargin='10px'>Friends</H5>
+                            <Text>Friends</Text>
                             <FlatList
                                 data={friends}
                                 keyExtractor={(item) => item.friend_id.toString()} // Assuming friend_id is a number
                                 renderItem={({item}) => (
                                     <View style={styles.friendItem} key={item.friend_id}>
-                                        <H6 weight="400" bmargin='5px' style={{opacity: 0.5}}>{item.friend_name}</H6>
+                                        <Text>{item.friend_name}</Text>
+                                    </View>
+                                )}
+                            />
+                            <Text>Requested</Text>
+                            <FlatList
+                                data={searchTerm ? searchResults : requestedFriends}
+                                keyExtractor={(item) => item.friend_id}
+                                renderItem={({item}) => (
+                                    <View style={styles.friendItem}>
+                                        <Text>{item.friend_name}</Text>
+                                        <View style={styles.buttonContainer}>
+                                            <TouchableOpacity
+                                                style={styles.acceptButton}
+                                                onPress={() => decideFriend(item.request_id, 'accept')}
+                                            >
+                                                <Text style={styles.buttonText}>Accept</Text>
+                                            </TouchableOpacity>
+                                            <TouchableOpacity
+                                                style={styles.rejectButton}
+                                                onPress={() => decideFriend(item.request_id, 'reject')}
+                                            >
+                                                <Text style={styles.buttonText}>Reject</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>
+                                )}
+                            />
+
+
+                            <Text>Search Friends</Text>
+                            <TextInput
+                                style={styles.searchInput}
+                                placeholder="Search Friends"
+                                value={searchTerm}
+                                onChangeText={(text) => setSearchTerm(text)}
+                            />
+                            <Button title="Search" onPress={searchUsers}/>
+                            <FlatList
+                                data={searchTerm ? searchResults : friends}
+                                keyExtractor={(item) => item.user_id}
+                                renderItem={({item}) => (
+                                    <View style={styles.friendItem}>
+                                        <Text>{item.username}</Text>
+                                        <TouchableOpacity onPress={() => handleMakeFriend(item.phone_number)}>
+                                            <Text style={styles.deleteButton}>Friend</Text>
+                                        </TouchableOpacity>
                                     </View>
                                 )}
                             />
@@ -275,22 +242,6 @@ const FriendsScreen = () => {
 };
 
 const styles = StyleSheet.create({
-    modalContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    modalContent: {
-        backgroundColor: 'white',
-        padding: 20,
-        borderRadius: 10,
-        elevation: 5,
-    },
-    modalTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 10,
-    },
     searchInput: {
         height: 40,
         borderColor: 'gray',
@@ -302,8 +253,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        borderTopWidth: 1,
-        borderTopColor: 'lightgray',
+        borderBottomWidth: 1,
+        borderBottomColor: 'lightgray',
         paddingVertical: 8,
     },
     deleteButton: {
