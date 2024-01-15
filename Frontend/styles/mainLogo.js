@@ -19,7 +19,7 @@ const LogoContainer = styled.SafeAreaView`
 
 const LogoInner = styled.SafeAreaView`
   height: 30px;
-  width:100%;
+  width:50%;
   bottom: 15px;
   z-index: 1000;
   margin: auto;
@@ -34,8 +34,8 @@ const LogoImg = styled.Image`
 
 const MainLogo = ({ bButton }) => (
   <LogoContainer>
+      {bButton ? <BackButton /> : null}
     <LogoInner>
-        {bButton ? <BackButton /> : null}
       <LogoImg source={require('../assets/fuelbuddyLogoShort.png')}/>
     </LogoInner>
   </LogoContainer>
