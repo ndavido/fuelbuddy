@@ -40,7 +40,7 @@ const FriendsScreen = () => {
             };
 
             const response = await axios.post(
-                'http://127.0.0.1:5000/list_friends',
+                `${process.env.REACT_APP_BACKEND_URL}/list_friends`,
                 {phone_number: user1},
                 config
             );
@@ -68,7 +68,7 @@ const FriendsScreen = () => {
             };
 
             const response = await axios.post(
-                'http://127.0.0.1:5000/requested_friends',
+                `${process.env.REACT_APP_BACKEND_URL}/requested_friends`,
                 {phone_number: user1},
                 config
             );
@@ -99,7 +99,7 @@ const FriendsScreen = () => {
             const phone = jwtDecode(token).sub;
 
             const response = await axios.post(
-                'http://127.0.0.1:5000/search_users',
+                `${process.env.REACT_APP_BACKEND_URL}/search_users`,
                 {
                     phone_number: phone,
                     search_term: searchTerm,
@@ -133,7 +133,7 @@ const FriendsScreen = () => {
             const phone = jwtDecode(token).sub;
 
             const response = await axios.post(
-                'http://127.0.0.1:5000/send_friend_request',
+                `${process.env.REACT_APP_BACKEND_URL}/send_friend_request`,
                 {
                     phone_number: phone,
                     friend_number: friendId,
@@ -156,7 +156,7 @@ const FriendsScreen = () => {
             const phone = jwtDecode(token).sub;
 
             const response = await axios.post(
-                'http://127.0.0.1:5000/respond_friend_request',
+                `${process.env.REACT_APP_BACKEND_URL}/respond_friend_request`,
                 {
                     phone_number: phone,
                     request_id: requestId,

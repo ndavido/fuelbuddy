@@ -83,7 +83,7 @@ const DashboardScreen = () => {
 
     const containsUKOrIreland = (article) => {
         const content = `${article.title} ${article.description}`; // Add other fields as needed
-        return content.toLowerCase().includes('uk') || content.toLowerCase().includes('ireland');
+        return content.toLowerCase().includes('uk ') || content.toLowerCase().includes('ireland');
     };
 
     // Define the data for charts (placeholders for now)
@@ -102,6 +102,7 @@ const DashboardScreen = () => {
         {name: '', amount: 20, color: '#F00', legendFontColor: '#7F7F7F', legendFontSize: 15},
     ];
 
+    // TODO How to Quickly reload info on the dashboard
     const fetchUserInfo = async () => {
         setLoading(true);
         try {

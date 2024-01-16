@@ -86,7 +86,7 @@ const MapScreen = () => {
                 },
             };
             const response = await fetch(
-                "http://ec2-54-172-255-239.compute-1.amazonaws.com/fuel_stations",
+                `${process.env.REACT_APP_BACKEND_URL}/fuel_stations`,
                 config
             );
             const stations = await response.json();
@@ -113,7 +113,7 @@ const MapScreen = () => {
 
             // Make the API request
             const response = await fetch(
-                'http://ec2-54-172-255-239.compute-1.amazonaws.com/store_fuel_prices',
+                `${process.env.REACT_APP_BACKEND_URL}/store_fuel_prices`,
                 {
                     method: 'POST',
                     headers: {

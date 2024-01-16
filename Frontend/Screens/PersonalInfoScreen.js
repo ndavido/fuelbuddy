@@ -71,7 +71,7 @@ const AccountScreen = () => {
             };
 
             // API call to update user information
-            const response = await axios.patch('http://127.0.0.1:5000/edit_account', updatedUserData, config);
+            const response = await axios.patch(`${process.env.REACT_APP_BACKEND_URL}/edit_account`, updatedUserData, config);
 
             if (response.data && response.data.message === 'Account updated successfully') {
                 // Update local user info state and exit edit mode
