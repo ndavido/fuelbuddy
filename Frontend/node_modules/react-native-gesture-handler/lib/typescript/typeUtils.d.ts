@@ -1,1 +1,1 @@
-export type ValueOf<T> = T[keyof T];
+export declare type ValueOf<T> = T[keyof T];

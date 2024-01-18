@@ -133,7 +133,7 @@ const DashboardScreen = () => {
             <MainLogo/>
             <WrapperScroll>
                 <TitleContainer>
-                    <H3 tmargin='100px' lmargin='20px' bmargin='10px'>My Dashboard</H3>
+                    <H3 weight='600' tmargin='100px' lmargin='20px' bmargin='10px'>My Dashboard</H3>
                 </TitleContainer>
                 <DashboardContainer>
                     <CardOverlap>

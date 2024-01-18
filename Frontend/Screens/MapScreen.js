@@ -1,53 +1,25 @@
-import React, {useState, useEffect, useRef} from "react";
-import {View, Text, StyleSheet, Platform, Animated, Dimensions, Button, TextInput, Modal} from "react-native";
+import React, {useState, useEffect, useRef, useMemo} from "react";
+import {View, Text, StyleSheet, Animated, Platform, Dimensions, Button, TextInput, Modal} from "react-native";
+import BottomSheet from '@gorhom/bottom-sheet';
 import MapView from "../Components/mymap";
 import MyMarker from '../Components/mymarker';
 import * as Location from "expo-location";
-import {Easing} from "react-native-reanimated";
-import {PanResponder} from "react-native-web"; // For user location
-import {PanGestureHandler, State} from 'react-native-gesture-handler';
+
+// Styling
+import {H2, H3, H4, H5, H6} from "../styles/text";
+import {Container, ButtonContainer, MenuButton} from "../styles/styles";
+
+const apiKey = process.env.googleMapsApiKey;
 
 const MapScreen = () => {
     const [petrolStations, setPetrolStations] = useState([]);
     const [location, setLocation] = useState(null);
     const [selectedStation, setSelectedStation] = useState(null);
-
     const [updateModalVisible, setUpdateModalVisible] = useState(false);
     const [newPetrolPrice, setNewPetrolPrice] = useState('');
     const [newDieselPrice, setNewDieselPrice] = useState('');
 
-    const smallSheetHeight = 75; // Adjust as needed
-    const largeSheetHeight = Dimensions.get('window').height / 2;
-    const snapPoints = [smallSheetHeight, largeSheetHeight];
-    const bottomSheetTranslation = useRef(new Animated.Value(smallSheetHeight))
-        .current;
-
-    const apiKey = process.env.googleMapsApiKey;
-
-    const handleSheetClose = () => {
-        Animated.timing(bottomSheetTranslation, {
-            toValue: smallSheetHeight,
-            duration: 1000,
-            useNativeDriver: false,
-            easing: Easing.ease,
-        }).start();
-    };
-
-    const onGestureEvent = Animated.event(
-        [{nativeEvent: {translationY: bottomSheetTranslation}}],
-        {useNativeDriver: false}
-    );
-
-    const onHandlerStateChange = ({nativeEvent}) => {
-        if (nativeEvent.oldState === State.ACTIVE) {
-            const velocityY = nativeEvent.velocityY;
-
-            Animated.spring(bottomSheetTranslation, {
-                toValue: velocityY < 0 ? largeSheetHeight : smallSheetHeight,
-                useNativeDriver: false,
-            }).start();
-        }
-    };
+    const snapPoints = useMemo(() => ['15%', '40%', '100%'], []);
 
     useEffect(() => {
         const fetchLocationAndPetrolStations = async () => {
@@ -62,20 +34,8 @@ const MapScreen = () => {
             fetchPetrolStations(location);
         };
 
-        if (Platform.OS === "web") {
-            fetchLocationAndPetrolStations();
-        } else {
-            fetchLocationAndPetrolStations();
-        }
+        fetchLocationAndPetrolStations();
     }, []);
-
-    const handleMarkerPress = (station) => {
-        setSelectedStation(station);
-        Animated.spring(bottomSheetTranslation, {
-            toValue: smallSheetHeight,
-            useNativeDriver: false,
-        }).start();
-    };
 
     const fetchPetrolStations = async (location) => {
         try {
@@ -137,6 +97,13 @@ const MapScreen = () => {
         setUpdateModalVisible(false);
     };
 
+    const handleMarkerPress = (station) => {
+        setSelectedStation(station);
+
+        // TODO Remove Dev Only
+        console.log("Selected Station: ", station);
+    };
+
     const renderMap = () => {
         if (Platform.OS === "web") {
             return (
@@ -144,8 +111,8 @@ const MapScreen = () => {
                     <MapView
                         style={{flex: 1}}
                         initialRegion={{
-                            latitude: 37.78825,
-                            longitude: -122.4324,
+                            latitude: 53.79053893099578,
+                            longitude: -6.239838384012141,
                             latitudeDelta: 0.0922,
                             longitudeDelta: 0.0421,
                         }}
@@ -168,12 +135,7 @@ const MapScreen = () => {
                                     latitude: station.location.latitude,
                                     longitude: station.location.longitude,
                                 }}
-                                title={station.name}
-                                description={
-                                    station.prices !== "No prices available"
-                                        ? `Petrol: ${station.prices.petrol_price}, Diesel: ${station.prices.diesel_price}`
-                                        : station.prices
-                                }
+                                onPress={() => handleMarkerPress(station)}
                             />
                         ))}
                     </MapView>
@@ -198,12 +160,6 @@ const MapScreen = () => {
                                 latitude: station.location.latitude,
                                 longitude: station.location.longitude,
                             }}
-                            title={station.name}
-                            description={
-                                station.prices !== 'No prices available'
-                                    ? `Petrol: ${station.prices.petrol_price}, Diesel: ${station.prices.diesel_price}`
-                                    : station.prices
-                            }
                             onPress={() => handleMarkerPress(station)}
                         />
                     ))}
@@ -213,79 +169,59 @@ const MapScreen = () => {
         }
     };
 
+    const renderBottomSheet = () => {
+        if (Platform.OS === "ios" || Platform.OS === "android") {
+            return (
+                <BottomSheet snapPoints={snapPoints}>
+                    {selectedStation && (
+                        <Container>
+                            <H3 weight='600' style={{lineHeight: 24}}>{selectedStation.name}</H3>
+                            <H6 style={{opacity: 0.6, lineHeight: 16}}>Fuel Station</H6>
+                            <ButtonContainer>
+                                <MenuButton title='Route To Station'
+                                            bgColor='#3891FA'
+                                            txtColor='white'
+                                            width='50%'
+                                            emoji="📍"/>
+                                <MenuButton title=''
+                                            bgColor='white'
+                                            txtColor='white'
+                                            width='40px'
+                                            emoji="❤️"/>
+                                <MenuButton title=''
+                                            bgColor='#6BFF91'
+                                            txtColor='white'
+                                            width='40px'
+                                            emoji="➕"
+                                            onPress={() => setUpdateModalVisible(true)}/>
+                            </ButtonContainer>
+                            <H4>Current Prices</H4>
+                            <H4>About</H4>
+                            <H6 style={{opacity: 0.6}}>NOT WORKING!!! About the petrol station amenities such as
+                                bathrooms </H6>
+                            <H6 style={{opacity: 0.6}}>{selectedStation.details}</H6>
+                            <H6>Address</H6>
+                            <H6 style={{opacity: 0.6}}>{selectedStation.address},</H6>
+                            <H6 style={{opacity: 0.6}}>Ireland</H6>
+                            <H4>Past Prices</H4>
+                        </Container>
+                    )}
+                </BottomSheet>
+            );
+        }
+    };
+
     return (
         <View style={{flex: 1}}>
             {renderMap()}
-            <PanGestureHandler
-                onGestureEvent={onGestureEvent}
-                onHandlerStateChange={onHandlerStateChange}
-            >
-                <Animated.View
-                    style={[styles.bottomSheet, {height: bottomSheetTranslation}]}
-                >
-                    <View style={styles.handleBar}/>
-                    {selectedStation && (
-                        <View>
-                            <Text>{selectedStation.name}</Text>
-                            <Text>Details: {selectedStation.details}</Text>
-                            <Text>Address: {selectedStation.address}</Text>
-                            <Button title="Update Fuel Price" onPress={() => setUpdateModalVisible(true)}/>
-                            <Button title="Close" onPress={handleSheetClose}/>
-                        </View>
-                    )}
-                </Animated.View>
-            </PanGestureHandler>
+            {renderBottomSheet()}
 
-            <Modal
-                animationType="slide"
-                transparent={true}
-                visible={updateModalVisible}
-                onRequestClose={() => setUpdateModalVisible(false)}
-            >
-                <View style={styles.centeredView}>
-                    <View style={styles.modalView}>
-                        <Text>Update Fuel Prices</Text>
-                        <TextInput
-                            placeholder="New Petrol Price"
-                            keyboardType="numeric"
-                            value={newPetrolPrice}
-                            onChangeText={(text) => setNewPetrolPrice(text)}
-                        />
-                        <TextInput
-                            placeholder="New Diesel Price"
-                            keyboardType="numeric"
-                            value={newDieselPrice}
-                            onChangeText={(text) => setNewDieselPrice(text)}
-                        />
-                        <Button title="Update" onPress={handleUpdatePress}/>
-                        <Button title="Cancel" onPress={() => setUpdateModalVisible(false)}/>
-                    </View>
-                </View>
-            </Modal>
         </View>
     );
 };
 
 
 const styles = StyleSheet.create({
-    bottomSheet: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: 'white',
-        borderTopLeftRadius: 10,
-        borderTopRightRadius: 10,
-        elevation: 5,
-    },
-    handleBar: {
-        height: 5,
-        width: 40,
-        backgroundColor: 'gray',
-        alignSelf: 'center',
-        marginTop: 8,
-        borderRadius: 2,
-    },
     centeredView: {
         flex: 1,
         justifyContent: "center",
