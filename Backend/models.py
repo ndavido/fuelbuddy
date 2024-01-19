@@ -60,15 +60,14 @@ class Vehicle(Document):
 
 
 class FuelStation(Document):
+    # ... (other fields)
     name = StringField(required=True)
     address = StringField(required=True)
     latitude = FloatField(required=True)
     longitude = FloatField(required=True)
-    is_fuel_station = BooleanField(required=True)
     meta = {
         'collection': 'FuelStation'
     }
-
 
 class ChargingStation(Document):
     name = StringField(required=True)
@@ -85,7 +84,7 @@ class ChargingStation(Document):
 
 
 class FuelPrices(Document):
-    fuel_station = StringField(required=True)
+    station = ReferenceField(FuelStation, required=True)
     petrol_price = FloatField()
     diesel_price = FloatField()
     updated_at = DateTimeField(required=True)

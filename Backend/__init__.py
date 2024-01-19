@@ -2,7 +2,7 @@
 import os
 
 from bson import json_util
-from flask import Flask, request, jsonify, abort
+from flask import Flask, request, jsonify, abort, current_app
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from flask_cors import CORS
 from database import Database, UserCollection, FuelStationsCollection, PetrolFuelPricesCollection
@@ -485,29 +485,28 @@ Gas Station Routes
 @require_api_key
 def get_fuel_stations():
     try:
-        stations = FuelStation.objects.all()
-        result = []
+        fuel_stations = FuelStation.objects.all()
 
-        for station in stations:
+        result = []
+        for fuel_station in fuel_stations:
             station_data = {
-                'name': station.name,
-                'address': station.address,
+                'name': fuel_station.name,
+                'address': fuel_station.address,
                 'location': {
-                    'latitude': station.latitude,
-                    'longitude': station.longitude
-                },
-                'is_charging_station': station.is_charging_station,
-                'is_fuel_station': station.is_fuel_station
+                    'latitude': fuel_station.latitude,
+                    'longitude': fuel_station.longitude
+                }
             }
 
-            prices = FuelPrices.objects(fuel_station=station).first()
+            prices = FuelPrices.objects(station=str(fuel_station.id)).first()
+
             if prices:
                 station_data['prices'] = {
                     'petrol_price': prices.petrol_price,
                     'diesel_price': prices.diesel_price,
-                    'electricity_price': prices.electricity_price,
-                    'updated_at': prices.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+                    'updated_at': prices.updated_at.strftime('%Y-%m-%d %H:%M:%S') if prices.updated_at else None
                 }
+                current_app.logger.info('Prices: %s', station_data['prices'])
             else:
                 station_data['prices'] = 'No prices available'
 
@@ -515,8 +514,8 @@ def get_fuel_stations():
 
         return jsonify(result)
     except Exception as e:
+        current_app.logger.error('An error occurred: %s', str(e))
         return handle_api_error(e)
-
 
 # ! This is the route for storing fuel stations info from Frontend
 @app.route('/store_fuel_stations', methods=['POST'])
