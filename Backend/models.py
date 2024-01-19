@@ -1,9 +1,9 @@
 # models.py
 from datetime import datetime
-from mongoengine.fields import GenericReferenceField
+from mongoengine.fields import GenericReferenceField, EmbeddedDocumentField
 
 from mongoengine import Document, StringField, FloatField, IntField, ReferenceField, BooleanField, ListField, \
-    DateTimeField, DecimalField, DictField, Q
+    DateTimeField, DecimalField, DictField, Q, EmbeddedDocument
 
 
 class Location(Document):
@@ -58,15 +58,32 @@ class Vehicle(Document):
     # Include 'Electric' as an option
     fuel_type = StringField(choices=('Petrol', 'Diesel', 'Electric'))
 
+class PetrolPrices(EmbeddedDocument):
+    price = FloatField(required=True)
+    updated_at = DateTimeField(default=datetime.utcnow)
+
+class DieselPrices(EmbeddedDocument):
+    price = FloatField(required=True)
+    updated_at = DateTimeField(default=datetime.utcnow)
 
 class FuelStation(Document):
-    # ... (other fields)
     name = StringField(required=True)
     address = StringField(required=True)
     latitude = FloatField(required=True)
     longitude = FloatField(required=True)
+    petrol_prices = ListField(EmbeddedDocumentField(PetrolPrices))
+    diesel_prices = ListField(EmbeddedDocumentField(DieselPrices))
     meta = {
         'collection': 'FuelStation'
+    }
+
+class FuelPrices(Document):
+    station = ReferenceField(FuelStation, required=True)
+    petrol_prices = ListField(EmbeddedDocumentField(PetrolPrices))
+    diesel_prices = ListField(EmbeddedDocumentField(DieselPrices))
+    updated_at = DateTimeField(default=datetime.utcnow)
+    meta = {
+        'collection': 'FuelPrices'
     }
 
 class ChargingStation(Document):
@@ -80,16 +97,6 @@ class ChargingStation(Document):
     updated_at = DateTimeField(required=True)
     meta = {
         'collection': 'ChargingStation'
-    }
-
-
-class FuelPrices(Document):
-    station = ReferenceField(FuelStation, required=True)
-    petrol_price = FloatField()
-    diesel_price = FloatField()
-    updated_at = DateTimeField(required=True)
-    meta = {
-        'collection': 'FuelPrices'
     }
 
 

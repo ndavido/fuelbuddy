@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from functools import wraps
 from models import FuelStation, Location, Users, FuelPrices, BudgetHistory, FriendRequest, Friends, Notification, \
-    ChargingStation, EVPrices, Trip
+    ChargingStation, EVPrices, Trip, PetrolPrices, DieselPrices
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
 import re
@@ -478,8 +478,6 @@ def update_budget():
 '''
 Gas Station Routes
 '''
-
-
 # ! This is the route for sending fuel stations info to Frontend
 @app.route('/fuel_stations', methods=['GET'])
 @require_api_key
@@ -495,20 +493,14 @@ def get_fuel_stations():
                 'location': {
                     'latitude': fuel_station.latitude,
                     'longitude': fuel_station.longitude
+                },
+                # handle null values and have -1 to ensure to get the latest price (may change this after frontend is done)
+                'prices': {
+                    'petrol_price': fuel_station.petrol_prices[-1].price if fuel_station.petrol_prices else None,
+                    'diesel_price': fuel_station.diesel_prices[-1].price if fuel_station.diesel_prices else None,
+                    'updated_at': fuel_station.diesel_prices[-1].updated_at.strftime('%Y-%m-%d %H:%M:%S') if fuel_station.diesel_prices else None
                 }
             }
-
-            prices = FuelPrices.objects(station=str(fuel_station.id)).first()
-
-            if prices:
-                station_data['prices'] = {
-                    'petrol_price': prices.petrol_price,
-                    'diesel_price': prices.diesel_price,
-                    'updated_at': prices.updated_at.strftime('%Y-%m-%d %H:%M:%S') if prices.updated_at else None
-                }
-                current_app.logger.info('Prices: %s', station_data['prices'])
-            else:
-                station_data['prices'] = 'No prices available'
 
             result.append(station_data)
 
@@ -560,28 +552,30 @@ def store_fuel_prices():
             fuel_station = FuelStation.objects(id=station_id).first()
 
             if not fuel_station:
-                continue  # Or handle the error as needed
+                continue
+            # Update fuel prices within FuelStation model
+            petrol_price = price_data.get('petrol_price')
+            diesel_price = price_data.get('diesel_price')
 
-            existing_price = FuelPrices.objects(
-                fuel_station=fuel_station).first()
+            fuel_station.petrol_prices.append(PetrolPrices(price=petrol_price, updated_at=datetime.utcnow()))
+            fuel_station.diesel_prices.append(DieselPrices(price=diesel_price, updated_at=datetime.utcnow()))
+            fuel_station.updated_at = datetime.utcnow()
+            fuel_station.save()
 
-            if existing_price:
-                existing_price.petrol_price = price_data.get(
-                    'petrol_price', existing_price.petrol_price)
-                existing_price.diesel_price = price_data.get(
-                    'diesel_price', existing_price.diesel_price)
-                existing_price.updated_at = datetime.strptime(
-                    price_data.get('timestamp'), '%Y-%m-%d %H:%M:%S')
-                existing_price.save()
-            else:
-                new_price = FuelPrices(
-                    fuel_station=fuel_station,
-                    petrol_price=price_data.get('petrol_price'),
-                    diesel_price=price_data.get('diesel_price'),
-                    updated_at=datetime.strptime(
-                        price_data.get('timestamp'), '%Y-%m-%d %H:%M:%S')
-                )
-                new_price.save()
+            # new entry in FuelPrices collection, storing the history of fuel prices
+            new_price = FuelPrices(
+                station=fuel_station,
+                petrol_prices=[{
+                    'price': petrol_price,
+                    'updated_at': datetime.utcnow()
+                }],
+                diesel_prices=[{
+                    'price': diesel_price,
+                    'updated_at': datetime.utcnow()
+                }],
+                updated_at=datetime.utcnow()
+            )
+            new_price.save()
 
         return jsonify({"message": "Fuel prices stored successfully"})
     except Exception as e:
