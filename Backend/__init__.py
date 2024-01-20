@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from functools import wraps
 from models import FuelStation, Location, Users, FuelPrices, BudgetHistory, FriendRequest, Friends, Notification, \
-    ChargingStation, EVPrices, Trip, PetrolPrices, DieselPrices
+    ChargingStation, EVPrices, Trip, PetrolPrices, DieselPrices, FavoriteFuelStation
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
 import re
@@ -538,6 +538,43 @@ def store_fuel_stations():
     except Exception as e:
         return handle_api_error(e)
 
+# this route is for managing favorite fuel station (add/remove)
+@app.route('/manage_favorite_fuel_station', methods=['POST'])
+@require_api_key
+def favorite_fuel_station():
+    try:
+        data = request.get_json()
+        user_id = data.get('user_id')
+        station_id = data.get('station_id')
+
+        # checks both collections to ensure user and station exists
+        user = Users.objects(id=user_id).first()
+        station = FuelStation.objects(id=station_id).first()
+
+        # goes through some cases for adding or removing favorite fuel station
+        if user and station:
+            favorite_doc = FavoriteFuelStation.objects(user=user).first()
+
+            if not favorite_doc:
+                favorite_doc = FavoriteFuelStation(user=user, favorite_stations=[station])
+                favorite_doc.save()
+                return jsonify({"message": f"Fuel station '{station.name}' has been added to favorites. user: '{user_id}'"}), 200
+
+            elif station in favorite_doc.favorite_stations:
+                favorite_doc.favorite_stations.remove(station)
+                favorite_doc.save()
+                return jsonify({"message": f"Fuel station '{station.name}' has been removed from favorites. user: '{user_id}'"}), 200
+
+            else:
+                favorite_doc.favorite_stations.append(station)
+                favorite_doc.save()
+                return jsonify({"message": f"Fuel station '{station.name}' has been added to favorites. user: '{user_id}'"}), 200
+
+        else:
+            return jsonify({"error": "User or fuel station not found."}), 404
+
+    except Exception as e:
+        return handle_api_error(e)
 
 # ! This is the route for storing petrol fuel prices info from Frontend
 @app.route('/store_fuel_prices', methods=['POST'])
