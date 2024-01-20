@@ -488,6 +488,7 @@ def get_fuel_stations():
         result = []
         for fuel_station in fuel_stations:
             station_data = {
+                'id': str(fuel_station.id),
                 'name': fuel_station.name,
                 'address': fuel_station.address,
                 'location': {
@@ -544,7 +545,15 @@ def store_fuel_stations():
 def favorite_fuel_station():
     try:
         data = request.get_json()
-        user_id = data.get('user_id')
+        username = data.get('username')
+
+        user = Users.objects(username=username).first()
+
+        if user:
+            user_id = user.id
+        else:
+            return jsonify({"error": "User not found."}), 404
+
         station_id = data.get('station_id')
 
         # checks both collections to ensure user and station exists

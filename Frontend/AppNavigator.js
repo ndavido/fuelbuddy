@@ -222,19 +222,6 @@ const AppNavigator = () => {
 
                                 return <FontAwesome5 name={iconName} size={size} color={iconColor}/>; // Use FontAwesome5 from Expo
                             },
-                            // tabBarLabel: ({focused, color}) => {
-                            //     let label;
-                            //     if (route.name === 'Dashboard') {
-                            //         label = 'Dashboard';
-                            //     } else if (route.name === 'Map') {
-                            //         label = 'Map';
-                            //     } else if (route.name === 'Account') {
-                            //         label = 'Account';
-                            //     }
-                            //
-                            //     // Use H4 component for the label
-                            //     return <H5 weight='400' style={{color}}>{label}</H5>;
-                            // },
                         })}
                     >
                         <Tab.Screen name="Dashboard" component={Dashboard}/>

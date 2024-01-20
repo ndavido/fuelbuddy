@@ -1,6 +1,7 @@
 import React, {useState, useEffect, useRef, useMemo} from "react";
 import {View, Text, StyleSheet, Animated, Platform, Dimensions, Button, TextInput, Modal} from "react-native";
 import BottomSheet from '@gorhom/bottom-sheet';
+import {SheetProvider} from 'react-native-actions-sheet';
 import MapView from "../Components/mymap";
 import MyMarker from '../Components/mymarker';
 import * as Location from "expo-location";
@@ -8,12 +9,14 @@ import * as Location from "expo-location";
 // Styling
 import {H2, H3, H4, H5, H6} from "../styles/text";
 import {Container, ButtonContainer, MenuButton} from "../styles/styles";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const apiKey = process.env.googleMapsApiKey;
 
 const MapScreen = () => {
     const [petrolStations, setPetrolStations] = useState([]);
     const [location, setLocation] = useState(null);
+    const [userInfo, setUserInfo] = useState({});
     const [selectedStation, setSelectedStation] = useState(null);
     const [updateModalVisible, setUpdateModalVisible] = useState(false);
     const [newPetrolPrice, setNewPetrolPrice] = useState('');
@@ -33,7 +36,18 @@ const MapScreen = () => {
             setLocation(location);
             fetchPetrolStations(location);
         };
+        const fetchUserInfo = async () => {
+            try {
+                const userDataJson = await AsyncStorage.getItem('userData');
+                if (userDataJson) {
+                    setUserInfo(JSON.parse(userDataJson));
+                }
+            } catch (error) {
+                console.error('Error fetching user account information:', error);
+            }
+        };
 
+        fetchUserInfo();
         fetchLocationAndPetrolStations();
     }, []);
 
@@ -97,6 +111,42 @@ const MapScreen = () => {
         setUpdateModalVisible(false);
     };
 
+    const handleLikePress = async () => {
+        try {
+            if (selectedStation) {
+                const payload = {
+                    username: userInfo.username,
+                    station_id: selectedStation.id,
+                };
+
+                console.log("Payload: ", payload)
+
+                const apiKey = process.env.REACT_NATIVE_API_KEY;
+                const config = {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': apiKey,
+                    },
+                    body: JSON.stringify(payload),
+                };
+
+                const response = await fetch(
+                    `${process.env.REACT_APP_BACKEND_URL}/manage_favorite_fuel_station`,
+                    config
+                );
+
+                if (response.ok) {
+                    console.log('Favorite status updated successfully');
+                } else {
+                    console.error('Failed to update favorite status');
+                }
+            }
+        } catch (error) {
+            console.error('Error updating favorite status:', error);
+        }
+    };
+
     const handleMarkerPress = (station) => {
         setSelectedStation(station);
 
@@ -143,7 +193,6 @@ const MapScreen = () => {
             );
         } else {
             return (
-
                 <MapView
                     style={{flex: 1}}
                     initialRegion={{
@@ -164,7 +213,6 @@ const MapScreen = () => {
                         />
                     ))}
                 </MapView>
-
             );
         }
     };
@@ -187,7 +235,8 @@ const MapScreen = () => {
                                             bgColor='white'
                                             txtColor='white'
                                             width='40px'
-                                            emoji="❤️"/>
+                                            emoji="❤️"
+                                            onPress={handleLikePress}/>
                                 <MenuButton title=''
                                             bgColor='#6BFF91'
                                             txtColor='white'
@@ -208,6 +257,45 @@ const MapScreen = () => {
                     )}
                 </BottomSheet>
             );
+        } else {
+            return (
+                <SheetProvider snapPoints={snapPoints}>
+                    {selectedStation && (
+                        <Container>
+                            <H3 weight='600' style={{lineHeight: 24}}>{selectedStation.name}</H3>
+                            <H6 style={{opacity: 0.6, lineHeight: 16}}>Fuel Station</H6>
+                            <ButtonContainer>
+                                <MenuButton title='Route To Station'
+                                            bgColor='#3891FA'
+                                            txtColor='white'
+                                            width='50%'
+                                            emoji="📍"/>
+                                <MenuButton title=''
+                                            bgColor='white'
+                                            txtColor='white'
+                                            width='40px'
+                                            emoji="❤️"
+                                            onPress={handleLikePress}/>
+                                <MenuButton title=''
+                                            bgColor='#6BFF91'
+                                            txtColor='white'
+                                            width='40px'
+                                            emoji="➕"
+                                            onPress={() => setUpdateModalVisible(true)}/>
+                            </ButtonContainer>
+                            <H4>Current Prices</H4>
+                            <H4>About</H4>
+                            <H6 style={{opacity: 0.6}}>NOT WORKING!!! About the petrol station amenities such as
+                                bathrooms </H6>
+                            <H6 style={{opacity: 0.6}}>{selectedStation.details}</H6>
+                            <H6>Address</H6>
+                            <H6 style={{opacity: 0.6}}>{selectedStation.address},</H6>
+                            <H6 style={{opacity: 0.6}}>Ireland</H6>
+                            <H4>Past Prices</H4>
+                        </Container>
+                    )}
+                </SheetProvider>
+            );
         }
     };
 
@@ -215,7 +303,6 @@ const MapScreen = () => {
         <View style={{flex: 1}}>
             {renderMap()}
             {renderBottomSheet()}
-
         </View>
     );
 };
