@@ -76,7 +76,13 @@ class FuelStation(Document):
     meta = {
         'collection': 'FuelStation'
     }
+class FavoriteFuelStation(Document):
+    user = ReferenceField(Users, required=True)
+    favorite_stations = ListField(ReferenceField(FuelStation))
 
+    meta = {
+        'collection': 'FavoriteFuelStation'
+    }
 class FuelPrices(Document):
     station = ReferenceField(FuelStation, required=True)
     petrol_prices = ListField(EmbeddedDocumentField(PetrolPrices))
