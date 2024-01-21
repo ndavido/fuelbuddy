@@ -7,8 +7,6 @@ const LogoContainer = styled.SafeAreaView`
   width: 100%;
   background-color: #FFFFFF;
   top: 0;
-  border-bottom-left-radius: 20px;
-  border-bottom-right-radius: 20px; 
   z-index: 1000;
   box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);
   margin: auto;
@@ -18,9 +16,9 @@ const LogoContainer = styled.SafeAreaView`
 `;
 
 const LogoInner = styled.SafeAreaView`
-  height: 30px;
+  height: 25px;
   width:50%;
-  bottom: 15px;
+  bottom: 10px;
   z-index: 1000;
   margin: auto;
   position: absolute;

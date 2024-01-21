@@ -97,14 +97,14 @@ const AccountScreen = () => {
         }
     };
 
-    const handleFriends = async () => {
-        try {
-            navigate.navigate('Friends');
-
-        } catch (error) {
-            console.error('Error Loading Friends:', error);
-        }
-    }
+    // const handleFriends = async () => {
+    //     try {
+    //         navigate.navigate('Friends');
+    //
+    //     } catch (error) {
+    //         console.error('Error Loading Friends:', error);
+    //     }
+    // }
 
     const handleDev = async () => {
         try {
@@ -170,15 +170,15 @@ const AccountScreen = () => {
                                                       bgColor='white'
                                                       txtColor='black'
                                                       emoji="⛽"/>
-                                    <MenuButtonMiddle title='my savings (NA)'
+                                    <MenuButtonBottom title='my savings (NA)'
                                                       bgColor='white'
                                                       txtColor='black'
                                                       emoji="💵"/>
-                                    <MenuButtonBottom title='my friends'
-                                                      bgColor='white'
-                                                      txtColor='black'
-                                                      emoji="🧑‍🤝‍🧑"
-                                                      onPress={handleFriends}/>
+                                    {/*<MenuButtonBottom title='my friends'*/}
+                                    {/*                  bgColor='white'*/}
+                                    {/*                  txtColor='black'*/}
+                                    {/*                  emoji="🧑‍🤝‍🧑"*/}
+                                    {/*                  onPress={handleFriends}/>*/}
                                     <MenuButton title='Privacy Settings (NA)'
                                                 bgColor='white'
                                                 txtColor='black'

@@ -29,7 +29,7 @@ export const Content = styled.View`
   width: 100%;
 `;
 
-export const Container = styled.ScrollView`
+export const Container = styled.View`
   height: auto;
   width: 100%;
   padding: 20px;
@@ -188,14 +188,14 @@ export const DashboardContainer = styled.View`
   display: inline-block;
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
-  padding: 20px;
+  padding: 10px;
 `;
 
 export const DashboardLegal = styled.View`
   background-color: #F7F7F7;
   position: relative;
   text-align: center;
-  height: 50px;
+  height: auto;
   padding: 20px;
 `;
 
@@ -214,7 +214,7 @@ export const Cardlrg = styled.View`
   width: calc(100% - 20px);
   min-height: 300px;
   border-radius: 8px;
-  padding: 20px;
+  padding: 10px;
   margin: 10px;
 `;
 

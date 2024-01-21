@@ -74,29 +74,13 @@ const DeveloperScreen = () => {
 
     return (
         <Main>
-            <MainLogo/>
+            <MainLogo bButton={true}/>
             <AccountWrapper>
                     <AccountRegularInfo>
                         <AccountContent>
                             <H3 tmargin='20px' lmargin='20px' bmargin='10px'>Developer Screen</H3>
                             <AccountTxtWrapper>
-                                <H5 tmargin='10px' bmargin='10px'>Personal Information</H5>
-                                <H6 bmargin='5px'>Username</H6>
-                                <AccountTxt bgColor='grey' >@{userInfo.username}</AccountTxt>
-                                <H6 bmargin='5px'>Name</H6>
-                                <AccountTxt bgColor='#FFFFFF' >{userInfo.full_name}</AccountTxt>
-                                <H6 bmargin='5px'>Phone Number</H6>
-                                <AccountTxt bgColor='#FFFFFF' >{userInfo.phone_number}</AccountTxt>
-                                <H6 bmargin='5px'>Email</H6>
-                                <AccountTxt bgColor='#FFFFFF' >{userInfo.email}</AccountTxt>
-                                <H5 tmargin='20px' bmargin='5px'>Delete Account</H5>
-                                <H6 bmargin='20px' weight='400'>Not comfortable? Deleting your account will
-                                    remove all data from our servers</H6>
-                                <MenuButton title='Delete Account'
-                                            bgColor='red'
-                                            txtColor='white'
-                                            onPress={handleDelete}
-                                            emoji="🥲"/>
+
                             </AccountTxtWrapper>
 
                         </AccountContent>

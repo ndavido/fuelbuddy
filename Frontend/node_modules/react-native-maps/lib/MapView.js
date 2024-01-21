@@ -50,12 +50,7 @@ class MapView extends React.Component {
         this._onMapReady = this._onMapReady.bind(this);
         this._onChange = this._onChange.bind(this);
     }
-    /**
-     * @deprecated Will be removed in v2.0.0, as setNativeProps is not a thing in fabric.
-     * See https://reactnative.dev/docs/new-architecture-library-intro#migrating-off-setnativeprops
-     */
     setNativeProps(props) {
-        console.warn('setNativeProps is deprecated and will be removed in next major release');
         // @ts-ignore
         this.map.current?.setNativeProps(props);
     }
@@ -309,6 +304,8 @@ class MapView extends React.Component {
                 initialRegion: null,
                 onChange: this._onChange,
                 onMapReady: this._onMapReady,
+                liteMode: this.props.liteMode,
+                googleMapId: this.props.googleMapId,
                 ref: this.map,
                 customMapStyleString: this.props.customMapStyle
                     ? JSON.stringify(this.props.customMapStyle)
@@ -329,6 +326,8 @@ class MapView extends React.Component {
             props = {
                 style: this.props.style,
                 region: null,
+                liteMode: this.props.liteMode,
+                googleMapId: this.props.googleMapId,
                 initialRegion: this.props.initialRegion || null,
                 initialCamera: this.props.initialCamera,
                 ref: this.map,
@@ -339,11 +338,6 @@ class MapView extends React.Component {
                     ? JSON.stringify(this.props.customMapStyle)
                     : undefined,
             };
-        }
-        if (react_native_1.Platform.OS === 'android' && this.props.liteMode) {
-            return (<decorateMapComponent_1.ProviderContext.Provider value={this.props.provider}>
-          <AIRMapLite {...props}/>
-        </decorateMapComponent_1.ProviderContext.Provider>);
         }
         const AIRMap = getNativeMapComponent(this.props.provider);
         return (<decorateMapComponent_1.ProviderContext.Provider value={this.props.provider}>
@@ -364,9 +358,6 @@ else {
         : (0, decorateMapComponent_1.createNotSupportedComponent)('react-native-maps: AirGoogleMaps dir must be added to your xCode project to support GoogleMaps on iOS.');
 }
 const getNativeMapComponent = (provider) => airMaps[provider || 'default'];
-const AIRMapLite = react_native_1.UIManager.getViewManagerConfig('AIRMapLite')
-    ? (0, react_native_1.requireNativeComponent)('AIRMapLite')
-    : () => null;
 exports.AnimatedMapView = react_native_1.Animated.createAnimatedComponent(MapView);
 const enableLatestRenderer = () => {
     if (react_native_1.Platform.OS !== 'android') {
