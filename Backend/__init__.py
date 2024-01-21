@@ -539,6 +539,37 @@ def store_fuel_stations():
     except Exception as e:
         return handle_api_error(e)
 
+# individually finds favorite fuel stations for a user
+
+@app.route('/get_favorite_fuel_stations/username', methods=['GET'])
+@require_api_key
+def get_favorite_fuel_stations(username):
+    try:
+        user = Users.objects(username=username).first()
+
+        if user:
+            favorite_doc = FavoriteFuelStation.objects(user=user).first()
+            if favorite_doc:
+                favorite_stations = favorite_doc.favorite_stations
+                station_list = [
+                    {
+                        "station_id": str(station.id),
+                        "name": station.name,
+                        "location": {
+                            "latitude": station.latitude,
+                            "longitude": station.longitude
+                        }
+                    } for station in favorite_stations
+                ]
+                return jsonify({"favorite_stations": station_list}), 200
+            else:
+                return jsonify({"message": "No favorite fuel stations found for the user."}), 200
+        else:
+            return jsonify({"error": "User not found."}), 404
+
+    except Exception as e:
+        return handle_api_error(e)
+
 # this route is for managing favorite fuel station (add/remove)
 @app.route('/manage_favorite_fuel_station', methods=['POST'])
 @require_api_key
