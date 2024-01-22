@@ -211,7 +211,7 @@ export const CardContainer = styled.View`
 
 export const Cardlrg = styled.View`
   background-color: #ffffff;
-  width: calc(100% - 20px);
+  flex: 1;
   min-height: 300px;
   border-radius: 8px;
   padding: 10px;
@@ -220,10 +220,10 @@ export const Cardlrg = styled.View`
 
 export const Cardsml = styled.View`
   background-color: #ffffff;
-  width: calc(50% - 20px);
+  flex: 1;
   min-height: 180px;
   border-radius: 8px;
-  padding: 20px;
+  padding: 10px;
   margin: 10px;
 `;
 

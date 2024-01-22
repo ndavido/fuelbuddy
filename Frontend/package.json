@@ -35,6 +35,7 @@
     "react-is": "^18.2.0",
     "react-native": "0.72.6",
     "react-native-actions-sheet": "^0.8.29",
+    "react-native-animatable": "^1.4.0",
     "react-native-chart-kit": "^6.12.0",
     "react-native-dotenv": "^3.4.9",
     "react-native-gesture-handler": "~2.12.0",

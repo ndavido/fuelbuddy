@@ -8,14 +8,16 @@ const isWeb = Platform.OS !== "ios" && Platform.OS !== "android";
 
 let MapView, MapViewDirections;
 if (!isWeb) {
-  MapView = require("react-native-map-clustering").default;
-  MapViewDirections = require("react-native-maps-directions").default;
+    MapView = require("react-native-map-clustering").default;
+    MapViewDirections = require("react-native-maps-directions").default;
 }
 
 // Styling
-import {H2, H3, H4, H5, H6} from "../styles/text";
-import {Container, ButtonContainer, MenuButton} from "../styles/styles";
+import {H2, H3, H4, H5, H6, H7, H8} from "../styles/text";
+import {Container, ButtonContainer, MenuButton, Cardsml, CardContainer} from "../styles/styles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import AnimatedHeartButton from "../styles/AnimatedIconButton";
+
 
 const apiKey = process.env.googleMapsApiKey;
 
@@ -23,13 +25,23 @@ const MapScreen = () => {
     const [petrolStations, setPetrolStations] = useState([]);
     const [location, setLocation] = useState(null);
     const [userInfo, setUserInfo] = useState({});
+
+    const [heartActive, setHeartActive] = useState(false);
+
     const mapRef = useRef(null);
+    const [estimatedDuration, setEstimatedDuration] = useState(null);
+    const [estimatedDistance, setEstimatedDistance] = useState(null);
+
     const [selectedStation, setSelectedStation] = useState(null);
     const [updateModalVisible, setUpdateModalVisible] = useState(false);
     const [newPetrolPrice, setNewPetrolPrice] = useState('');
     const [newDieselPrice, setNewDieselPrice] = useState('');
 
-    const snapPoints = useMemo(() => ['15%', '40%', '90%'], []);
+    const [showStationInfo, setShowStationInfo] = useState(true);
+    const [showRouteInfo, setShowRouteInfo] = useState(false);
+    const bottomSheetRef = useRef(null);
+
+    const snapPoints = useMemo(() => ['20%', '40%', '90%'], []);
 
     useEffect(() => {
         const fetchLocationAndPetrolStations = async () => {
@@ -52,14 +64,12 @@ const MapScreen = () => {
                     longitudeDelta: 0.0421,
                 });
 
-                // Fetch petrol stations using the obtained location
                 fetchPetrolStations(location);
 
                 Location.watchPositionAsync({distanceInterval: 10}, (newLocation) => {
-                    // Update the user's live location
+
                     setLocation(newLocation);
 
-                    // Animate the map to the new location
                     mapRef.current?.animateToRegion({
                         latitude: newLocation.coords.latitude,
                         longitude: newLocation.coords.longitude,
@@ -95,10 +105,7 @@ const MapScreen = () => {
                     "X-API-Key": apiKey,
                 },
             };
-            const response = await fetch(
-                `${process.env.REACT_APP_BACKEND_URL}/fuel_stations`,
-                config
-            );
+            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/fuel_stations`, config);
             const stations = await response.json();
             console.log("Stations: ", stations);
             setPetrolStations(stations);
@@ -109,36 +116,24 @@ const MapScreen = () => {
 
     const handleUpdatePress = async () => {
         try {
-            // Prepare the payload
             const payload = {
-                fuelPrices: [
-                    {
-                        station_id: selectedStation.id, // Assuming your station object has an 'id'
-                        petrol_price: newPetrolPrice,
-                        diesel_price: newDieselPrice,
-                        timestamp: new Date().toISOString(),
-                    },
-                ],
+                fuelPrices: [{
+                    station_id: selectedStation.id,
+                    petrol_price: newPetrolPrice, diesel_price: newDieselPrice, timestamp: new Date().toISOString(),
+                },],
             };
 
             // Make the API request
-            const response = await fetch(
-                `${process.env.REACT_APP_BACKEND_URL}/store_fuel_prices`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(payload),
-                }
-            );
+            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/store_fuel_prices`, {
+                method: 'POST', headers: {
+                    'Content-Type': 'application/json',
+                }, body: JSON.stringify(payload),
+            });
 
             if (response.ok) {
                 console.log('Successfully updated fuel prices');
-                // Optionally, update your local state or perform additional actions
             } else {
                 console.error('Failed to update fuel prices');
-                // Handle error accordingly
             }
         } catch (error) {
             console.error('Error updating fuel prices:', error);
@@ -151,26 +146,19 @@ const MapScreen = () => {
         try {
             if (selectedStation) {
                 const payload = {
-                    username: userInfo.username,
-                    station_id: selectedStation.id,
+                    username: userInfo.username, station_id: selectedStation.id,
                 };
 
                 console.log("Payload: ", payload)
 
                 const apiKey = process.env.REACT_NATIVE_API_KEY;
                 const config = {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-API-Key': apiKey,
-                    },
-                    body: JSON.stringify(payload),
+                    method: 'POST', headers: {
+                        'Content-Type': 'application/json', 'X-API-Key': apiKey,
+                    }, body: JSON.stringify(payload),
                 };
 
-                const response = await fetch(
-                    `${process.env.REACT_APP_BACKEND_URL}/manage_favorite_fuel_station`,
-                    config
-                );
+                const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/manage_favorite_fuel_station`, config);
 
                 if (response.ok) {
                     console.log('Favorite status updated successfully');
@@ -193,104 +181,110 @@ const MapScreen = () => {
     const handleRoutePress = () => {
         if (selectedStation && location) {
             const origin = {
-                latitude: location.coords.latitude,
-                longitude: location.coords.longitude,
+                latitude: location.coords.latitude, longitude: location.coords.longitude,
             };
 
             const destination = {
-                latitude: selectedStation.location.latitude,
-                longitude: selectedStation.location.longitude,
+                latitude: selectedStation.location.latitude, longitude: selectedStation.location.longitude,
             };
 
-            const waypoints = [
-                {
-                    latitude: location.coords.latitude,
-                    longitude: location.coords.longitude,
-                },
-                destination,
-            ];
-
             const directionsOptions = {
-                origin,
-                destination,
-                waypoints,
-                optimizeWaypoints: true,
-                travelMode: 'DRIVING',
-                unitSystem: 'METRIC',
+                origin, destination, waypoints: [{
+                    latitude: location.coords.latitude, longitude: location.coords.longitude,
+                },], optimizeWaypoints: true, travelMode: 'DRIVING', unitSystem: 'METRIC',
             };
 
             setUpdateModalVisible(false);
 
-            mapRef.current.fitToCoordinates(waypoints, {
-                edgePadding: {top: 50, right: 50, bottom: 50, left: 50},
-            });
+            mapRef.current.fitToCoordinates([{
+                latitude: location.coords.latitude,
+                longitude: location.coords.longitude
+            }, {
+                latitude: selectedStation.location.latitude,
+                longitude: selectedStation.location.longitude
+            },], {edgePadding: {top: 50, right: 50, bottom: 50, left: 50}});
+
+            const apiUrl = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&key=${apiKey}`;
+
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const duration = data.routes[0].legs[0].duration.text;
+                    const distance = data.routes[0].legs[0].distance.text;
+
+                    console.log('Estimated Duration:', duration);
+                    console.log('Distance:', distance);
+
+                    setEstimatedDuration(duration);
+                    setEstimatedDistance(distance);
+
+                })
+                .catch(error => {
+                    console.error('Error fetching directions:', error);
+                });
+            setShowStationInfo(false);
+            setShowRouteInfo(true);
         }
     };
 
+    const handleCancelPress = () => {
+        setShowStationInfo(true);
+        setShowRouteInfo(false);
+    };
 
     const renderMap = () => {
         if (isWeb) {
-            return (
-                <View style={{flex: 1}}>
-                    <H2>Switch to Mobile plz x</H2>
-                </View>
-            );
+            return (<View style={{flex: 1}}>
+                <H2>Switch to Mobile plz x</H2>
+            </View>);
         } else {
-            return (
-                <MapView
-                    style={{flex: 1}}
-                    initialRegion={{
-                        latitude: 53.98444410090042,
-                        longitude: -6.393485737521783,
-                        latitudeDelta: 0.0922,
-                        longitudeDelta: 0.0421,
+            return (<MapView
+                style={{flex: 1}}
+                initialRegion={{
+                    latitude: 53.98444410090042,
+                    longitude: -6.393485737521783,
+                    latitudeDelta: 0.0922,
+                    longitudeDelta: 0.0421,
+                }}
+                ref={mapRef}
+                showsUserLocation={true}
+                userInterfaceStyle={"dark"}
+            >
+                {petrolStations.map((station, index) => (<MyMarker
+                    key={index}
+                    coordinate={{
+                        latitude: station.location.latitude, longitude: station.location.longitude,
                     }}
-                    ref={mapRef}
-                    showsUserLocation={true}
-                    userInterfaceStyle={"dark"}
-                >
-                    {petrolStations.map((station, index) => (
-                        <MyMarker
-                            key={index}
-                            coordinate={{
-                                latitude: station.location.latitude,
-                                longitude: station.location.longitude,
-                            }}
-                            onPress={() => handleMarkerPress(station)}
-                        />
-                    ))}
-                    {selectedStation && location && (
-                        <MapViewDirections
-                            timePrecision="now"
-                            origin={{
-                                latitude: location.coords.latitude,
-                                longitude: location.coords.longitude,
-                            }}
-                            destination={{
-                                latitude: selectedStation.location.latitude,
-                                longitude: selectedStation.location.longitude,
-                            }}
-                            waypoints={[
-                                {
-                                    latitude: location.coords.latitude,
-                                    longitude: location.coords.longitude,
-                                },
-                            ]}
-                            apikey={apiKey}
-                            strokeWidth={3}
-                            strokeColor="hotpink"
-                        />
-                    )}
-                </MapView>
-            );
+                    onPress={() => handleMarkerPress(station)}
+                />))}
+                {selectedStation && location && showRouteInfo && (<MapViewDirections
+                    timePrecision="now"
+                    origin={{
+                        latitude: location.coords.latitude, longitude: location.coords.longitude,
+                    }}
+                    destination={{
+                        latitude: selectedStation.location.latitude,
+                        longitude: selectedStation.location.longitude,
+                    }}
+                    waypoints={[{
+                        latitude: location.coords.latitude, longitude: location.coords.longitude,
+                    },]}
+                    apikey={apiKey}
+                    strokeWidth={3}
+                    strokeColor="hotpink"
+                />)}
+            </MapView>);
         }
     };
 
-    const renderBottomSheet = () => {
+    const renderStationBottomSheet = () => {
         if (!isWeb) {
             return (
-                <BottomSheet snapPoints={snapPoints}>
-                    {selectedStation && (
+                <BottomSheet snapPoints={snapPoints}
+                             backgroundStyle={{
+                                 backgroundColor: '#F7F7F7'
+                             }}>
+                    {selectedStation && showStationInfo && (
                         <Container>
                             <H3 weight='600' style={{lineHeight: 24}}>{selectedStation.name}</H3>
                             <H6 style={{opacity: 0.6, lineHeight: 16}}>Fuel Station</H6>
@@ -301,12 +295,7 @@ const MapScreen = () => {
                                             width='50%'
                                             emoji="📍"
                                             onPress={handleRoutePress}/>
-                                <MenuButton title=''
-                                            bgColor='white'
-                                            txtColor='white'
-                                            width='40px'
-                                            emoji="❤️"
-                                            onPress={handleLikePress}/>
+                                <AnimatedHeartButton initialIsActive={heartActive} onPress={handleLikePress} />
                                 <MenuButton title=''
                                             bgColor='#6BFF91'
                                             txtColor='white'
@@ -315,6 +304,18 @@ const MapScreen = () => {
                                             onPress={() => setUpdateModalVisible(true)}/>
                             </ButtonContainer>
                             <H4>Current Prices</H4>
+                            <CardContainer>
+                                <Cardsml>
+                                    <H5 style={{opacity: 0.6, textAlign: 'center'}}>Petrol</H5>
+                                    <H3 style={{textAlign: 'center'}}>No Price Avaliable</H3>
+                                    <H8 style={{opacity: 0.6, textAlign: 'center'}}>Last Updated: NA</H8>
+                                </Cardsml>
+                                <Cardsml>
+                                    <H5 style={{opacity: 0.6, textAlign: 'center'}}>Diesel</H5>
+                                    <H3 style={{textAlign: 'center'}}>No Price Avaliable</H3>
+                                    <H8 style={{opacity: 0.6, textAlign: 'center'}}>Last Updated: NA</H8>
+                                </Cardsml>
+                            </CardContainer>
                             <H4>About</H4>
                             <H6 style={{opacity: 0.6}}>NOT WORKING!!! About the petrol station amenities such as
                                 bathrooms </H6>
@@ -322,49 +323,43 @@ const MapScreen = () => {
                             <H6>Address</H6>
                             <H6 style={{opacity: 0.6}}>{selectedStation.address},</H6>
                             <H6 style={{opacity: 0.6}}>Ireland</H6>
-                            <H4>Past Prices</H4>
-                        </Container>
-                    )}
-                </BottomSheet>
-            );
+                            <H4 tmargin="20px">Past Prices</H4>
+                        </Container>)}
+                </BottomSheet>);
         } else {
-            return (
-                <H4>Note: The Map Clustering, The bottom Sheet, The Map Directions & The Map itself doesnt work on Web</H4>
-            );
+            return (<H4>Note: The Map Clustering, The bottom Sheet, The Map Directions & The Map itself doesnt work on
+                Web</H4>);
         }
     };
 
-    return (
-        <View style={{flex: 1}}>
-            {renderMap()}
-            {renderBottomSheet()}
-        </View>
-    );
+    const renderRouteInfoBottomSheet = () => {
+        if (!isWeb && showRouteInfo) {
+            return (
+                <BottomSheet snapPoints={['20%', '40%']} index={0} ref={bottomSheetRef}>
+                    <Container>
+                        <H3>Journey Details</H3>
+                        <H6>Estimated Time: {estimatedDuration}</H6>
+                        <H6>Distance: {estimatedDistance}</H6>
+                        <H6>Estimated Trip Price: €</H6>
+                        <ButtonContainer>
+                            <Button title='Start Journey' onPress={() => {
+                            }}/>
+                            <Button title='Cancel' onPress={handleCancelPress}/>
+                        </ButtonContainer>
+                    </Container>
+                </BottomSheet>
+            );
+        } else {
+            return (<H4></H4>);
+        }
+    };
+
+    return (<View style={{flex: 1}}>
+        {renderMap()}
+        {renderStationBottomSheet()}
+        {renderRouteInfoBottomSheet()}
+
+    </View>);
 };
-
-
-const styles = StyleSheet.create({
-    centeredView: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        marginTop: 22,
-    },
-    modalView: {
-        margin: 20,
-        backgroundColor: "white",
-        borderRadius: 20,
-        padding: 35,
-        alignItems: "center",
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-});
 
 export default MapScreen;
