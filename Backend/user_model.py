@@ -1,8 +1,6 @@
-from keras.models import Sequential
-from keras.layers import SimpleRNN, Dense
-from sklearn.preprocessing import MinMaxScaler
-from keras.models import load_model
 import numpy as np
+from keras.models import load_model
+from sklearn.preprocessing import MinMaxScaler
 import pandas as pd
 
 # Define the load_saved_model function
@@ -22,23 +20,32 @@ def make_prediction(model, scaler, last_weeks_data, look_back):
     predicted_price = scaler.inverse_transform(predicted_price)
     return predicted_price[0][0]
 
+# Define the round_to_nearest_10 function
+def round_to_nearest_10(value):
+    return round(value / 10.0) * 10
+
 # Define the model path and look_back period
-look_back = 4
-model_path = 'Backend/user_model.h5'
+look_back = 10
+model_path = 'Backend/updated_user_model.h5'
 
 # Load the pre-trained model
 model = load_saved_model(model_path)
 
 # Initialize the scaler
 scaler = MinMaxScaler(feature_range=(0, 1))
-df = pd.read_csv('Backend/new_user_spending_data.csv')
+df = pd.read_csv('Backend/unseen_spending_data.csv')
 data = df['Total'].values.reshape(-1, 1)
 scaler.fit(data)
 
 # Input data for the prediction
-last_weeks_data = np.array([80,70,100,120])
+last_weeks_data = np.array([50,80,70,120,100,50.60,80,100,140,150])
 
 # Make the prediction
 predicted_price = make_prediction(model, scaler, last_weeks_data, look_back)
+
+# Adjust the prediction to the nearest 10
+adjusted_predicted_price = round_to_nearest_10(predicted_price)
+
 print("Next Week's Predicted Price is: ", predicted_price)
+print("Adjusted Predicted Price to the nearest 10 is: ", adjusted_predicted_price)
 
