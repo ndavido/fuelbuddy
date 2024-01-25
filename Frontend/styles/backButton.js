@@ -18,7 +18,6 @@ const BackButtonContainer = styled(TouchableOpacity)`
     align-items: center;
 `;
 
-// Updated styling for the FontAwesome5 icon
 const Icon = styled(FontAwesome5)`
     color: #515151;
     font-size: 18px;

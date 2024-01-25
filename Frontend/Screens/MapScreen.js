@@ -16,7 +16,8 @@ if (!isWeb) {
 import {H2, H3, H4, H5, H6, H7, H8} from "../styles/text";
 import {Container, ButtonContainer, MenuButton, Cardsml, CardContainer} from "../styles/styles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import AnimatedHeartButton from "../styles/AnimatedIconButton";
+import {AnimatedGenericButton, AnimatedHeartButton, TAnimatedGenericButton} from "../styles/AnimatedIconButton";
+import CustomMarker from "../Components/customMarker";
 
 
 const apiKey = process.env.googleMapsApiKey;
@@ -107,7 +108,7 @@ const MapScreen = () => {
             };
             const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/fuel_stations`, config);
             const stations = await response.json();
-            console.log("Stations: ", stations);
+
             setPetrolStations(stations);
         } catch (error) {
             console.error(error);
@@ -174,6 +175,8 @@ const MapScreen = () => {
     const handleMarkerPress = (station) => {
         setSelectedStation(station);
 
+        setShowStationInfo(true);
+        setShowRouteInfo(false);
         // TODO Remove Dev Only
         console.log("Selected Station: ", station);
     };
@@ -250,7 +253,7 @@ const MapScreen = () => {
                 showsUserLocation={true}
                 userInterfaceStyle={"dark"}
             >
-                {petrolStations.map((station, index) => (<MyMarker
+                {petrolStations.map((station, index) => (<CustomMarker
                     key={index}
                     coordinate={{
                         latitude: station.location.latitude, longitude: station.location.longitude,
@@ -278,7 +281,7 @@ const MapScreen = () => {
     };
 
     const renderStationBottomSheet = () => {
-        if (!isWeb) {
+        if (!isWeb && showStationInfo) {
             return (
                 <BottomSheet snapPoints={snapPoints}
                              backgroundStyle={{
@@ -289,19 +292,9 @@ const MapScreen = () => {
                             <H3 weight='600' style={{lineHeight: 24}}>{selectedStation.name}</H3>
                             <H6 style={{opacity: 0.6, lineHeight: 16}}>Fuel Station</H6>
                             <ButtonContainer>
-                                <MenuButton title='Route To Station'
-                                            bgColor='#3891FA'
-                                            txtColor='white'
-                                            width='50%'
-                                            emoji="📍"
-                                            onPress={handleRoutePress}/>
+                                <TAnimatedGenericButton text="Route To Station" onPress={handleRoutePress}/>
                                 <AnimatedHeartButton initialIsActive={heartActive} onPress={handleLikePress} />
-                                <MenuButton title=''
-                                            bgColor='#6BFF91'
-                                            txtColor='white'
-                                            width='40px'
-                                            emoji="➕"
-                                            onPress={() => setUpdateModalVisible(true)}/>
+                                <AnimatedGenericButton onPress={() => setUpdateModalVisible(true)}/>
                             </ButtonContainer>
                             <H4>Current Prices</H4>
                             <CardContainer>
@@ -327,24 +320,21 @@ const MapScreen = () => {
                         </Container>)}
                 </BottomSheet>);
         } else {
-            return (<H4>Note: The Map Clustering, The bottom Sheet, The Map Directions & The Map itself doesnt work on
-                Web</H4>);
+            return (<H4></H4>);
         }
     };
 
     const renderRouteInfoBottomSheet = () => {
         if (!isWeb && showRouteInfo) {
             return (
-                <BottomSheet snapPoints={['20%', '40%']} index={0} ref={bottomSheetRef}>
+                <BottomSheet snapPoints={['20%', '20%']} index={0} ref={bottomSheetRef} handleIndicatorStyle={{ display: "none" }}>
                     <Container>
-                        <H3>Journey Details</H3>
-                        <H6>Estimated Time: {estimatedDuration}</H6>
-                        <H6>Distance: {estimatedDistance}</H6>
-                        <H6>Estimated Trip Price: €</H6>
+                        <H4 style={{ flexDirection: 'row' }}>{estimatedDuration} ({estimatedDistance})</H4>
+                        <H6>Estimated Price: €</H6>
                         <ButtonContainer>
-                            <Button title='Start Journey' onPress={() => {
-                            }}/>
+                            <Button title='Start Journey' onPress={() => {}}/>
                             <Button title='Cancel' onPress={handleCancelPress}/>
+                            <Button title='Save Route' onPress={() => {}}/>
                         </ButtonContainer>
                     </Container>
                 </BottomSheet>

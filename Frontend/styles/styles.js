@@ -211,7 +211,6 @@ export const CardContainer = styled.View`
 
 export const Cardlrg = styled.View`
   background-color: #ffffff;
-  flex: 1;
   min-height: 300px;
   border-radius: 8px;
   padding: 10px;

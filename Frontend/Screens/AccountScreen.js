@@ -47,7 +47,7 @@ const AccountScreen = () => {
 
             // Define the swipe threshold and target position
             const SWIPE_THRESHOLD = 100;
-            const TARGET_TRANSLATE_Y = -150;
+            const TARGET_TRANSLATE_Y = -140;
 
             if (translationY < -SWIPE_THRESHOLD) {
                 // Swipe up
