@@ -38,7 +38,7 @@ data = df['Total'].values.reshape(-1, 1)
 scaler.fit(data)
 
 # Input data for the prediction
-last_weeks_data = np.array([50,80,70,120,100,50.60,80,100,140,150])
+last_weeks_data = np.array([70,120,100,50.60,80,100,140,150,70,50])
 
 # Make the prediction
 predicted_price = make_prediction(model, scaler, last_weeks_data, look_back)
