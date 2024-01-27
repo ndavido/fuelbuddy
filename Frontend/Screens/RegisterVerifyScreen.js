@@ -88,7 +88,7 @@ const RegisterVerifyScreen = ({route}) => {
                     },
                 };
 
-                const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/register`, {
+                const response = await axios.post(`${url}/register`, {
                     full_name: route.params.full_name,
                     username: formData.username,
                     phone_number: route.params.phone_number

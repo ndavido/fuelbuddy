@@ -29,6 +29,8 @@ const FriendsScreen = () => {
     const [loading, setLoading] = useState(true);
     const hasRequestedFriends = requestedFriends.length > 0;
 
+    console.log(url)
+
     const fetchFriends = async () => {
         try {
             const token = await AsyncStorage.getItem('token');

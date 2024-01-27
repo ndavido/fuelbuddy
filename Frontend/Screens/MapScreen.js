@@ -3,17 +3,16 @@ import {View, Text, StyleSheet, Animated, Platform, Linking, Button, TextInput, 
 import BottomSheet from '@gorhom/bottom-sheet';
 import MyMarker from '../Components/mymarker';
 import * as Location from "expo-location";
-import MapView from "react-native-maps";
 
 const isWeb = Platform.OS !== "ios" && Platform.OS !== "android";
 
+let MapView;
 let MapViewDirections;
 if (!isWeb) {
     // MapView = require("react-native-map-clustering").default;
+    MapView = require("react-native-maps").default;
     MapViewDirections = require("react-native-maps-directions").default;
 }
-
-const url = process.env.REACT_APP_BACKEND_URL
 
 // Styling
 import {H2, H3, H4, H5, H6, H7, H8} from "../styles/text";
@@ -24,6 +23,7 @@ import CustomMarker from "../Components/customMarker";
 
 
 const apiKey = process.env.googleMapsApiKey;
+const url = process.env.REACT_APP_BACKEND_URL
 
 const MapScreen = () => {
     const [petrolStations, setPetrolStations] = useState([]);
@@ -46,6 +46,8 @@ const MapScreen = () => {
     const bottomSheetRef = useRef(null);
 
     const snapPoints = useMemo(() => ['20%', '40%', '90%'], []);
+
+    console.log(url)
 
     useEffect(() => {
         const fetchLocationAndPetrolStations = async () => {
@@ -109,7 +111,7 @@ const MapScreen = () => {
                     "X-API-Key": apiKey,
                 },
             };
-            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/fuel_stations`, config);
+            const response = await fetch(`${url}/fuel_stations`, config);
             const stations = await response.json();
 
             setPetrolStations(stations);
