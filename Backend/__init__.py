@@ -635,29 +635,39 @@ def store_fuel_prices():
 
             if not fuel_station:
                 continue
-            # Update fuel prices within FuelStation model
-            petrol_price = price_data.get('petrol_price')
-            diesel_price = price_data.get('diesel_price')
 
-            fuel_station.petrol_prices.append(PetrolPrices(price=petrol_price, updated_at=datetime.utcnow()))
-            fuel_station.diesel_prices.append(DieselPrices(price=diesel_price, updated_at=datetime.utcnow()))
+            # Update or add new petrol price
+            petrol_price_entry = fuel_station.petrol_prices.first()
+            if petrol_price_entry:
+                petrol_price_entry.price = price_data.get('petrol_price')
+                petrol_price_entry.updated_at = datetime.utcnow()
+            else:
+                fuel_station.petrol_prices.create(price=price_data.get('petrol_price'), updated_at=datetime.utcnow())
+
+            diesel_price_entry = fuel_station.diesel_prices.first()
+            if diesel_price_entry:
+                diesel_price_entry.price = price_data.get('diesel_price')
+                diesel_price_entry.updated_at = datetime.utcnow()
+            else:
+                fuel_station.diesel_prices.create(price=price_data.get('diesel_price'), updated_at=datetime.utcnow())
+
             fuel_station.updated_at = datetime.utcnow()
             fuel_station.save()
 
-            # new entry in FuelPrices collection, storing the history of fuel prices
-            new_price = FuelPrices(
-                station=fuel_station,
-                petrol_prices=[{
-                    'price': petrol_price,
-                    'updated_at': datetime.utcnow()
-                }],
-                diesel_prices=[{
-                    'price': diesel_price,
-                    'updated_at': datetime.utcnow()
-                }],
-                updated_at=datetime.utcnow()
-            )
-            new_price.save()
+            latest_fuel_price = FuelPrices.objects(station=fuel_station).order_by('-updated_at').first()
+
+            if latest_fuel_price:
+                latest_fuel_price.petrol_prices[-1]['price'] = price_data.get('petrol_price')
+                latest_fuel_price.diesel_prices[-1]['price'] = price_data.get('diesel_price')
+                latest_fuel_price.updated_at = datetime.utcnow()
+            else:
+                new_price = FuelPrices(
+                    station=fuel_station,
+                    petrol_prices=[{'price': price_data.get('petrol_price'), 'updated_at': datetime.utcnow()}],
+                    diesel_prices=[{'price': price_data.get('diesel_price'), 'updated_at': datetime.utcnow()}],
+                    updated_at=datetime.utcnow()
+                )
+                new_price.save()
 
         return jsonify({"message": "Fuel prices stored successfully"})
     except Exception as e:

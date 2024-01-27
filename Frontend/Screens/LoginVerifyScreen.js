@@ -89,7 +89,7 @@ const LoginVerifyScreen = ({route}) => {
                     },
                 };
 
-                const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/login`, { phone_number: formData.phone_number, }, config );
+                const response = await axios.post(`${url}/login`, { phone_number: formData.phone_number, }, config );
 
                 // Check the response status or message to confirm code resent successfully
                 if (response && response.data) {

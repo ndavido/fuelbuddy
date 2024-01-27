@@ -29,6 +29,8 @@ import LoginVerify from './Screens/LoginVerifyScreen';
 import Register from './Screens/RegisterScreen';
 import RegisterVerify from './Screens/RegisterVerifyScreen';
 
+const url = process.env.REACT_APP_BACKEND_URL
+
 const Tab = createBottomTabNavigator();
 
 const Stack = createNativeStackNavigator();
@@ -137,7 +139,7 @@ function LoadingScreen({isVisible}) {
                     },
                 };
 
-                const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/account`, {phone_number: phone}, config);
+                const response = await axios.post(`${url}/account`, {phone_number: phone}, config);
 
                 if (response.data && response.data.user) {
                     await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
