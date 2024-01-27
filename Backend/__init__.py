@@ -385,11 +385,16 @@ def delete_account():
         encrypted_phone = data.get('phone_number')
 
         if not encrypted_phone:
+            return jsonify({"error": "Phone number not provided"}), 400
+
+        user_info = Users.objects(phone_number=encrypted_phone).first()
+
+        if user_info:
+            user_info.delete()
+            return jsonify({"message": "Account deleted successfully!"})
+        else:
             return jsonify({"error": "User not found"}), 404
 
-        users_collection.delete_user({"phone_number": encrypted_phone})
-
-        return jsonify({"message": "Account deleted successfully!"})
     except Exception as e:
         return handle_api_error(e)
 
