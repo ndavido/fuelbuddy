@@ -185,7 +185,7 @@ const FriendsScreen = () => {
 
     return (
         <Main>
-            <MainLogo bButton={true}/>
+            <MainLogo/>
             <AccountWrapper>
                 <AccountRegularInfo>
                     <AccountContent>
@@ -229,7 +229,7 @@ const FriendsScreen = () => {
                             </Modal>
                             {hasRequestedFriends && (
                                 <>
-                                    <H5 tmargin='10px' bmargin='10px'>Requested</H5>
+                                    <H5 tmargin='10px' bmargin='10px'>Added Me</H5>
                                     <FlatList
                                         data={searchTerm ? searchResults : requestedFriends}
                                         keyExtractor={(item) => item.friend_id}

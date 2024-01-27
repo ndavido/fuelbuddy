@@ -18,7 +18,7 @@ export const AccountContent = styled.View`
 
 export const AccountTopInfo = styled.View`
   position: relative;
-  height: 300px;
+  height: 280px;
   top: 85px;
   width: 100%;
 `;
@@ -48,7 +48,7 @@ export const DeveloperTick = styled.Text`
 export const AccountBottomInfo = styled(Animated.View)`
     position: relative;
     background-color: #F7F7F7;
-    height: 1500px;
+    height: 1000px;
     width: 100%; 
     border-top-left-radius: 20px;
     border-top-right-radius: 20px; 

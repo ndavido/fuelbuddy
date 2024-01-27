@@ -8,25 +8,26 @@ import "core-js/stable/atob";
 import axios from 'axios';
 import {useAuth} from './AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {View, Text, StyleSheet} from 'react-native';
+import {View, Text, StyleSheet, StatusBar} from 'react-native';
 import * as Progress from 'react-native-progress';
 import {jwtDecode} from "jwt-decode";
 
 import Welcome from './Screens/WelcomeScreen';
 import Dashboard from './Screens/DashboardScreen';
 import Map from './Screens/MapScreen';
+import Scan from './Screens/ScanScreen'
+import Friends from './Screens/FriendsScreen';
 import Account from './Screens/AccountScreen';
+
 import PersonalInfo from './Screens/PersonalInfoScreen';
 import DeleteConfirm from './Screens/DeleteConfirmScreen';
 import Vehicle from './Screens/VehicleScreen';
-import Friends from './Screens/FriendsScreen';
 import Developer from './Screens/DeveloperScreen';
+
 import Login from './Screens/LoginScreen';
 import LoginVerify from './Screens/LoginVerifyScreen';
 import Register from './Screens/RegisterScreen';
 import RegisterVerify from './Screens/RegisterVerifyScreen';
-
-import {H5, H6} from './styles/text.js';
 
 const Tab = createBottomTabNavigator();
 
@@ -77,13 +78,13 @@ const AccountNavigator = () => {
             <Stack.Screen name="PersonalInfo" component={PersonalInfo}/>
             <Stack.Screen name="DeleteConfirm" component={DeleteConfirm}/>
             <Stack.Screen name="Vehicle" component={Vehicle}/>
-            <Stack.Screen name="Friends" component={Friends}/>
+            {/*<Stack.Screen name="Friends" component={Friends}/>*/}
             <Stack.Screen name="Developer" component={Developer}/>
         </Stack.Navigator>
     );
 };
 
-function LoadingScreen({ isVisible }) {
+function LoadingScreen({isVisible}) {
     const [progress, setProgress] = useState(0);
 
     useEffect(() => {
@@ -136,7 +137,7 @@ function LoadingScreen({ isVisible }) {
                     },
                 };
 
-                const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/account`, { phone_number: phone }, config);
+                const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/account`, {phone_number: phone}, config);
 
                 if (response.data && response.data.user) {
                     await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
@@ -194,6 +195,11 @@ const AppNavigator = () => {
 
     return (
         <View style={{flex: 1, overflow: "hidden"}}>
+            <StatusBar
+                translucent
+                backgroundColor="#FFFFFF"
+                barStyle="dark-content"
+            />
             <NavigationContainer>
                 {state.isUserAuthenticated ? (
                     <Tab.Navigator
@@ -207,25 +213,38 @@ const AppNavigator = () => {
                             tabBarLabelStyle: {
                                 fontSize: 16,
                             },
+                            tabBarLabel: '',
                             tabBarIcon: ({color, size, focused}) => {
                                 let iconName;
+
+                                const iconStyle = {
+                                    marginBottom: focused ? 3 : 0, // Adjust the marginBottom as needed
+                                };
+
+                                let iconSize = 22;
 
                                 if (route.name === 'Dashboard') {
                                     iconName = 'chart-bar';
                                 } else if (route.name === 'Map') {
                                     iconName = 'map-marked-alt';
+                                } else if (route.name === 'OCR') {
+                                    iconName = 'camera';
+                                } else if (route.name === 'Friends') {
+                                    iconName = 'user-friends';
                                 } else if (route.name === 'Account') {
                                     iconName = 'user-alt';
                                 }
 
                                 let iconColor = focused ? '#6BFF91' : '#515151';
 
-                                return <FontAwesome5 name={iconName} size={size} color={iconColor}/>; // Use FontAwesome5 from Expo
+                                return <FontAwesome5 name={iconName} size={iconSize} color={iconColor} style={iconStyle}/>; // Use FontAwesome5 from Expo
                             },
                         })}
                     >
                         <Tab.Screen name="Dashboard" component={Dashboard}/>
                         <Tab.Screen name="Map" component={Map}/>
+                        <Tab.Screen name="OCR" component={Scan}/>
+                        <Tab.Screen name="Friends" component={Friends}/>
                         <Tab.Screen name="Account" component={AccountNavigator}/>
                     </Tab.Navigator>
                 ) : (
