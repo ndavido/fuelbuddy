@@ -3,17 +3,16 @@ import {View, Text, StyleSheet, Animated, Platform, Linking, Button, TextInput, 
 import BottomSheet from '@gorhom/bottom-sheet';
 import MyMarker from '../Components/mymarker';
 import * as Location from "expo-location";
-import MapView from "react-native-maps";
 
 const isWeb = Platform.OS !== "ios" && Platform.OS !== "android";
 
+let MapView;
 let MapViewDirections;
 if (!isWeb) {
     // MapView = require("react-native-map-clustering").default;
+    MapView = require("react-native-maps").default;
     MapViewDirections = require("react-native-maps-directions").default;
 }
-
-const url = process.env.REACT_APP_BACKEND_URL
 
 // Styling
 import {H2, H3, H4, H5, H6, H7, H8} from "../styles/text";
@@ -23,7 +22,9 @@ import {AnimatedGenericButton, AnimatedHeartButton, TAnimatedGenericButton} from
 import CustomMarker from "../Components/customMarker";
 
 
-const apiKey = process.env.googleMapsApiKey;
+const apiMapKey = process.env.googleMapsApiKey;
+const apiKey = process.env.REACT_NATIVE_API_KEY;
+const url = process.env.REACT_APP_BACKEND_URL
 
 const MapScreen = () => {
     const [petrolStations, setPetrolStations] = useState([]);
@@ -46,6 +47,8 @@ const MapScreen = () => {
     const bottomSheetRef = useRef(null);
 
     const snapPoints = useMemo(() => ['20%', '40%', '90%'], []);
+
+    console.log(url)
 
     useEffect(() => {
         const fetchLocationAndPetrolStations = async () => {
@@ -103,13 +106,12 @@ const MapScreen = () => {
 
     const fetchPetrolStations = async (location) => {
         try {
-            const apiKey = process.env.REACT_NATIVE_API_KEY;
             const config = {
                 headers: {
                     "X-API-Key": apiKey,
                 },
             };
-            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/fuel_stations`, config);
+            const response = await fetch(`${url}/fuel_stations`, config);
             const stations = await response.json();
 
             setPetrolStations(stations);
@@ -130,6 +132,7 @@ const MapScreen = () => {
             // Make the API request
             const response = await fetch(`${url}/store_fuel_prices`, {
                 method: 'POST', headers: {
+                    "X-API-Key": apiKey,
                     'Content-Type': 'application/json',
                 }, body: JSON.stringify(payload),
             });
@@ -155,7 +158,6 @@ const MapScreen = () => {
 
                 console.log("Payload: ", payload)
 
-                const apiKey = process.env.REACT_NATIVE_API_KEY;
                 const config = {
                     method: 'POST', headers: {
                         'Content-Type': 'application/json', 'X-API-Key': apiKey,
@@ -210,7 +212,7 @@ const MapScreen = () => {
                 longitude: selectedStation.location.longitude
             },], {edgePadding: {top: 50, right: 50, bottom: 50, left: 50}});
 
-            const apiUrl = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&key=${apiKey}`;
+            const apiUrl = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&key=${apiMapKey}`;
 
             fetch(apiUrl)
                 .then(response => response.json())
@@ -354,8 +356,77 @@ const MapScreen = () => {
         {renderMap()}
         {renderStationBottomSheet()}
         {renderRouteInfoBottomSheet()}
+        <Modal
+                animationType="slide"
+                transparent={true}
+                visible={updateModalVisible}
+                onRequestClose={() => setUpdateModalVisible(false)}
+            >
+                <View style={styles.centeredView}>
+                    <View style={styles.modalView}>
+                        <Text>Update Fuel Prices</Text>
+                        <TextInput
+                            placeholder="New Petrol Price"
+                            keyboardType="numeric"
+                            value={newPetrolPrice}
+                            onChangeText={(text) => setNewPetrolPrice(text)}
+                        />
+                        <TextInput
+                            placeholder="New Diesel Price"
+                            keyboardType="numeric"
+                            value={newDieselPrice}
+                            onChangeText={(text) => setNewDieselPrice(text)}
+                        />
+                        <Button title="Update" onPress={handleUpdatePress}/>
+                        <Button title="Cancel" onPress={() => setUpdateModalVisible(false)}/>
+                    </View>
+                </View>
+            </Modal>
 
     </View>);
-};
+}
+
+const styles = StyleSheet.create({
+    bottomSheet: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: 'white',
+        borderTopLeftRadius: 10,
+        borderTopRightRadius: 10,
+        elevation: 5,
+    },
+    handleBar: {
+        height: 5,
+        width: 40,
+        backgroundColor: 'gray',
+        alignSelf: 'center',
+        marginTop: 8,
+        borderRadius: 2,
+    },
+    centeredView: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        marginTop: 22,
+    },
+    modalView: {
+        margin: 20,
+        backgroundColor: "white",
+        borderRadius: 20,
+        padding: 35,
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+});
+
 
 export default MapScreen;

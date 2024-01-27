@@ -25,6 +25,7 @@ import AccountImg from '../styles/accountImg';
 import {MenuButton} from "../styles/accountButton";
 import {H3, H4, H5, H6} from "../styles/text";
 import {InputTxt, Main} from "../styles/styles";
+import {TAnimatedGenericButton} from "../styles/AnimatedIconButton";
 
 const url = process.env.REACT_APP_BACKEND_URL
 
@@ -125,6 +126,7 @@ const AccountScreen = () => {
                         <H3 tmargin='20px' lmargin='20px' bmargin='10px'>Account</H3>
                         <AccountTxtWrapper>
                             <H5 tmargin='10px' bmargin='10px'>Personal Information</H5>
+                            <TAnimatedGenericButton text="Route To Station" onPress={() => {}}/>
                             {editMode ? (
                                 <>
                                     <H6 bmargin='5px'>Username</H6>

@@ -33,6 +33,8 @@ const LoginScreen = () => {
         phone_number: '',
     });
 
+    console.log(url)
+
     const countryCode = '353';
 
     const [message, setMessage] = useState('');
