@@ -3,12 +3,13 @@ import {View, Text, StyleSheet, Animated, Platform, Linking, Button, TextInput, 
 import BottomSheet from '@gorhom/bottom-sheet';
 import MyMarker from '../Components/mymarker';
 import * as Location from "expo-location";
+import MapView from "react-native-maps";
 
 const isWeb = Platform.OS !== "ios" && Platform.OS !== "android";
 
-let MapView, MapViewDirections;
+let MapViewDirections;
 if (!isWeb) {
-    MapView = require("react-native-map-clustering").default;
+    // MapView = require("react-native-map-clustering").default;
     MapViewDirections = require("react-native-maps-directions").default;
 }
 
@@ -293,7 +294,7 @@ const MapScreen = () => {
                             <H6 style={{opacity: 0.6, lineHeight: 16}}>Fuel Station</H6>
                             <ButtonContainer>
                                 <TAnimatedGenericButton text="Route To Station" onPress={handleRoutePress}/>
-                                <AnimatedHeartButton initialIsActive={heartActive} onPress={handleLikePress} />
+                                <AnimatedHeartButton initialIsActive={heartActive} onPress={handleLikePress}/>
                                 <AnimatedGenericButton onPress={() => setUpdateModalVisible(true)}/>
                             </ButtonContainer>
                             <H4>Current Prices</H4>
@@ -327,14 +328,17 @@ const MapScreen = () => {
     const renderRouteInfoBottomSheet = () => {
         if (!isWeb && showRouteInfo) {
             return (
-                <BottomSheet snapPoints={['20%', '20%']} index={0} ref={bottomSheetRef} handleIndicatorStyle={{ display: "none" }}>
+                <BottomSheet snapPoints={['20%', '20%']} index={0} ref={bottomSheetRef}
+                             handleIndicatorStyle={{display: "none"}}>
                     <Container>
-                        <H4 style={{ flexDirection: 'row' }}>{estimatedDuration} ({estimatedDistance})</H4>
+                        <H4 style={{flexDirection: 'row'}}>{estimatedDuration} ({estimatedDistance})</H4>
                         <H6>Estimated Price: €</H6>
                         <ButtonContainer>
-                            <Button title='Start Journey' onPress={() => {}}/>
+                            <Button title='Start Journey' onPress={() => {
+                            }}/>
                             <Button title='Cancel' onPress={handleCancelPress}/>
-                            <Button title='Save Route' onPress={() => {}}/>
+                            <Button title='Save Route' onPress={() => {
+                            }}/>
                         </ButtonContainer>
                     </Container>
                 </BottomSheet>
