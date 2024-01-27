@@ -21,6 +21,7 @@ import PressableButton2 from '../styles/buttons2';
 import Logo from '../styles/logo';
 import {H1, H2, H3, H4, H5, H6, Img, Txt} from '../styles/text.js';
 
+const url = process.env.REACT_APP_BACKEND_URL
 
 const RegisterVerifyScreen = ({route}) => {
     const { login } = useAuth();
@@ -49,7 +50,9 @@ const RegisterVerifyScreen = ({route}) => {
                 },
             };
 
-            const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/register/verify`, formData, config);
+            console.log(url)
+
+            const response = await axios.post(`${url}/register/verify`, formData, config);
             setMessage(response.data.message);
 
             // If verification is successful, update the authentication state

@@ -21,6 +21,7 @@ import PressableButton2 from '../styles/buttons2';
 import Logo from '../styles/logo';
 import {H1, H2, H3, H4, H5, H6, Img, Txt} from '../styles/text.js';
 
+const url = process.env.REACT_APP_BACKEND_URL
 
 const PhoneContainer = styled(View)`
   flex-direction: row;
@@ -56,7 +57,7 @@ const LoginScreen = () => {
             /* TODO Remove!!! Dev Only */
             console.log(config);
 
-            const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/login`, {
+            const response = await axios.post(`${url}/login`, {
                 ...formData,
                 phone_number: fullNum
             }, config);

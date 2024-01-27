@@ -27,6 +27,8 @@ import {MenuButton} from "../styles/accountButton";
 import {H3, H4, H5, H6} from "../styles/text";
 import {useNavigation} from "@react-navigation/native";
 
+const url = process.env.REACT_APP_BACKEND_URL
+
 const DeleteConfirmScreen = () => {
     const navigate = useNavigation();
     const handleConfirmDelete = async () => {
@@ -69,7 +71,7 @@ const DeleteConfirmScreen = () => {
 
                 const phone = decodedToken.sub;
 
-                const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/delete_account`, {phone_number: phone}, config);
+                const response = await axios.post(`${url}/delete_account`, {phone_number: phone}, config);
 
                 if (response.data.message === 'Account deleted successfully!') {
                     try {

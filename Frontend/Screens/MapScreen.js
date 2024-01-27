@@ -13,6 +13,8 @@ if (!isWeb) {
     MapViewDirections = require("react-native-maps-directions").default;
 }
 
+const url = process.env.REACT_APP_BACKEND_URL
+
 // Styling
 import {H2, H3, H4, H5, H6, H7, H8} from "../styles/text";
 import {Container, ButtonContainer, MenuButton, Cardsml, CardContainer} from "../styles/styles";
@@ -126,7 +128,7 @@ const MapScreen = () => {
             };
 
             // Make the API request
-            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/store_fuel_prices`, {
+            const response = await fetch(`${url}/store_fuel_prices`, {
                 method: 'POST', headers: {
                     'Content-Type': 'application/json',
                 }, body: JSON.stringify(payload),
@@ -160,7 +162,7 @@ const MapScreen = () => {
                     }, body: JSON.stringify(payload),
                 };
 
-                const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/manage_favorite_fuel_station`, config);
+                const response = await fetch(`${url}/manage_favorite_fuel_station`, config);
 
                 if (response.ok) {
                     console.log('Favorite status updated successfully');

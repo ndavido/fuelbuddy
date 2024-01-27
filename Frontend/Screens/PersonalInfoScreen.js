@@ -26,6 +26,8 @@ import {MenuButton} from "../styles/accountButton";
 import {H3, H4, H5, H6} from "../styles/text";
 import {InputTxt, Main} from "../styles/styles";
 
+const url = process.env.REACT_APP_BACKEND_URL
+
 const AccountScreen = () => {
     const [userInfo, setUserInfo] = useState({});
     const [loading, setLoading] = useState(true);
@@ -71,7 +73,7 @@ const AccountScreen = () => {
             };
 
             // API call to update user information
-            const response = await axios.patch(`${process.env.REACT_APP_BACKEND_URL}/edit_account`, updatedUserData, config);
+            const response = await axios.patch(`${url}/edit_account`, updatedUserData, config);
 
             if (response.data && response.data.message === 'Account updated successfully') {
                 // Update local user info state and exit edit mode
