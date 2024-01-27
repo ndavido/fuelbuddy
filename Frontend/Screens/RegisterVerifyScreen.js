@@ -49,7 +49,7 @@ const RegisterVerifyScreen = ({route}) => {
                 },
             };
 
-            const response = await axios.post('${process.env.BACKEND_URL}/register/verify', formData, config);
+            const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/register/verify`, formData, config);
             setMessage(response.data.message);
 
             // If verification is successful, update the authentication state
