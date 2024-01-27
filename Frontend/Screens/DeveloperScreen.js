@@ -27,6 +27,8 @@ import AccountImg from '../styles/accountImg';
 import {MenuButton} from "../styles/accountButton";
 import {H3, H4, H5, H6} from "../styles/text";
 
+const url = process.env.REACT_APP_BACKEND_URL
+
 const DeveloperScreen = () => {
     const [userInfo, setUserInfo] = useState({});
     const [loading, setLoading] = useState(true);
@@ -56,7 +58,7 @@ const DeveloperScreen = () => {
 
                   const phone = decodedToken.sub;
 
-                  const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/account`, { phone_number: phone }, config);
+                  const response = await axios.post(`${url}/account`, { phone_number: phone }, config);
 
                   if (response.data && response.data.user) {
                     setUserInfo(response.data.user); // Set the user info directly

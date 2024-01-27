@@ -18,6 +18,7 @@ import {jwtDecode} from "jwt-decode";
 import {H3, H5, H6} from "../styles/text";
 
 const apiKey = process.env.REACT_NATIVE_API_KEY;
+const url = process.env.REACT_APP_BACKEND_URL
 
 const FriendsScreen = () => {
     const [friends, setFriends] = useState([]);
@@ -40,7 +41,7 @@ const FriendsScreen = () => {
             };
 
             const response = await axios.post(
-                `${process.env.REACT_APP_BACKEND_URL}/list_friends`,
+                `${url}/list_friends`,
                 {phone_number: user1},
                 config
             );
@@ -68,7 +69,7 @@ const FriendsScreen = () => {
             };
 
             const response = await axios.post(
-                `${process.env.REACT_APP_BACKEND_URL}/requested_friends`,
+                `${url}/requested_friends`,
                 {phone_number: user1},
                 config
             );
@@ -99,7 +100,7 @@ const FriendsScreen = () => {
             const phone = jwtDecode(token).sub;
 
             const response = await axios.post(
-                `${process.env.REACT_APP_BACKEND_URL}/search_users`,
+                `${url}/search_users`,
                 {
                     phone_number: phone,
                     search_term: searchTerm,
@@ -133,7 +134,7 @@ const FriendsScreen = () => {
             const phone = jwtDecode(token).sub;
 
             const response = await axios.post(
-                `${process.env.REACT_APP_BACKEND_URL}/send_friend_request`,
+                `${url}/send_friend_request`,
                 {
                     phone_number: phone,
                     friend_number: friendId,
@@ -156,7 +157,7 @@ const FriendsScreen = () => {
             const phone = jwtDecode(token).sub;
 
             const response = await axios.post(
-                `${process.env.REACT_APP_BACKEND_URL}/respond_friend_request`,
+                `${url}/respond_friend_request`,
                 {
                     phone_number: phone,
                     request_id: requestId,
