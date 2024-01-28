@@ -57,7 +57,7 @@ const MapScreen = () => {
                 const userDataJson = await AsyncStorage.getItem('userData');
                 if (userDataJson) {
                     setUserInfo(JSON.parse(userDataJson));
-                    await fetchFavoriteStations; // Moved inside fetchUserInfo
+                    await fetchFavoriteStations;
                 }
             } catch (error) {
                 console.error('Error fetching user account information:', error);
