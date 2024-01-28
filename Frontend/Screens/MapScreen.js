@@ -20,6 +20,7 @@ import {Container, ButtonContainer, MenuButton, Cardsml, CardContainer} from "..
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {AnimatedGenericButton, AnimatedHeartButton, TAnimatedGenericButton} from "../styles/AnimatedIconButton";
 import CustomMarker from "../Components/customMarker";
+import axios from "axios";
 
 
 const apiMapKey = process.env.googleMapsApiKey;
@@ -51,6 +52,18 @@ const MapScreen = () => {
     console.log(url)
 
     useEffect(() => {
+        const fetchUserInfo = async () => {
+            try {
+                const userDataJson = await AsyncStorage.getItem('userData');
+                if (userDataJson) {
+                    setUserInfo(JSON.parse(userDataJson));
+                    await fetchFavoriteStations; // Moved inside fetchUserInfo
+                }
+            } catch (error) {
+                console.error('Error fetching user account information:', error);
+            }
+        };
+
         const fetchLocationAndPetrolStations = async () => {
             let {status} = await Location.requestForegroundPermissionsAsync();
             if (status !== "granted") {
@@ -71,8 +84,6 @@ const MapScreen = () => {
                     longitudeDelta: 0.0421,
                 });
 
-                fetchPetrolStations(location);
-
                 Location.watchPositionAsync({distanceInterval: 10}, (newLocation) => {
 
                     setLocation(newLocation);
@@ -85,18 +96,10 @@ const MapScreen = () => {
                     });
                 });
 
+                fetchPetrolStations(location);
+
             } catch (error) {
                 console.error("Error fetching user location:", error);
-            }
-        };
-        const fetchUserInfo = async () => {
-            try {
-                const userDataJson = await AsyncStorage.getItem('userData');
-                if (userDataJson) {
-                    setUserInfo(JSON.parse(userDataJson));
-                }
-            } catch (error) {
-                console.error('Error fetching user account information:', error);
             }
         };
 
@@ -114,9 +117,35 @@ const MapScreen = () => {
             const response = await fetch(`${url}/fuel_stations`, config);
             const stations = await response.json();
 
+            // TODO Remove Dev Only
+            console.log("Stations: ", stations)
+
             setPetrolStations(stations);
+
         } catch (error) {
             console.error(error);
+        }
+    };
+
+    const fetchFavoriteStations = async () => {
+        const updatedUserData = {
+            username: userInfo.username,
+        };
+
+        console.log(updatedUserData)
+
+        const fav_response = await axios.get(`${url}/get_favorite_fuel_stations`, {
+            params: updatedUserData,
+            headers: {
+                "X-API-Key": apiKey,
+            },
+        });
+
+        if (fav_response.data) {
+            // Update local user info state and exit edit mode
+            console.log("Favourites: ", fav_response.data)
+        } else {
+            console.log("BN")
         }
     };
 
@@ -214,6 +243,8 @@ const MapScreen = () => {
 
             const apiUrl = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&key=${apiMapKey}`;
 
+            console.log("API URL: ", apiUrl)
+
             fetch(apiUrl)
                 .then(response => response.json())
                 .then(data => {
@@ -258,13 +289,18 @@ const MapScreen = () => {
                 showsUserLocation={true}
                 userInterfaceStyle={"dark"}
             >
-                {petrolStations.map((station, index) => (<CustomMarker
-                    key={index}
-                    coordinate={{
-                        latitude: station.location.latitude, longitude: station.location.longitude,
-                    }}
-                    onPress={() => handleMarkerPress(station)}
-                />))}
+                {petrolStations.map((station, index) => (
+                    <CustomMarker
+                        key={index}
+                        coordinate={{
+                            latitude: station.location.latitude,
+                            longitude: station.location.longitude,
+                        }}
+                        onPress={() => handleMarkerPress(station)}
+                        petrolUpdatedAt={station.prices.petrol_updated_at}
+                        dieselUpdatedAt={station.prices.diesel_updated_at}
+                    />
+                ))}
                 {selectedStation && location && showRouteInfo && (<MapViewDirections
                     timePrecision="now"
                     origin={{
@@ -277,7 +313,7 @@ const MapScreen = () => {
                     waypoints={[{
                         latitude: location.coords.latitude, longitude: location.coords.longitude,
                     },]}
-                    apikey={apiKey}
+                    apikey={apiMapKey}
                     strokeWidth={3}
                     strokeColor="hotpink"
                 />)}
@@ -305,18 +341,30 @@ const MapScreen = () => {
                             <CardContainer>
                                 <Cardsml>
                                     <H5 style={{opacity: 0.6, textAlign: 'center'}}>Petrol</H5>
-                                    <H3 style={{textAlign: 'center'}}>No Price Avaliable</H3>
-                                    <H8 style={{opacity: 0.6, textAlign: 'center'}}>Last Updated: NA</H8>
+                                    <H3 weight='600'
+                                        style={{textAlign: 'center'}}>{selectedStation.prices.petrol_price}</H3>
+                                    <H8 style={{opacity: 0.6, textAlign: 'center'}}>Last
+                                        Updated: {selectedStation.prices.petrol_updated_at}</H8>
                                 </Cardsml>
                                 <Cardsml>
                                     <H5 style={{opacity: 0.6, textAlign: 'center'}}>Diesel</H5>
-                                    <H3 style={{textAlign: 'center'}}>No Price Avaliable</H3>
-                                    <H8 style={{opacity: 0.6, textAlign: 'center'}}>Last Updated: NA</H8>
+                                    <H3 weight='600'
+                                        style={{textAlign: 'center'}}>{selectedStation.prices.diesel_price}</H3>
+                                    <H8 style={{opacity: 0.6, textAlign: 'center'}}>Last
+                                        Updated: {selectedStation.prices.diesel_updated_at}</H8>
                                 </Cardsml>
                             </CardContainer>
                             <H4>About</H4>
-                            <H6 style={{opacity: 0.6}}>NOT WORKING!!! About the petrol station amenities such as
-                                bathrooms </H6>
+                            <H6>Opening Hours</H6>
+                            <H6 style={{opacity: 0.6}}>{selectedStation.opening_hours}</H6>
+                            <H6>Phone Number</H6>
+                            <H6 style={{opacity: 0.6, color: '#3891FA'}}
+                                onPress={() => {
+                                    if (selectedStation && selectedStation.phone_number) {
+                                        const phoneNumber = `tel:${selectedStation.phone_number}`;
+                                        Linking.openURL(phoneNumber);
+                                    }
+                                }}>{selectedStation.phone_number}</H6>
                             <H6 style={{opacity: 0.6}}>{selectedStation.details}</H6>
                             <H6>Address</H6>
                             <H6 style={{opacity: 0.6}}>{selectedStation.address},</H6>
@@ -357,31 +405,31 @@ const MapScreen = () => {
         {renderStationBottomSheet()}
         {renderRouteInfoBottomSheet()}
         <Modal
-                animationType="slide"
-                transparent={true}
-                visible={updateModalVisible}
-                onRequestClose={() => setUpdateModalVisible(false)}
-            >
-                <View style={styles.centeredView}>
-                    <View style={styles.modalView}>
-                        <Text>Update Fuel Prices</Text>
-                        <TextInput
-                            placeholder="New Petrol Price"
-                            keyboardType="numeric"
-                            value={newPetrolPrice}
-                            onChangeText={(text) => setNewPetrolPrice(text)}
-                        />
-                        <TextInput
-                            placeholder="New Diesel Price"
-                            keyboardType="numeric"
-                            value={newDieselPrice}
-                            onChangeText={(text) => setNewDieselPrice(text)}
-                        />
-                        <Button title="Update" onPress={handleUpdatePress}/>
-                        <Button title="Cancel" onPress={() => setUpdateModalVisible(false)}/>
-                    </View>
+            animationType="slide"
+            transparent={true}
+            visible={updateModalVisible}
+            onRequestClose={() => setUpdateModalVisible(false)}
+        >
+            <View style={styles.centeredView}>
+                <View style={styles.modalView}>
+                    <Text>Update Fuel Prices</Text>
+                    <TextInput
+                        placeholder="New Petrol Price"
+                        keyboardType="numeric"
+                        value={newPetrolPrice}
+                        onChangeText={(text) => setNewPetrolPrice(text)}
+                    />
+                    <TextInput
+                        placeholder="New Diesel Price"
+                        keyboardType="numeric"
+                        value={newDieselPrice}
+                        onChangeText={(text) => setNewDieselPrice(text)}
+                    />
+                    <Button title="Update" onPress={handleUpdatePress}/>
+                    <Button title="Cancel" onPress={() => setUpdateModalVisible(false)}/>
                 </View>
-            </Modal>
+            </View>
+        </Modal>
 
     </View>);
 }
