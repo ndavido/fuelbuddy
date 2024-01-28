@@ -444,11 +444,10 @@ def edit_account():
 
 @app.route('/update_budget', methods=['POST'])
 @require_api_key
-@jwt_required()
 def update_budget():
     try:
-        current_user_id = get_jwt_identity()
         data = request.get_json()
+        username = data.get('username')
 
         if 'weekly_budget' not in data:
             return jsonify({"error": "Weekly budget not provided"}), 400
@@ -459,19 +458,19 @@ def update_budget():
             return jsonify({"error": "Invalid budget format"}), 400
 
         try:
-            user = Users.objects.get(id=current_user_id)
-            old_budget = user.weekly_budget  # Store the old budget value
-
-            # Update the user's budget
-            user.weekly_budget = weekly_budget
-            user.save()
+            user = Users.objects.get(username=username)
+            print('weekly_budget', weekly_budget)
             # Record the budget change in BudgetHistory
             BudgetHistory(
                 user=user,
-                old_budget=old_budget,
                 new_budget=weekly_budget,
                 change_date=datetime.now()
             ).save()
+            print('budget', BudgetHistory.objects.all())
+            print('budget history saved')
+
+            user.weekly_budget = weekly_budget
+            user.save()
 
             return jsonify({"message": "Budget updated successfully"})
         except DoesNotExist:
