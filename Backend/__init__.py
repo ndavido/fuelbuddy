@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 import os
 
-from bson import json_util
+from bson import json_util, ObjectId
 from flask import Flask, request, jsonify, abort, current_app
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from flask_cors import CORS
@@ -545,35 +545,47 @@ def store_fuel_stations():
         return handle_api_error(e)
 
 # individually finds favorite fuel stations for a user
-
-@app.route('/get_favorite_fuel_stations/username', methods=['GET'])
+# got the username sent from response body, then find the user object, searched FavoriteFuelStation collection for the user object
+# then got the favorite_stations field which is a list of fuel station objects, then got the id of each fuel station object
+#ref: https://www.mongodb.com/docs/v6.2/reference/method/ObjectId/
+#ref: https://www.mongodb.com/docs/manual/reference/database-references/
+@app.route('/get_favorite_fuel_stations/', methods=['GET'])
 @require_api_key
-def get_favorite_fuel_stations(username):
+def get_favorite_fuel_stations():
     try:
-        user = Users.objects(username=username).first()
+        username = request.args.get('username')
 
-        if user:
-            favorite_doc = FavoriteFuelStation.objects(user=user).first()
-            if favorite_doc:
-                favorite_stations = favorite_doc.favorite_stations
-                station_list = [
-                    {
-                        "station_id": str(station.id),
-                        "name": station.name,
-                        "location": {
-                            "latitude": station.latitude,
-                            "longitude": station.longitude
-                        }
-                    } for station in favorite_stations
-                ]
-                return jsonify({"favorite_stations": station_list}), 200
+        if username:
+            user = Users.objects(username=username).first()
+            if user:
+                favorite_doc = FavoriteFuelStation.objects(user=user.id).first()
+                if favorite_doc:
+                    favorite_stations = favorite_doc.favorite_stations
+
+                    fuel_stations = FuelStation.objects(id__in=[dbref.id for dbref in favorite_stations])
+
+                    station_list = [
+                        {
+                            "station_id": str(station.id),
+                            "name": station.name,
+                            "phone_number": station.phone_number,
+                            "location": {
+                                "latitude": station.latitude,
+                                "longitude": station.longitude,
+                            }
+                        } for station in fuel_stations
+                    ]
+                    return jsonify({"favorite_stations": station_list}), 200
+                else:
+                    return jsonify({"message": "No favorite fuel stations found for the user."}), 200
             else:
-                return jsonify({"message": "No favorite fuel stations found for the user."}), 200
+                return jsonify({"error": "User not found with the provided username."}), 404
         else:
-            return jsonify({"error": "User not found."}), 404
+            return jsonify({"error": "Username not provided."}), 400
 
     except Exception as e:
         return handle_api_error(e)
+
 
 # this route is for managing favorite fuel station (add/remove)
 @app.route('/manage_favorite_fuel_station', methods=['POST'])
