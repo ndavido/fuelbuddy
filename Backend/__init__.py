@@ -23,7 +23,6 @@ import binascii
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 import numpy as np
-from keras.models import load_model
 from sklearn.preprocessing import MinMaxScaler
 import pandas as pd
 
@@ -1253,6 +1252,7 @@ def save_trip():
 @app.route('/user_suggested_budget', methods=['POST'])
 @require_api_key
 def user_suggested_budget():
+    from keras.models import load_model
     def load_saved_model(model_path):
         return load_model(model_path)
 
