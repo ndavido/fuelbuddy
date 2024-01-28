@@ -7,8 +7,8 @@ import { jwtDecode } from "jwt-decode";
 
 // Styling
 import {
-    Main2,
-} from '../styles/wrapper';
+    Main,
+} from '../styles/styles';
 import {
     AccountWrapper,
     AccountInner,
@@ -26,6 +26,8 @@ import MainLogo from '../styles/mainLogo';
 import AccountImg from '../styles/accountImg';
 import {MenuButton} from "../styles/accountButton";
 import {H3, H4, H5, H6} from "../styles/text";
+
+const url = process.env.REACT_APP_BACKEND_URL
 
 const VehicleScreen = () => {
     const [userInfo, setUserInfo] = useState({});
@@ -57,7 +59,7 @@ const VehicleScreen = () => {
 
                   const phone = decodedToken.sub;
 
-                  const response = await axios.post('http://127.0.0.1:5000/account', { phone_number: phone }, config);
+                  const response = await axios.post(`${url}/account`, { phone_number: phone }, config);
 
                   if (response.data && response.data.user) {
                     setUserInfo(response.data.user); // Set the user info directly
@@ -74,28 +76,25 @@ const VehicleScreen = () => {
     }, []);
 
     return (
-        <Main2>
-            <MainLogo/>
+        <Main>
+            <MainLogo bButton={true}/>
             <AccountWrapper>
-                <AccountInner>
-                    <AccountRegularInfo>
-                        <AccountContent>
-                            <H3 tmargin='20px' lmargin='20px' bmargin='10px'>Vehicle</H3>
-                            <AccountTxtWrapper>
-                                <H5 tmargin='10px' bmargin='10px'>My Car</H5>
-                                <H6 bmargin='5px'>Make</H6>
-                                <AccountTxt bgColor='grey' >CAR MAKE</AccountTxt>
-                                <H6 bmargin='5px'>Model</H6>
-                                <AccountTxt bgColor='#FFFFFF' >CAR MODEL</AccountTxt>
-                                <H6 bmargin='5px'>Average Km/l</H6>
-                                <AccountTxt bgColor='#FFFFFF' >CAR KM</AccountTxt>
-                            </AccountTxtWrapper>
-
-                        </AccountContent>
-                    </AccountRegularInfo>
-                </AccountInner>
+                <AccountRegularInfo>
+                    <AccountContent>
+                        <H3 tmargin='20px' lmargin='20px' bmargin='10px'>Vehicle</H3>
+                        <AccountTxtWrapper>
+                            <H5 tmargin='10px' bmargin='10px'>My Car</H5>
+                            <H6 bmargin='5px'>Make</H6>
+                            <AccountTxt bgColor='grey' >CAR MAKE</AccountTxt>
+                            <H6 bmargin='5px'>Model</H6>
+                            <AccountTxt bgColor='#FFFFFF' >CAR MODEL</AccountTxt>
+                            <H6 bmargin='5px'>Average Km/l</H6>
+                            <AccountTxt bgColor='#FFFFFF' >CAR KM</AccountTxt>
+                        </AccountTxtWrapper>
+                    </AccountContent>
+                </AccountRegularInfo>
             </AccountWrapper>
-        </Main2>
+        </Main>
     );
 };
 

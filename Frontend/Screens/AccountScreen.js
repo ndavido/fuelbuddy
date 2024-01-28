@@ -1,15 +1,16 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {View, Text, Button, Animated} from 'react-native';
 import axios from 'axios';
 import {PanGestureHandler, GestureHandlerRootView, State} from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {jwtDecode} from "jwt-decode";
+import {useAuth} from '../AuthContext';
 
 // Styling
 import {
-    Main2,
-} from '../styles/wrapper';
+    Main,
+} from '../styles/styles.js';
 import {
     AccountWrapper,
     AccountInner,
@@ -31,6 +32,7 @@ const AccountScreen = () => {
     const navigate = useNavigation();
     const [userInfo, setUserInfo] = useState({});
     const [loading, setLoading] = useState(true);
+    const {logout} = useAuth();
 
     const translateY = new Animated.Value(0);
 
@@ -45,7 +47,7 @@ const AccountScreen = () => {
 
             // Define the swipe threshold and target position
             const SWIPE_THRESHOLD = 100;
-            const TARGET_TRANSLATE_Y = -150;
+            const TARGET_TRANSLATE_Y = -140;
 
             if (translationY < -SWIPE_THRESHOLD) {
                 // Swipe up
@@ -70,7 +72,7 @@ const AccountScreen = () => {
 
             delete axios.defaults.headers.common['Authorization'];
 
-            navigation.navigate('Welcome');
+            await logout();
 
         } catch (error) {
             console.error('Error logging out:', error);
@@ -94,6 +96,15 @@ const AccountScreen = () => {
             console.error('Error Loading Vehicle Information:', error);
         }
     };
+
+    // const handleFriends = async () => {
+    //     try {
+    //         navigate.navigate('Friends');
+    //
+    //     } catch (error) {
+    //         console.error('Error Loading Friends:', error);
+    //     }
+    // }
 
     const handleDev = async () => {
         try {
@@ -121,19 +132,19 @@ const AccountScreen = () => {
     }, []);
 
     return (
-        <Main2>
+        <Main>
             <MainLogo/>
             <AccountWrapper>
-                <AccountInner>
-                    <AccountTopInfo>
-                        <AccountContent>
-                            <H3 tmargin='20px' lmargin='20px' bmargin='10px'>Account</H3>
-                            <AccountImg/>
-                            <AccountUsername>@{userInfo.username} {userInfo.roles && userInfo.roles.includes("Developer") &&
-                                <DeveloperTick>🧑‍💻</DeveloperTick>}</AccountUsername>
-                        </AccountContent>
-                    </AccountTopInfo>
-                    <GestureHandlerRootView style={{flex: 1}}>
+
+                <AccountTopInfo>
+                    <AccountContent>
+                        <H3 weight='600' tmargin='20px' lmargin='20px' bmargin='10px'>Account</H3>
+                        <AccountImg/>
+                        <AccountUsername>@{userInfo.username} {userInfo.roles && userInfo.roles.includes("Developer") &&
+                            <DeveloperTick>🧑‍💻</DeveloperTick>}</AccountUsername>
+                    </AccountContent>
+                </AccountTopInfo>
+                <GestureHandlerRootView style={{flex: 1}}>
                     <PanGestureHandler
                         onGestureEvent={onGestureEvent}
                         onHandlerStateChange={onHandlerStateChange}
@@ -141,12 +152,12 @@ const AccountScreen = () => {
                         <AccountBottomInfo style={{transform: [{translateY}]}}>
                             <AccountContent>
                                 <AccountTxtWrapper>
-                                    <MenuButtonTop title='Personal Information'
+                                    <MenuButtonTop title='my Information'
                                                    bgColor='white'
                                                    txtColor='black'
                                                    emoji="🕴️"
                                                    onPress={handleInfo}/>
-                                    <MenuButtonBottom title='Vehicle'
+                                    <MenuButtonBottom title='my vehicle'
                                                       bgColor='white'
                                                       txtColor='black'
                                                       emoji="🚗"
@@ -159,14 +170,19 @@ const AccountScreen = () => {
                                                       bgColor='white'
                                                       txtColor='black'
                                                       emoji="⛽"/>
-                                    <MenuButtonBottom title='my friends (NA)'
+                                    <MenuButtonBottom title='my savings (NA)'
                                                       bgColor='white'
                                                       txtColor='black'
-                                                      emoji="🧑‍🤝‍🧑"/>
+                                                      emoji="💵"/>
+                                    {/*<MenuButtonBottom title='my friends'*/}
+                                    {/*                  bgColor='white'*/}
+                                    {/*                  txtColor='black'*/}
+                                    {/*                  emoji="🧑‍🤝‍🧑"*/}
+                                    {/*                  onPress={handleFriends}/>*/}
                                     <MenuButton title='Privacy Settings (NA)'
-                                                      bgColor='white'
-                                                      txtColor='black'
-                                                      emoji="🔏"/>
+                                                bgColor='white'
+                                                txtColor='black'
+                                                emoji="🔏"/>
                                     <MenuButton title='Support (NA)'
                                                 bgColor='white'
                                                 txtColor='black'
@@ -189,10 +205,10 @@ const AccountScreen = () => {
                             </AccountContent>
                         </AccountBottomInfo>
                     </PanGestureHandler>
-                        </GestureHandlerRootView>
-                </AccountInner>
+                </GestureHandlerRootView>
+
             </AccountWrapper>
-        </Main2>
+        </Main>
     );
 };
 

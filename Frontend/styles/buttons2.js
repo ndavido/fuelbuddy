@@ -2,7 +2,6 @@ import React from 'react';
 import styled from 'styled-components/native';
 
 const ButtonContainer2 = styled.TouchableOpacity`
-  margin-bottom: 10px;
   padding: 12px;
   width: 50%;
   border-radius: 10px;
@@ -12,6 +11,7 @@ const ButtonContainer2 = styled.TouchableOpacity`
 const ButtonText2 = styled.Text`
   font-size: 16px;
   text-align: center;
+  font-family: 'Poppins_400Regular';
   color: white;
   color: ${props => props.txtColor};
 `;

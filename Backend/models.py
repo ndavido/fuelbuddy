@@ -1,13 +1,15 @@
 # models.py
 from datetime import datetime
+from mongoengine.fields import GenericReferenceField, EmbeddedDocumentField
 
 from mongoengine import Document, StringField, FloatField, IntField, ReferenceField, BooleanField, ListField, \
-    DateTimeField, DecimalField
+    DateTimeField, DecimalField, DictField, Q, EmbeddedDocument
 
 
 class Location(Document):
     latitude = FloatField(required=True)
     longitude = FloatField(required=True)
+
 
 class Users(Document):
     username = StringField(required=True, unique=True)
@@ -27,7 +29,6 @@ class Users(Document):
         # Record the old and new budget
         BudgetHistory(
             user=self,
-            old_budget=self.weekly_budget,
             new_budget=new_budget,
             change_date=datetime.now()
         ).save()
@@ -35,14 +36,15 @@ class Users(Document):
         self.weekly_budget = new_budget
         self.save()
 
+
 class BudgetHistory(Document):
     user = ReferenceField(Users, required=True)
-    old_budget = DecimalField(precision=2)
     new_budget = DecimalField(precision=2)
     change_date = DateTimeField(required=True)
     meta = {
         'collection': 'BudgetHistory'
     }
+
 
 class Vehicle(Document):
     user = ReferenceField(Users, reverse_delete_rule='CASCADE')
@@ -51,42 +53,165 @@ class Vehicle(Document):
     model = StringField()
     engine_size = StringField()
     license_plate = StringField()
-    fuel_type = StringField(choices=('Petrol', 'Diesel', 'Electric'))  # Include 'Electric' as an option
+    # Include 'Electric' as an option
+    fuel_type = StringField(choices=('Petrol', 'Diesel', 'Electric'))
+
+class PetrolPrices(EmbeddedDocument):
+    price = FloatField(required=True)
+    updated_at = DateTimeField(default=datetime.utcnow)
+
+class DieselPrices(EmbeddedDocument):
+    price = FloatField(required=True)
+    updated_at = DateTimeField(default=datetime.utcnow)
+
+class OpeningHours(EmbeddedDocument):
+    day = StringField()
+    hours = StringField()
 
 class FuelStation(Document):
     name = StringField(required=True)
     address = StringField(required=True)
     latitude = FloatField(required=True)
     longitude = FloatField(required=True)
-    is_charging_station = BooleanField(required=True)
-    is_fuel_station = BooleanField(required=True)
-    meta = {
-        'collection': 'FuelStation'
-    }
-    # charging_price = FloatField()
-    # petrol_price = FloatField()
-    # diesel_price = FloatField()
+    place_id = StringField(required=True, unique=True)
+    petrol_prices = ListField(EmbeddedDocumentField(PetrolPrices))
+    diesel_prices = ListField(EmbeddedDocumentField(DieselPrices))
+    opening_hours = ListField(EmbeddedDocumentField(OpeningHours))
+    phone_number = StringField()
 
+    meta = {
+        'collection': 'FuelStationTest'
+    }
+class FavoriteFuelStation(Document):
+    user = ReferenceField(Users, required=True)
+    favorite_stations = ListField(ReferenceField(FuelStation))
+
+    meta = {
+        'collection': 'FavoriteFuelStation'
+    }
 class FuelPrices(Document):
-    fuel_station = ReferenceField(FuelStation, reverse_delete_rule='CASCADE')
-    petrol_price = FloatField()
-    diesel_price = FloatField()
-    electricity_price = FloatField()  # Price per kWh
+    station = ReferenceField(FuelStation, required=True)
+    petrol_prices = ListField(EmbeddedDocumentField(PetrolPrices))
+    diesel_prices = ListField(EmbeddedDocumentField(DieselPrices))
+    updated_at = DateTimeField(default=datetime.utcnow)
+    meta = {
+        'collection': 'FuelPrices'
+    }
+
+class ChargingStation(Document):
+    name = StringField(required=True)
+    address = StringField(required=True)
+    latitude = FloatField(required=True)
+    longitude = FloatField(required=True)
+    is_charging_station = BooleanField(required=True)
+    is_fast_charging = BooleanField(required=True)
+    charging_price = FloatField()
     updated_at = DateTimeField(required=True)
+    meta = {
+        'collection': 'ChargingStation'
+    }
+
+
+class EVPrices(Document):
+    # Use the name or a unique identifier of the charging station
+    charging_station = StringField(required=True)
+    charging_price = FloatField()
+    updated_at = DateTimeField(required=True)
+    meta = {
+        'collection': 'EVPrices'
+    }
+# Models for friends and friend requests
+
 
 class Friends(Document):
     user1 = ReferenceField(Users, reverse_delete_rule='CASCADE')
     user2 = ReferenceField(Users, reverse_delete_rule='CASCADE')
     friendship_start_date = DateTimeField(default=datetime.now)
+    last_interacted = DateTimeField()
+
     meta = {
-        'collection': 'Friends'
+        'collection': 'Friends',
+        'indexes': [
+            # Make sure that there is only one entry for a pair of friends
+            {'fields': ['user1', 'user2'], 'unique': True}
+        ]
     }
+
+    @classmethod
+    def are_friends(cls, user1_id, user2_id):
+        return cls.objects(
+            (Q(user1=user1_id) & Q(user2=user2_id)) |
+            (Q(user1=user2_id) & Q(user2=user1_id))
+        ).count() > 0
+
 
 class FriendRequest(Document):
     sender = ReferenceField(Users, reverse_delete_rule='CASCADE')
     recipient = ReferenceField(Users, reverse_delete_rule='CASCADE')
     sent_at = DateTimeField(default=datetime.now)
-    status = StringField(choices=('pending', 'accepted', 'rejected', 'canceled'))
+    message = StringField()
+    status = StringField(
+        choices=('pending', 'accepted', 'rejected', 'canceled'))
+    status_changes = ListField(DictField())
+
     meta = {
-        'collection': 'FriendRequest'
+        'collection': 'FriendRequest',
+        'indexes': ['sender', 'recipient', 'status']
+    }
+
+    def change_status(self, new_status):
+        self.status_changes.append({
+            'status': new_status,
+            'changed_at': datetime.now()
+        })
+        self.status = new_status
+        self.save()
+
+
+# Notification for friend request sent, friend request accepted, friend request rejected
+
+
+class Notification(Document):
+    user = ReferenceField(Users, reverse_delete_rule='CASCADE')
+    message = StringField()
+    created_at = DateTimeField(default=datetime.now)
+    read_at = DateTimeField()  # Timestamp for when the notification was read
+    type = StringField(choices=('friend_request_sent',
+                                'friend_request_accepted',
+                                'friend_request_rejected',
+                                ))
+    # To link to related data (like FriendRequest)
+    related_document = GenericReferenceField()
+
+    meta = {
+        'collection': 'Notifications',
+        'indexes': [
+            'user',
+            '-created_at'  # '-' indicates descending order
+        ]
+    }
+
+    def mark_as_read(self):
+        self.read_at = datetime.now()
+        self.save()
+
+# helper function to create a notification
+
+
+def create_notification(user, message, notification_type):
+    notification = Notification(
+        user=user,
+        message=message,
+        type=notification_type
+    )
+    notification.save()
+
+
+class Trip(Document):
+    user = ReferenceField(Users, reverse_delete_rule='CASCADE')
+    start_location = ReferenceField(Location)
+    end_location = ReferenceField(Location)
+    distance = FloatField()
+    meta = {
+        'collection': 'Trip'
     }

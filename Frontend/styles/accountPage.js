@@ -1,6 +1,5 @@
 import styled from 'styled-components/native';
 import {Dimensions, Animated} from 'react-native';
-import LogoSrc from '../assets/welcomeTemp.jpg';
 
 export const AccountWrapper = styled.View`
   height: 100%;
@@ -8,23 +7,18 @@ export const AccountWrapper = styled.View`
   margin: auto;
 `;
 
-export const AccountInner = styled.View`
-  position: relative;
-  flex: 1 1 auto;
-`;
-
 export const AccountContent = styled.View`
   flex: 1 1 auto;
   position: relative;
   min-width: 1px;
-  max-width: 600px;
+  max-width: 800px;
   margin: 0 auto;
   width: 100%;
 `;
 
 export const AccountTopInfo = styled.View`
   position: relative;
-  height: 300px;
+  height: 280px;
   top: 85px;
   width: 100%;
 `;
@@ -54,7 +48,7 @@ export const DeveloperTick = styled.Text`
 export const AccountBottomInfo = styled(Animated.View)`
     position: relative;
     background-color: #F7F7F7;
-    height: 1500px;
+    height: 1000px;
     width: 100%; 
     border-top-left-radius: 20px;
     border-top-right-radius: 20px; 

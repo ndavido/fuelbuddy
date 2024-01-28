@@ -1,24 +1,27 @@
 import React, {useState} from 'react';
 import {View, Text} from 'react-native';
+import styled from "styled-components/native";
 import {useNavigation} from '@react-navigation/native';
 import axios from 'axios';
 
-// Styled Components and other imports
+//Styling
 import {
-    Main,
-    ContainerWrapper,
-    ContainerInner,
-    ContainerContent,
-    BttnDiv,
-    BttnDiv2,
-    InputWrapper,
+    WelcomeMain,
+    InputTxt,
     PhoneTxt,
-    CCTxt
-} from '../styles/wrapper';
+    CCTxt,
+    ButtonDiv,
+    Content,
+    Wrapper,
+    Container,
+    LRContainer, LRButtonDiv
+} from "../styles/styles";
 import PressableButton from '../styles/buttons';
 import PressableButton2 from '../styles/buttons2';
 import Logo from '../styles/logo';
-import styled from "styled-components/native";
+import {H1, H2, H3, H4, H5, H6, Img, Txt} from '../styles/text.js';
+
+const url = process.env.REACT_APP_BACKEND_URL
 
 const PhoneContainer = styled(View)`
   flex-direction: row;
@@ -29,6 +32,8 @@ const LoginScreen = () => {
     const [formData, setFormData] = useState({
         phone_number: '',
     });
+
+    console.log(url)
 
     const countryCode = '353';
 
@@ -54,10 +59,11 @@ const LoginScreen = () => {
             /* TODO Remove!!! Dev Only */
             console.log(config);
 
-            const response = await axios.post('http://127.0.0.1:5000/login', {
+            const response = await axios.post(`${url}/login`, {
                 ...formData,
                 phone_number: fullNum
             }, config);
+            console.log(response.data)
             if (response && response.data) {
                 setMessage(response.data.message);
 
@@ -73,54 +79,51 @@ const LoginScreen = () => {
     };
 
     return (
-        <Main>
+        <WelcomeMain>
             <Logo/>
-            <ContainerWrapper>
-                <ContainerInner>
-                    <ContainerContent>
-                        <BttnDiv2>
-                            <PressableButton2
-                                onPress={() => navigation.navigate('Register')}
-                                title='Register'
-                                bgColor='#6bff91'
-                                txtColor='white'
+            <Wrapper>
+                <Content>
+                    <LRContainer>
+                        <PressableButton2
+                            onPress={() => navigation.navigate('Register')}
+                            title='Register'
+                            bgColor='#6bff91'
+                            txtColor='white'
+                        />
+                        <PressableButton2
+                            title='Login'
+                            bgColor='F7F7F7'
+                            txtColor='black'
+                        />
+                    </LRContainer>
+                    <Container>
+                        <H6 bmargin='5px'>Phone Number</H6>
+                        <PhoneContainer>
+                            <CCTxt
+                                value="+353"
+                                editable={false}
+                                placeholder=""
+                                onChangeText={(text) => handleChange('country_code', text)}
                             />
-                            <PressableButton2
+                            <PhoneTxt
+                                placeholder=""
+                                maxLength={10}
+                                onChangeText={(text) => handleChange('phone_number', text)}
+                            />
+                        </PhoneContainer>
 
-                                title='Login'
-                                bgColor='white'
-                                txtColor='black'
-                            />
-                        </BttnDiv2>
-                        <InputWrapper>
-                            <Text>Phone Number</Text>
-                            <PhoneContainer>
-                                <CCTxt
-                                    value="+353"
-                                    editable={false}
-                                    placeholder=""
-                                    onChangeText={(text) => handleChange('country_code', text)}
-                                />
-                                <PhoneTxt
-                                    placeholder=""
-                                    maxLength={10}
-                                    onChangeText={(text) => handleChange('phone_number', text)}
-                                />
-                            </PhoneContainer>
-
-                            <Text>{message}</Text>
-                            <BttnDiv>
-                            <PressableButton
-                                onPress={handleLogin}
-                                title='Send Login Code'
-                                bgColor='#6bff91'
-                            />
-                        </BttnDiv>
-                        </InputWrapper>
-                    </ContainerContent>
-                </ContainerInner>
-            </ContainerWrapper>
-        </Main>
+                        <H6>{message}</H6>
+                    </Container>
+                    <LRButtonDiv>
+                        <PressableButton
+                            onPress={handleLogin}
+                            title='Send Login Code'
+                            bgColor='#6bff91'
+                        />
+                    </LRButtonDiv>
+                </Content>
+            </Wrapper>
+        </WelcomeMain>
     );
 };
 

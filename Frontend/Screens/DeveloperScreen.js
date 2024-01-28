@@ -7,8 +7,8 @@ import { jwtDecode } from "jwt-decode";
 
 // Styling
 import {
-    Main2,
-} from '../styles/wrapper';
+    Main,
+} from '../styles/styles';
 import {
     AccountWrapper,
     AccountInner,
@@ -27,6 +27,8 @@ import AccountImg from '../styles/accountImg';
 import {MenuButton} from "../styles/accountButton";
 import {H3, H4, H5, H6} from "../styles/text";
 
+const url = process.env.REACT_APP_BACKEND_URL
+
 const DeveloperScreen = () => {
     const [userInfo, setUserInfo] = useState({});
     const [loading, setLoading] = useState(true);
@@ -38,7 +40,6 @@ const DeveloperScreen = () => {
     };
 
     useEffect(() => {
-        // Make an API request to fetch user account information from the backend
         const fetchUserInfo = async () => {
             try {
                 const apiKey = process.env.REACT_NATIVE_API_KEY;
@@ -57,7 +58,7 @@ const DeveloperScreen = () => {
 
                   const phone = decodedToken.sub;
 
-                  const response = await axios.post('http://127.0.0.1:5000/account', { phone_number: phone }, config);
+                  const response = await axios.post(`${url}/account`, { phone_number: phone }, config);
 
                   if (response.data && response.data.user) {
                     setUserInfo(response.data.user); // Set the user info directly
@@ -74,38 +75,20 @@ const DeveloperScreen = () => {
     }, []);
 
     return (
-        <Main2>
-            <MainLogo/>
+        <Main>
+            <MainLogo bButton={true}/>
             <AccountWrapper>
-                <AccountInner>
                     <AccountRegularInfo>
                         <AccountContent>
                             <H3 tmargin='20px' lmargin='20px' bmargin='10px'>Developer Screen</H3>
                             <AccountTxtWrapper>
-                                <H5 tmargin='10px' bmargin='10px'>Personal Information</H5>
-                                <H6 bmargin='5px'>Username</H6>
-                                <AccountTxt bgColor='grey' >@{userInfo.username}</AccountTxt>
-                                <H6 bmargin='5px'>Name</H6>
-                                <AccountTxt bgColor='#FFFFFF' >{userInfo.full_name}</AccountTxt>
-                                <H6 bmargin='5px'>Phone Number</H6>
-                                <AccountTxt bgColor='#FFFFFF' >{userInfo.phone_number}</AccountTxt>
-                                <H6 bmargin='5px'>Email</H6>
-                                <AccountTxt bgColor='#FFFFFF' >{userInfo.email}</AccountTxt>
-                                <H5 tmargin='20px' bmargin='5px'>Delete Account</H5>
-                                <H6 bmargin='20px' weight='400'>Not comfortable? Deleting your account will
-                                    remove all data from our servers</H6>
-                                <MenuButton title='Delete Account'
-                                            bgColor='red'
-                                            txtColor='white'
-                                            onPress={handleDelete}
-                                            emoji="🥲"/>
+
                             </AccountTxtWrapper>
 
                         </AccountContent>
                     </AccountRegularInfo>
-                </AccountInner>
             </AccountWrapper>
-        </Main2>
+        </Main>
     );
 };
 

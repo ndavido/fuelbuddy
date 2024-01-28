@@ -1,0 +1,75 @@
+{
+  "name": "react-native-animatable",
+  "version": "1.4.0",
+  "description": "Easy to use declarative transitions and animations for React Native",
+  "typings": "typings/react-native-animatable.d.ts",
+  "main": "index.js",
+  "scripts": {
+    "jest": "./node_modules/.bin/jest",
+    "jest:watch": "npm run jest -- --watch",
+    "lint": "./node_modules/.bin/eslint ./*.js",
+    "test": "npm run lint && npm run jest",
+    "format": "./node_modules/.bin/prettier --write {,definitions/,__tests__/}*.js typings/*.d.ts"
+  },
+  "keywords": [
+    "react-native",
+    "react-component",
+    "react-native-component",
+    "react",
+    "mobile",
+    "ios",
+    "android",
+    "ui",
+    "fade",
+    "bounce",
+    "slide",
+    "animatable",
+    "transition",
+    "animation"
+  ],
+  "author": {
+    "name": "Joel Arvidsson",
+    "email": "joel@oblador.se"
+  },
+  "homepage": "https://github.com/oblador/react-native-animatable",
+  "bugs": {
+    "url": "https://github.com/oblador/react-native-animatable/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/oblador/react-native-animatable.git"
+  },
+  "license": "MIT",
+  "jest": {
+    "preset": "react-native",
+    "modulePathIgnorePatterns": [
+      "<rootDir>/Examples/"
+    ],
+    "testPathIgnorePatterns": [
+      "<rootDir>/Examples/"
+    ],
+    "collectCoverage": true,
+    "coverageDirectory": "<rootDir>/coverage/"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.20.0",
+    "@babel/eslint-parser": "^7.22.15",
+    "@babel/runtime": "^7.20.0",
+    "eslint": "^8.2.0",
+    "eslint-config-airbnb": "19.0.4",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-import": "^2.25.3",
+    "eslint-plugin-jsx-a11y": "^6.5.1",
+    "eslint-plugin-prettier": "^5.0.1",
+    "eslint-plugin-react": "^7.28.0",
+    "eslint-plugin-react-hooks": "^4.3.0",
+    "jest": "^29.7.0",
+    "metro-react-native-babel-preset": "0.76.8",
+    "prettier": "^3.0.3",
+    "react": "18.2.0",
+    "react-native": "0.72.6"
+  },
+  "dependencies": {
+    "prop-types": "^15.8.1"
+  }
+}
