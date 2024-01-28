@@ -503,9 +503,10 @@ def get_fuel_stations():
                 # handle null values and have -1 to ensure to get the latest price (may change this after frontend is done)
                 'prices': {
                     'petrol_price': fuel_station.petrol_prices[-1].price if fuel_station.petrol_prices else None,
+                    'petrol_updated_at': fuel_station.petrol_prices[-1].updated_at.strftime('%Y-%m-%d %H:%M:%S') if fuel_station.petrol_prices else None,
                     'diesel_price': fuel_station.diesel_prices[-1].price if fuel_station.diesel_prices else None,
-                    'updated_at': fuel_station.diesel_prices[-1].updated_at.strftime('%Y-%m-%d %H:%M:%S') if fuel_station.diesel_prices else None
-                }
+                    'diesel_updated_at': fuel_station.diesel_prices[-1].updated_at.strftime('%Y-%m-%d %H:%M:%S') if fuel_station.diesel_prices else None
+                },
             }
 
             result.append(station_data)
