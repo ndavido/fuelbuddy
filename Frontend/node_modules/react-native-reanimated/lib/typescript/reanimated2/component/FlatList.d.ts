@@ -1,0 +1,23 @@
+import React from 'react';
+import type { FlatListProps } from 'react-native';
+import { FlatList } from 'react-native';
+import type { ILayoutAnimationBuilder } from '../layoutReanimation/animationBuilder/commonTypes';
+import type { AnimatedProps } from '../helperTypes';
+declare const AnimatedFlatList: React.ComponentClass<import("../helperTypes").AnimateProps<FlatListProps<unknown>>, any>;
+interface ReanimatedFlatListPropsWithLayout<T> extends AnimatedProps<FlatListProps<T>> {
+    /**
+     * Lets you pass layout animation directly to the FlatList item.
+     */
+    itemLayoutAnimation?: ILayoutAnimationBuilder;
+    /**
+     * Lets you skip entering and exiting animations of FlatList items when on FlatList mount or unmount.
+     */
+    skipEnteringExitingAnimations?: boolean;
+}
+export type FlatListPropsWithLayout<T> = ReanimatedFlatListPropsWithLayout<T>;
+interface AnimatedFlatListComplement<T> extends FlatList<T> {
+    getNode(): FlatList<T>;
+}
+export declare const ReanimatedFlatList: React.ForwardRefExoticComponent<ReanimatedFlatListPropsWithLayout<any> & React.RefAttributes<FlatList<any>>>;
+export type ReanimatedFlatList<T> = typeof AnimatedFlatList & AnimatedFlatListComplement<T>;
+export {};

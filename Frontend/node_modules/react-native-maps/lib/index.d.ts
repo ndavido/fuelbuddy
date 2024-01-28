@@ -33,6 +33,6 @@ export * from './ProviderConstants';
 export * from './MapView.types';
 export * from './MapPolygon.types';
 export * from './sharedTypes';
-export declare const MarkerAnimated: import("react-native").Animated.AnimatedComponent<typeof import("./MapMarker").MapMarker>;
-export declare const OverlayAnimated: import("react-native").Animated.AnimatedComponent<typeof import("./MapOverlay").MapOverlay>;
+export declare const MarkerAnimated: import("react-native/types").Animated.AnimatedComponent<typeof import("./MapMarker").MapMarker>;
+export declare const OverlayAnimated: import("react-native/types").Animated.AnimatedComponent<typeof import("./MapOverlay").MapOverlay>;
 export default MapView;

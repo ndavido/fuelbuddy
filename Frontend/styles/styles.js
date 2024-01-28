@@ -61,6 +61,48 @@ export const InputTxt = styled.TextInput`
   border-radius: 10px;
 `;
 
+export const ButtonContainer = styled.View`
+  margin-bottom: 30px;
+  margin-top: 10px;
+  display: flex;
+  flex-direction: row;
+  height: 40px;
+`;
+
+const ButtContainer = styled.TouchableOpacity`
+  padding: 12px;
+  width: ${props => props.width};
+  border-radius: 10px;
+  background-color: ${props => props.bgColor};
+  flex-direction: row;
+  display: inline-flex;
+`;
+
+const EmojiText = styled.Text`
+  font-size: 12px;
+  align-items: center;
+  justify-content: center;
+  line-height: 20px;
+`;
+
+const ButtonText = styled.Text`
+  font-size: 14px;
+  line-height: 20px;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  font-family: 'Poppins_500Medium';
+  color: ${props => props.txtColor};
+  margin-left: 10px;
+`;
+
+export const MenuButton = ({onPress, width, bgColor, txtColor, title, emoji}) => (
+    <ButtContainer onPress={onPress} width={width} bgColor={bgColor}>
+        <EmojiText>{emoji}</EmojiText>
+        <ButtonText txtColor={txtColor}>{title}</ButtonText>
+    </ButtContainer>
+);
+
 
 /* Welcome Screen */
 export const WelcomeMain = styled.View`
@@ -123,6 +165,7 @@ export const CCTxt = styled.TextInput`
   width: 16%;
   margin-bottom: 10px;
   padding: 10px;
+  text-align: center;
   height: auto;
   line-height: 18px;
   background-color: #F7F7F7;
@@ -145,14 +188,14 @@ export const DashboardContainer = styled.View`
   display: inline-block;
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
-  padding: 20px;
+  padding: 10px;
 `;
 
 export const DashboardLegal = styled.View`
   background-color: #F7F7F7;
   position: relative;
-  height: 50px;
-  display: block;
+  text-align: center;
+  height: auto;
   padding: 20px;
 `;
 
@@ -168,20 +211,18 @@ export const CardContainer = styled.View`
 
 export const Cardlrg = styled.View`
   background-color: #ffffff;
-  width: calc(100% - 20px);
   min-height: 300px;
   border-radius: 8px;
-  padding: 20px;
+  padding: 10px;
   margin: 10px;
 `;
 
 export const Cardsml = styled.View`
   background-color: #ffffff;
-  width: calc(50% - 20px);
-  display: inline-block;
+  flex: 1;
   min-height: 180px;
   border-radius: 8px;
-  padding: 20px;
+  padding: 10px;
   margin: 10px;
 `;
 

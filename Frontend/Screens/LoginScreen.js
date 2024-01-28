@@ -20,10 +20,8 @@ import PressableButton from '../styles/buttons';
 import PressableButton2 from '../styles/buttons2';
 import Logo from '../styles/logo';
 import {H1, H2, H3, H4, H5, H6, Img, Txt} from '../styles/text.js';
-import {
-    BttnDiv2,
-} from '../styles/wrapper';
 
+const url = process.env.REACT_APP_BACKEND_URL
 
 const PhoneContainer = styled(View)`
   flex-direction: row;
@@ -34,6 +32,8 @@ const LoginScreen = () => {
     const [formData, setFormData] = useState({
         phone_number: '',
     });
+
+    console.log(url)
 
     const countryCode = '353';
 
@@ -59,10 +59,11 @@ const LoginScreen = () => {
             /* TODO Remove!!! Dev Only */
             console.log(config);
 
-            const response = await axios.post('http://127.0.0.1:5000/login', {
+            const response = await axios.post(`${url}/login`, {
                 ...formData,
                 phone_number: fullNum
             }, config);
+            console.log(response.data)
             if (response && response.data) {
                 setMessage(response.data.message);
 

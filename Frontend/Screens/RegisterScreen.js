@@ -21,6 +21,8 @@ import PressableButton2 from '../styles/buttons2';
 import Logo from '../styles/logo';
 import {H1, H2, H3, H4, H5, H6, Img, Txt} from '../styles/text.js';
 
+const url = process.env.REACT_APP_BACKEND_URL
+
 const PhoneContainer = styled(View)`
   flex-direction: row;
 `;
@@ -83,7 +85,7 @@ const RegisterScreen = () => {
                 },
             };
 
-            const response = await axios.post('http://127.0.0.1:5000/register', {
+            const response = await axios.post(`${url}/register`, {
                 ...formData,
                 username: username,
                 phone_number: fullNum

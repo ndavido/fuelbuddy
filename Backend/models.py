@@ -1,9 +1,9 @@
 # models.py
 from datetime import datetime
-from mongoengine.fields import GenericReferenceField
+from mongoengine.fields import GenericReferenceField, EmbeddedDocumentField
 
 from mongoengine import Document, StringField, FloatField, IntField, ReferenceField, BooleanField, ListField, \
-    DateTimeField, DecimalField, DictField, Q
+    DateTimeField, DecimalField, DictField, Q, EmbeddedDocument
 
 
 class Location(Document):
@@ -29,7 +29,6 @@ class Users(Document):
         # Record the old and new budget
         BudgetHistory(
             user=self,
-            old_budget=self.weekly_budget,
             new_budget=new_budget,
             change_date=datetime.now()
         ).save()
@@ -40,7 +39,6 @@ class Users(Document):
 
 class BudgetHistory(Document):
     user = ReferenceField(Users, required=True)
-    old_budget = DecimalField(precision=2)
     new_budget = DecimalField(precision=2)
     change_date = DateTimeField(required=True)
     meta = {
@@ -58,17 +56,47 @@ class Vehicle(Document):
     # Include 'Electric' as an option
     fuel_type = StringField(choices=('Petrol', 'Diesel', 'Electric'))
 
+class PetrolPrices(EmbeddedDocument):
+    price = FloatField(required=True)
+    updated_at = DateTimeField(default=datetime.utcnow)
+
+class DieselPrices(EmbeddedDocument):
+    price = FloatField(required=True)
+    updated_at = DateTimeField(default=datetime.utcnow)
+
+class OpeningHours(EmbeddedDocument):
+    day = StringField()
+    hours = StringField()
 
 class FuelStation(Document):
     name = StringField(required=True)
     address = StringField(required=True)
     latitude = FloatField(required=True)
     longitude = FloatField(required=True)
-    is_fuel_station = BooleanField(required=True)
-    meta = {
-        'collection': 'FuelStation'
-    }
+    place_id = StringField(required=True, unique=True)
+    petrol_prices = ListField(EmbeddedDocumentField(PetrolPrices))
+    diesel_prices = ListField(EmbeddedDocumentField(DieselPrices))
+    opening_hours = ListField(EmbeddedDocumentField(OpeningHours))
+    phone_number = StringField()
 
+    meta = {
+        'collection': 'FuelStationTest'
+    }
+class FavoriteFuelStation(Document):
+    user = ReferenceField(Users, required=True)
+    favorite_stations = ListField(ReferenceField(FuelStation))
+
+    meta = {
+        'collection': 'FavoriteFuelStation'
+    }
+class FuelPrices(Document):
+    station = ReferenceField(FuelStation, required=True)
+    petrol_prices = ListField(EmbeddedDocumentField(PetrolPrices))
+    diesel_prices = ListField(EmbeddedDocumentField(DieselPrices))
+    updated_at = DateTimeField(default=datetime.utcnow)
+    meta = {
+        'collection': 'FuelPrices'
+    }
 
 class ChargingStation(Document):
     name = StringField(required=True)
@@ -81,16 +109,6 @@ class ChargingStation(Document):
     updated_at = DateTimeField(required=True)
     meta = {
         'collection': 'ChargingStation'
-    }
-
-
-class FuelPrices(Document):
-    fuel_station = StringField(required=True)
-    petrol_price = FloatField()
-    diesel_price = FloatField()
-    updated_at = DateTimeField(required=True)
-    meta = {
-        'collection': 'FuelPrices'
     }
 
 

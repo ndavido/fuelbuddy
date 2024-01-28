@@ -8,9 +8,6 @@ import * as Updates from 'expo-updates';
 
 // Styling
 import {
-    Main2,
-} from '../styles/wrapper';
-import {
     AccountWrapper,
     AccountInner,
     AccountContent,
@@ -27,7 +24,10 @@ import MainLogo from '../styles/mainLogo';
 import AccountImg from '../styles/accountImg';
 import {MenuButton} from "../styles/accountButton";
 import {H3, H4, H5, H6} from "../styles/text";
-import {InputTxt} from "../styles/styles";
+import {InputTxt, Main} from "../styles/styles";
+import {TAnimatedGenericButton} from "../styles/AnimatedIconButton";
+
+const url = process.env.REACT_APP_BACKEND_URL
 
 const AccountScreen = () => {
     const [userInfo, setUserInfo] = useState({});
@@ -74,7 +74,7 @@ const AccountScreen = () => {
             };
 
             // API call to update user information
-            const response = await axios.patch('http://127.0.0.1:5000/edit_account', updatedUserData, config);
+            const response = await axios.patch(`${url}/edit_account`, updatedUserData, config);
 
             if (response.data && response.data.message === 'Account updated successfully') {
                 // Update local user info state and exit edit mode
@@ -118,7 +118,7 @@ const AccountScreen = () => {
     }, []);
 
     return (
-        <Main2>
+        <Main>
             <MainLogo bButton={true}/>
             <AccountWrapper>
                 <AccountRegularInfo>
@@ -126,6 +126,7 @@ const AccountScreen = () => {
                         <H3 tmargin='20px' lmargin='20px' bmargin='10px'>Account</H3>
                         <AccountTxtWrapper>
                             <H5 tmargin='10px' bmargin='10px'>Personal Information</H5>
+                            <TAnimatedGenericButton text="Route To Station" onPress={() => {}}/>
                             {editMode ? (
                                 <>
                                     <H6 bmargin='5px'>Username</H6>
@@ -167,7 +168,7 @@ const AccountScreen = () => {
                     </AccountContent>
                 </AccountRegularInfo>
             </AccountWrapper>
-        </Main2>
+        </Main>
     );
 };
 

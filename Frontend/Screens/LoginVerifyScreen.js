@@ -23,6 +23,8 @@ import PressableButton2 from '../styles/buttons2';
 import Logo from '../styles/logo';
 import {H1, H2, H3, H4, H5, H6, Img, Txt} from '../styles/text.js';
 
+const url = process.env.REACT_APP_BACKEND_URL
+
 const LoginVerifyScreen = ({route}) => {
     const navigation = useNavigation();
     const {login} = useAuth(); // Get the dispatch function from the AuthContext
@@ -51,9 +53,7 @@ const LoginVerifyScreen = ({route}) => {
                 },
             };
 
-            const response = await axios.post('http://127.0.0.1:5000/login_verify', formData, config);
-
-            setMessage(response.data.message);
+            const response = await axios.post(`${url}/login_verify`, formData, config);
 
             // If verification is successful, update the authentication state
             if (response.data.message === 'Login successful!' && response.data.access_token) {
@@ -89,7 +89,7 @@ const LoginVerifyScreen = ({route}) => {
                     },
                 };
 
-                const response = await axios.post('http://127.0.0.1:5000/login', { phone_number: formData.phone_number, }, config );
+                const response = await axios.post(`${url}/login`, { phone_number: formData.phone_number, }, config );
 
                 // Check the response status or message to confirm code resent successfully
                 if (response && response.data) {

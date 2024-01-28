@@ -4,7 +4,7 @@ import styled from 'styled-components/native';
 const LogoContainer = styled.SafeAreaView`
   height: 150px;
   width: 220px;
-  top: 10;
+  top: 0;
   z-index: 1000;
   margin: auto;
   position: absolute;

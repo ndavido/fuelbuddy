@@ -43,3 +43,6 @@ Werkzeug==2.2.3
 yarl==1.9.2
 zope.event==5.0
 zope.interface==6.1
+tensorflow==2.15.0
+numpy==1.26.2
+pandas==2.1.3

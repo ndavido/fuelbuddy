@@ -6,8 +6,8 @@ import {jwtDecode} from "jwt-decode";
 
 // Styling
 import {
-    Main2,
-} from '../styles/wrapper';
+    Main,
+} from '../styles/styles.js';
 import {
     AccountWrapper,
     AccountInner,
@@ -26,6 +26,8 @@ import AccountImg from '../styles/accountImg';
 import {MenuButton} from "../styles/accountButton";
 import {H3, H4, H5, H6} from "../styles/text";
 import {useNavigation} from "@react-navigation/native";
+
+const url = process.env.REACT_APP_BACKEND_URL
 
 const DeleteConfirmScreen = () => {
     const navigate = useNavigation();
@@ -69,7 +71,7 @@ const DeleteConfirmScreen = () => {
 
                 const phone = decodedToken.sub;
 
-                const response = await axios.post('http://127.0.0.1:5000/delete_account', {phone_number: phone}, config);
+                const response = await axios.post(`${url}/delete_account`, {phone_number: phone}, config);
 
                 if (response.data.message === 'Account deleted successfully!') {
                     try {
@@ -87,7 +89,7 @@ const DeleteConfirmScreen = () => {
     };
 
     return (
-        <Main2>
+        <Main>
             <MainLogo bButton={true}/>
             <AccountWrapper>
                 <AccountRegularInfo>
@@ -112,7 +114,7 @@ const DeleteConfirmScreen = () => {
                     </AccountContent>
                 </AccountRegularInfo>
             </AccountWrapper>
-        </Main2>
+        </Main>
     );
 };
 

@@ -7,8 +7,8 @@ import { jwtDecode } from "jwt-decode";
 
 // Styling
 import {
-    Main2,
-} from '../styles/wrapper';
+    Main,
+} from '../styles/styles';
 import {
     AccountWrapper,
     AccountInner,
@@ -26,6 +26,8 @@ import MainLogo from '../styles/mainLogo';
 import AccountImg from '../styles/accountImg';
 import {MenuButton} from "../styles/accountButton";
 import {H3, H4, H5, H6} from "../styles/text";
+
+const url = process.env.REACT_APP_BACKEND_URL
 
 const VehicleScreen = () => {
     const [userInfo, setUserInfo] = useState({});
@@ -57,7 +59,7 @@ const VehicleScreen = () => {
 
                   const phone = decodedToken.sub;
 
-                  const response = await axios.post('http://ec2-54-172-255-239.compute-1.amazonaws.com/account', { phone_number: phone }, config);
+                  const response = await axios.post(`${url}/account`, { phone_number: phone }, config);
 
                   if (response.data && response.data.user) {
                     setUserInfo(response.data.user); // Set the user info directly
@@ -74,8 +76,8 @@ const VehicleScreen = () => {
     }, []);
 
     return (
-        <Main2>
-            <MainLogo/>
+        <Main>
+            <MainLogo bButton={true}/>
             <AccountWrapper>
                 <AccountRegularInfo>
                     <AccountContent>
@@ -92,7 +94,7 @@ const VehicleScreen = () => {
                     </AccountContent>
                 </AccountRegularInfo>
             </AccountWrapper>
-        </Main2>
+        </Main>
     );
 };
 
