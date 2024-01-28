@@ -6,11 +6,15 @@ from models import BudgetHistory, Users
 import database
 
 # Define the load_saved_model function
+
+
 def load_saved_model(model_path):
     # Load and return the model
     return load_model(model_path)
 
 # Define the make_prediction function
+
+
 def make_prediction(model, scaler, last_weeks_data, look_back):
     # Reshape and scale the input data
     last_weeks_data = np.array(last_weeks_data).reshape(-1, 1)
@@ -22,9 +26,10 @@ def make_prediction(model, scaler, last_weeks_data, look_back):
     predicted_price = scaler.inverse_transform(predicted_price)
     return predicted_price[0][0]
 
+
 # Define the model path and look_back period
 look_back = 10
-model_path = 'Backend/updated_user_model.h5'
+model_path = 'Backend/Updated_user_model.h5'
 
 # Load the pre-trained model
 model = load_saved_model(model_path)
@@ -35,8 +40,9 @@ df = pd.read_csv('Backend/unseen_spending_data.csv')
 data = df['Total'].values.reshape(-1, 1)
 scaler.fit(data)
 
-users = Users.objects(username='ndavido').first()
-user_budget_history = BudgetHistory.objects(user=Users.objects(username='ndavido').first()).order_by('-date_created')
+# users = Users.objects(username='ndavido').first()
+user_budget_history = BudgetHistory.objects(user=Users.objects(
+    username='ndavido').first()).order_by('-date_created')
 
 if user_budget_history:
     for budget_history in user_budget_history:
@@ -44,13 +50,16 @@ if user_budget_history:
 else:
     print('Budget not set')
 
+
 def round_to_nearest_10(predicted_price):
     # Round the predicted price to the nearest 10
     adjusted_predicted_price = round(predicted_price / 10) * 10
     return adjusted_predicted_price
 
+
 # Get the last week's data
-last_weeks_data = [budget_history.new_budget for budget_history in user_budget_history][:look_back]
+last_weeks_data = [
+    budget_history.new_budget for budget_history in user_budget_history][:look_back]
 
 # Make the prediction
 predicted_price = make_prediction(model, scaler, last_weeks_data, look_back)
@@ -60,4 +69,3 @@ adjusted_predicted_price = round_to_nearest_10(predicted_price)
 
 print("Next Week's Predicted Price is: ", predicted_price)
 print("Adjusted Predicted Price to the nearest 10 is: ", adjusted_predicted_price)
-

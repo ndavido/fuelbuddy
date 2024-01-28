@@ -22,6 +22,10 @@ from mongoengine.errors import DoesNotExist, ValidationError
 import binascii
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
+import numpy as np
+from keras.models import load_model
+from sklearn.preprocessing import MinMaxScaler
+import pandas as pd
 
 # from updated_user_monthly_predictions import main as nn
 
@@ -484,6 +488,8 @@ def update_budget():
 Gas Station Routes
 '''
 # ! This is the route for sending fuel stations info to Frontend
+
+
 @app.route('/fuel_stations', methods=['GET'])
 @require_api_key
 def get_fuel_stations():
@@ -517,6 +523,8 @@ def get_fuel_stations():
         return handle_api_error(e)
 
 # ! This is the route for storing fuel stations info from Frontend
+
+
 @app.route('/store_fuel_stations', methods=['POST'])
 @require_api_key
 def store_fuel_stations():
@@ -548,8 +556,10 @@ def store_fuel_stations():
 # individually finds favorite fuel stations for a user
 # got the username sent from response body, then find the user object, searched FavoriteFuelStation collection for the user object
 # then got the favorite_stations field which is a list of fuel station objects, then got the id of each fuel station object
-#ref: https://www.mongodb.com/docs/v6.2/reference/method/ObjectId/
-#ref: https://www.mongodb.com/docs/manual/reference/database-references/
+# ref: https://www.mongodb.com/docs/v6.2/reference/method/ObjectId/
+# ref: https://www.mongodb.com/docs/manual/reference/database-references/
+
+
 @app.route('/get_favorite_fuel_stations/', methods=['GET'])
 @require_api_key
 def get_favorite_fuel_stations():
@@ -559,11 +569,13 @@ def get_favorite_fuel_stations():
         if username:
             user = Users.objects(username=username).first()
             if user:
-                favorite_doc = FavoriteFuelStation.objects(user=user.id).first()
+                favorite_doc = FavoriteFuelStation.objects(
+                    user=user.id).first()
                 if favorite_doc:
                     favorite_stations = favorite_doc.favorite_stations
 
-                    fuel_stations = FuelStation.objects(id__in=[dbref.id for dbref in favorite_stations])
+                    fuel_stations = FuelStation.objects(
+                        id__in=[dbref.id for dbref in favorite_stations])
 
                     station_list = [
                         {
@@ -614,7 +626,8 @@ def favorite_fuel_station():
             favorite_doc = FavoriteFuelStation.objects(user=user).first()
 
             if not favorite_doc:
-                favorite_doc = FavoriteFuelStation(user=user, favorite_stations=[station])
+                favorite_doc = FavoriteFuelStation(
+                    user=user, favorite_stations=[station])
                 favorite_doc.save()
                 return jsonify({"message": f"Fuel station '{station.name}' has been added to favorites. user: '{user_id}'"}), 200
 
@@ -635,6 +648,8 @@ def favorite_fuel_station():
         return handle_api_error(e)
 
 # ! This is the route for storing petrol fuel prices info from Frontend
+
+
 @app.route('/store_fuel_prices', methods=['POST'])
 @require_api_key
 def store_fuel_prices():
@@ -655,29 +670,36 @@ def store_fuel_prices():
                 petrol_price_entry.price = price_data.get('petrol_price')
                 petrol_price_entry.updated_at = datetime.utcnow()
             else:
-                fuel_station.petrol_prices.create(price=price_data.get('petrol_price'), updated_at=datetime.utcnow())
+                fuel_station.petrol_prices.create(price=price_data.get(
+                    'petrol_price'), updated_at=datetime.utcnow())
 
             diesel_price_entry = fuel_station.diesel_prices.first()
             if diesel_price_entry:
                 diesel_price_entry.price = price_data.get('diesel_price')
                 diesel_price_entry.updated_at = datetime.utcnow()
             else:
-                fuel_station.diesel_prices.create(price=price_data.get('diesel_price'), updated_at=datetime.utcnow())
+                fuel_station.diesel_prices.create(price=price_data.get(
+                    'diesel_price'), updated_at=datetime.utcnow())
 
             fuel_station.updated_at = datetime.utcnow()
             fuel_station.save()
 
-            latest_fuel_price = FuelPrices.objects(station=fuel_station).order_by('-updated_at').first()
+            latest_fuel_price = FuelPrices.objects(
+                station=fuel_station).order_by('-updated_at').first()
 
             if latest_fuel_price:
-                latest_fuel_price.petrol_prices[-1]['price'] = price_data.get('petrol_price')
-                latest_fuel_price.diesel_prices[-1]['price'] = price_data.get('diesel_price')
+                latest_fuel_price.petrol_prices[-1]['price'] = price_data.get(
+                    'petrol_price')
+                latest_fuel_price.diesel_prices[-1]['price'] = price_data.get(
+                    'diesel_price')
                 latest_fuel_price.updated_at = datetime.utcnow()
             else:
                 new_price = FuelPrices(
                     station=fuel_station,
-                    petrol_prices=[{'price': price_data.get('petrol_price'), 'updated_at': datetime.utcnow()}],
-                    diesel_prices=[{'price': price_data.get('diesel_price'), 'updated_at': datetime.utcnow()}],
+                    petrol_prices=[{'price': price_data.get(
+                        'petrol_price'), 'updated_at': datetime.utcnow()}],
+                    diesel_prices=[{'price': price_data.get(
+                        'diesel_price'), 'updated_at': datetime.utcnow()}],
                     updated_at=datetime.utcnow()
                 )
                 new_price.save()
@@ -773,6 +795,8 @@ Friends Routes
 '''
 
 # Changed By David C
+
+
 @app.route('/send_friend_request', methods=['POST'])
 @require_api_key
 def send_friend_request():
@@ -845,6 +869,7 @@ def list_friends():
     except Exception as e:
         return handle_api_error(e)
 
+
 @app.route('/requested_friends', methods=['POST'])
 @require_api_key
 def requested_friends():
@@ -859,7 +884,8 @@ def requested_friends():
         print(recipient)
 
         # Only include friend requests that are not accepted
-        friend_requests = FriendRequest.objects(recipient=recipient, status='pending')
+        friend_requests = FriendRequest.objects(
+            recipient=recipient, status='pending')
 
         requested_friends_list = []
         for friend_request in friend_requests:
@@ -933,7 +959,6 @@ def respond_friend_request():
         return jsonify({"error": "Friend request not found"}), 404
     except Exception as e:
         return handle_api_error(e)
-
 
 
 # ! This is the route for sending friend requests to Frontend
@@ -1161,6 +1186,8 @@ def search_users():
 #! This route is for sending friend requests
 
 # TODO I Changed this name to sending_friend_request2
+
+
 @app.route('/send_friend_request2', methods=['POST'])
 @require_api_key
 @jwt_required()
@@ -1241,10 +1268,69 @@ def save_trip():
         return handle_api_error(e)
 
 
-@app.route('/user_spending', methods=['POST'])
+@app.route('/user_suggested_budget', methods=['POST'])
 @require_api_key
-def user_spending():
-    nn()
+def user_suggested_budget():
+    def load_saved_model(model_path):
+        return load_model(model_path)
+
+# Define the make_prediction function
+    def make_prediction(model, scaler, last_weeks_data, look_back):
+        # Reshape and scale the input data
+        last_weeks_data = np.array(last_weeks_data).reshape(-1, 1)
+        last_weeks_data_scaled = scaler.transform(last_weeks_data)
+        last_weeks_data_scaled = last_weeks_data_scaled.reshape(
+            1, look_back, 1)
+
+        # Make the prediction
+        predicted_price = model.predict(last_weeks_data_scaled)
+        predicted_price = scaler.inverse_transform(predicted_price)
+        return predicted_price[0][0]
+
+    # Define the model path and look_back period
+    look_back = 10
+    model_path = 'Backend/Updated_user_model.h5'
+
+    # Load the pre-trained model
+    model = load_saved_model(model_path)
+
+    # Initialize the scaler
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    df = pd.read_csv('Backend/unseen_spending_data.csv')
+    data = df['Total'].values.reshape(-1, 1)
+    scaler.fit(data)
+
+    current_user = request.get_json()
+    username = current_user['username']
+
+    user_budget_history = BudgetHistory.objects(user=Users.objects(
+        username=username).first()).order_by('-date_created')
+
+    if user_budget_history:
+        for budget_history in user_budget_history:
+            print(budget_history.new_budget)
+    else:
+        print('Budget not set')
+
+    def round_to_nearest_10(predicted_price):
+        # Round the predicted price to the nearest 10
+        adjusted_predicted_price = round(predicted_price / 10) * 10
+        return adjusted_predicted_price
+
+    # Get the last week's data
+    last_weeks_data = [
+        budget_history.new_budget for budget_history in user_budget_history][:look_back]
+
+    # Make the prediction
+    predicted_price = make_prediction(
+        model, scaler, last_weeks_data, look_back)
+
+    # Adjust the prediction to the nearest 10
+    adjusted_predicted_price = round_to_nearest_10(predicted_price)
+
+    print("Next Week's Predicted Price is: ", predicted_price)
+    print("Adjusted Predicted Price to the nearest 10 is: ",
+          adjusted_predicted_price)
 
 
 if __name__ == '__main__':
