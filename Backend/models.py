@@ -29,7 +29,6 @@ class Users(Document):
         # Record the old and new budget
         BudgetHistory(
             user=self,
-            old_budget=self.weekly_budget,
             new_budget=new_budget,
             change_date=datetime.now()
         ).save()
@@ -66,15 +65,23 @@ class DieselPrices(EmbeddedDocument):
     price = FloatField(required=True)
     updated_at = DateTimeField(default=datetime.utcnow)
 
+class OpeningHours(EmbeddedDocument):
+    day = StringField()
+    hours = StringField()
+
 class FuelStation(Document):
     name = StringField(required=True)
     address = StringField(required=True)
     latitude = FloatField(required=True)
     longitude = FloatField(required=True)
+    place_id = StringField(required=True, unique=True)
     petrol_prices = ListField(EmbeddedDocumentField(PetrolPrices))
     diesel_prices = ListField(EmbeddedDocumentField(DieselPrices))
+    opening_hours = ListField(EmbeddedDocumentField(OpeningHours))
+    phone_number = StringField()
+
     meta = {
-        'collection': 'FuelStation'
+        'collection': 'FuelStationTest'
     }
 class FavoriteFuelStation(Document):
     user = ReferenceField(Users, required=True)
