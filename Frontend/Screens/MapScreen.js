@@ -122,7 +122,15 @@ const MapScreen = () => {
 
     const manualRefresh = async () => {
         setRefreshing(true);
-        await fetchPetrolStations(userInfo);
+        const userDataJson = await AsyncStorage.getItem('userData');
+
+        if (userDataJson) {
+            const parsedUserData = jsonBig.parse(userDataJson);
+            await setUserInfo(parsedUserData);
+
+            // Now that user information is set, fetch location and petrol stations
+            await fetchPetrolStations(parsedUserData);
+        }
         setRefreshing(false);
     };
 
