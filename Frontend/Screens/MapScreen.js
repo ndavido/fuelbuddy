@@ -34,8 +34,6 @@ const MapScreen = () => {
     const [location, setLocation] = useState(null);
     const [userInfo, setUserInfo] = useState({});
 
-    const [heartActive, setHeartActive] = useState(false);
-
     const [favoriteStations, setFavoriteStations] = useState([]);
 
     const [favoriteStatus, setFavoriteStatus] = useState({});
@@ -52,6 +50,8 @@ const MapScreen = () => {
     const [showStationInfo, setShowStationInfo] = useState(true);
     const [showRouteInfo, setShowRouteInfo] = useState(false);
     const bottomSheetRef = useRef(null);
+
+    const [refreshing, setRefreshing] = useState(false);
 
     const snapPoints = useMemo(() => ['20%', '40%', '90%'], []);
 
@@ -114,6 +114,12 @@ const MapScreen = () => {
 
         fetchUserInfo();
     }, []);
+
+    const manualRefresh = async () => {
+        setRefreshing(true);
+        await fetchPetrolStations(userInfo);
+        setRefreshing(false);
+    };
 
     const fetchPetrolStations = async (userData) => {
         try {
@@ -192,6 +198,7 @@ const MapScreen = () => {
 
             if (response.ok) {
                 console.log('Successfully updated fuel prices');
+                await manualRefresh();
             } else {
                 console.error('Failed to update fuel prices');
             }
@@ -332,6 +339,7 @@ const MapScreen = () => {
                         dieselUpdatedAt={station.prices.diesel_updated_at}
                         isFavorite={favoriteStations.some(favStation => favStation.station_id === station.id)}
                         onHeartPress={() => handleLikePress(station.id)}
+                        isSelected={selectedStation && selectedStation.id === station.id}
                     />
                 ))}
                 {selectedStation && location && showRouteInfo && (<MapViewDirections
