@@ -661,6 +661,7 @@ def store_fuel_prices():
 
             if not fuel_station:
                 continue
+
             # Update fuel prices within FuelStation model
             petrol_price = price_data.get('petrol_price')
             diesel_price = price_data.get('diesel_price')
@@ -683,6 +684,15 @@ def store_fuel_prices():
                 }],
                 updated_at=datetime.utcnow()
             )
+
+            new_price.petrol_prices.append({
+                'price': petrol_price,
+                'updated_at': datetime.utcnow()
+            })
+            new_price.diesel_prices.append({
+                'price': diesel_price,
+                'updated_at': datetime.utcnow()
+            })
             new_price.save()
 
         return jsonify({"message": "Fuel prices stored successfully"})
