@@ -58,6 +58,11 @@ const MapScreen = () => {
     console.log(url)
 
     useEffect(() => {
+        const refreshInterval = setInterval(async () => {
+            console.log('Refreshing data...');
+            await manualRefresh();
+        }, 60000);
+
         const fetchUserInfo = async () => {
             try {
                 const userDataJson = await AsyncStorage.getItem('userData');
@@ -111,8 +116,8 @@ const MapScreen = () => {
                 console.error("Error fetching user location:", error);
             }
         }
-
         fetchUserInfo();
+        return () => clearInterval(refreshInterval);
     }, []);
 
     const manualRefresh = async () => {
