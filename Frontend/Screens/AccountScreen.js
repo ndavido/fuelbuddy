@@ -161,11 +161,7 @@ const AccountScreen = () => {
                                                       txtColor='black'
                                                       emoji="🚗"
                                                       onPress={handleVehicle}/>
-                                    <MenuButtonTop title='my routes (NA)'
-                                                   bgColor='white'
-                                                   txtColor='black'
-                                                   emoji="📍"/>
-                                    <MenuButtonMiddle title='my stations (NA)'
+                                    <MenuButtonTop title='my stations (NA)'
                                                       bgColor='white'
                                                       txtColor='black'
                                                       emoji="⛽"/>

@@ -111,7 +111,7 @@ const MapScreen = () => {
                 });
 
                 // Pass user data to fetchPetrolStations
-                fetchPetrolStations(userData);
+                fetchFavoriteStations(userData);
             } catch (error) {
                 console.error("Error fetching user location:", error);
             }
@@ -129,12 +129,12 @@ const MapScreen = () => {
             await setUserInfo(parsedUserData);
 
             // Now that user information is set, fetch location and petrol stations
-            await fetchPetrolStations(parsedUserData);
+            await fetchFavoriteStations(parsedUserData);
         }
         setRefreshing(false);
     };
 
-    const fetchPetrolStations = async (userData) => {
+    const fetchPetrolStations = async () => {
         try {
             const config = {
                 headers: {
@@ -150,7 +150,7 @@ const MapScreen = () => {
             setPetrolStations(stations);
 
             // Pass user data to fetchFavoriteStations
-            fetchFavoriteStations(userData);
+
         } catch (error) {
             console.error(error);
         }
@@ -182,11 +182,13 @@ const MapScreen = () => {
                 setFavoriteStatus(initialFavoriteStatus);
                 // TODO Remove Dev only!!
                 console.log("Fav Stations:", fav_response.data.favorite_stations)
+
             } else {
                 console.log("No favorite stations found");
                 setFavoriteStations([]);
                 setFavoriteStatus({});
             }
+            fetchPetrolStations();
         } catch (error) {
             console.error('Error fetching favorite fuel stations:', error);
         }
@@ -248,6 +250,7 @@ const MapScreen = () => {
                     ...prevStatus,
                     [stationId]: !prevStatus[stationId],
                 }));
+                await manualRefresh();
             } else {
                 console.error('Failed to update favorite status');
             }
