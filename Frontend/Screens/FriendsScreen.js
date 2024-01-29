@@ -1,5 +1,15 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, TextInput, FlatList, TouchableOpacity, Button, StyleSheet, Modal} from 'react-native';
+import {
+    View,
+    Text,
+    TextInput,
+    FlatList,
+    TouchableOpacity,
+    Button,
+    StyleSheet,
+    Modal,
+    RefreshControl
+} from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNavigation} from '@react-navigation/native';
@@ -29,6 +39,8 @@ const FriendsScreen = () => {
     const [loading, setLoading] = useState(true);
     const hasRequestedFriends = requestedFriends.length > 0;
 
+    const [refreshing, setRefreshing] = useState(false);
+
     console.log(url)
 
     const fetchFriends = async () => {
@@ -57,6 +69,14 @@ const FriendsScreen = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const onRefresh = async () => {
+        setRefreshing(true);
+        // Perform your refresh logic here, e.g., refetch data
+        await fetchFriends();
+        await fetchRequestedFriends();
+        setRefreshing(false);
     };
 
     const fetchRequestedFriends = async () => {
@@ -190,7 +210,12 @@ const FriendsScreen = () => {
         <Main>
             <MainLogo PageTxt='Friends'/>
             <AccountWrapper>
-                <AccountRegularInfo>
+                <AccountRegularInfo refreshControl={
+                                    <RefreshControl
+                                        refreshing={refreshing}
+                                        onRefresh={onRefresh}
+                                    />
+                                }>
                     <AccountContent>
                         <H3 tmargin='20px' lmargin='20px' bmargin='5px'></H3>
                         <H5 tmargin='10px' bmargin='5px' onPress={openSearchModal}>Add Friends</H5>
@@ -226,6 +251,12 @@ const FriendsScreen = () => {
                                                     </TouchableOpacity>
                                                 </View>
                                             )}
+                                            refreshControl={
+                                                <RefreshControl
+                                                    refreshing={refreshing}
+                                                    onRefresh={onRefresh}
+                                                />
+                                            }
                                         />
                                     </View>
                                 </View>

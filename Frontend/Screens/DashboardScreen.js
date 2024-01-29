@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useFocusEffect} from '@react-navigation/native';
-import {View, Image, Text} from 'react-native';
+import {View, Image, Text, RefreshControl} from 'react-native';
 import styled from 'styled-components/native';
 import {LineChart, PieChart} from 'react-native-chart-kit'; // Assuming you're using chart-kit for charts
 import {jwtDecode} from "jwt-decode";
@@ -26,6 +26,8 @@ const DashboardScreen = () => {
 
     const [newsData, setNewsData] = useState([]);
     const [loadingNews, setLoadingNews] = useState(true);
+
+    const [refreshing, setRefreshing] = useState(false);
 
     const fetchNews = async () => {
         try {
@@ -97,6 +99,14 @@ const DashboardScreen = () => {
         ],
     };
 
+    const onRefresh = async () => {
+        setRefreshing(true);
+
+        await fetchUserInfo();
+        await fetchNews();
+        setRefreshing(false);
+    };
+
     const pieChartData = [
         {name: '', amount: 40, color: 'green', legendFontColor: '#7F7F7F', legendFontSize: 15},
         {name: '', amount: 20, color: '#F00', legendFontColor: '#7F7F7F', legendFontSize: 15},
@@ -131,9 +141,14 @@ const DashboardScreen = () => {
     return (
         <Main>
             <MainLogo PageTxt='Dashboard'/>
-            <WrapperScroll>
+            <WrapperScroll refreshControl={
+                <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                />
+            }>
                 <TitleContainer>
-                    <H3 weight='600' tmargin='100px' lmargin='20px' bmargin='10px'></H3>
+                    <H3 weight='600' tmargin='100px' lmargin='20px' bmargin='10px'>Hey, {userInfo.username}</H3>
                 </TitleContainer>
                 <DashboardContainer>
                     <CardOverlap>
@@ -177,7 +192,11 @@ const DashboardScreen = () => {
                                             )}
                                             <H5>{article.title}</H5>
                                             <H6 style={{opacity: 0.5}}>{article.description}</H6>
-                                            <H7 style={{opacity: 0.3}}>{article.source?.name} - {new Date(article.publishedAt).toLocaleString('en-GB', { timeZone: 'GMT', dateStyle: 'short', timeStyle: 'short' })}</H7>
+                                            <H7 style={{opacity: 0.3}}>{article.source?.name} - {new Date(article.publishedAt).toLocaleString('en-GB', {
+                                                timeZone: 'GMT',
+                                                dateStyle: 'short',
+                                                timeStyle: 'short'
+                                            })}</H7>
                                         </View>
                                     ))}
                                 </View>
