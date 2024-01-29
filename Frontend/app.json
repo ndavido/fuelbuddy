@@ -33,6 +33,7 @@
     },
     "web": {
       "favicon": "./assets/fuelbuddyDrop.png"
-    }
+    },
+    "platforms": ["ios", "android", "web"]
   }
 }
