@@ -23,7 +23,7 @@ ireland_bounds = {
 }
 
 search_types = ['gas_station']
-step_size = 0.5
+step_size = 0.1
 petrol_results = []
 
 def get_places_in_region(north, south, east, west, search_types):
@@ -41,41 +41,73 @@ def get_places_in_region(north, south, east, west, search_types):
                 longitude = place['geometry']['location']['lng']
                 place_id = place['place_id']
 
-                details_result = gmaps.place(place_id=place_id,
-                                             fields=['name', 'formatted_address', 'geometry', 'opening_hours',
-                                                     'formatted_phone_number'])
+                existing_station = FuelStation.objects(place_id=place_id).first()
+                if existing_station:
+                    existing_station.name = name
+                    existing_station.address = address
+                    existing_station.latitude = latitude
+                    existing_station.longitude = longitude
 
-                result_data = details_result.get('result', {})
+                    details_result = gmaps.place(place_id=place_id,
+                                                 fields=['name', 'formatted_address', 'geometry', 'opening_hours',
+                                                         'formatted_phone_number'])
 
-                opening_hours_data = result_data.get('opening_hours', {}).get('periods', [])
-                if opening_hours_data:
-                    opening_hours = [
-                        OpeningHours(
-                            day=str(period['open']['day']),
-                            hours=f"{period['open']['time']}–{period['close']['time']}" if 'close' in period else "Unknown"
-                        )
-                        for period in opening_hours_data
-                    ]
+                    result_data = details_result.get('result', {})
+                    opening_hours_data = result_data.get('opening_hours', {}).get('periods', [])
+                    if opening_hours_data:
+                        opening_hours = [
+                            OpeningHours(
+                                day=str(period['open']['day']),
+                                hours=f"{period['open']['time']}–{period['close']['time']}" if 'close' in period else "Unknown"
+                            )
+                            for period in opening_hours_data
+                        ]
+                    else:
+                        opening_hours = None
+
+                    phone_number = result_data.get('formatted_phone_number', 'Phone number not available')
+
+                    existing_station.opening_hours = opening_hours
+                    existing_station.phone_number = phone_number
+
+                    existing_station.save()
                 else:
-                    opening_hours = None
 
-                phone_number = details_result.get('result', {}).get('formatted_phone_number',
-                                                                    'Phone number not available')
+                    details_result = gmaps.place(place_id=place_id,
+                                                 fields=['name', 'formatted_address', 'geometry', 'opening_hours',
+                                                         'formatted_phone_number'])
 
-                # Create a FuelStation object and save it to MongoDB
-                fuel_station = FuelStation(
-                    name=name,
-                    address=address,
-                    latitude=latitude,
-                    longitude=longitude,
-                    opening_hours=opening_hours,
-                    phone_number=phone_number
-                )
-                fuel_station.save()
-                fuel_station_count += 1
+                    result_data = details_result.get('result', {})
+                    opening_hours_data = result_data.get('opening_hours', {}).get('periods', [])
+                    if opening_hours_data:
+                        opening_hours = [
+                            OpeningHours(
+                                day=str(period['open']['day']),
+                                hours=f"{period['open']['time']}–{period['close']['time']}" if 'close' in period else "Unknown"
+                            )
+                            for period in opening_hours_data
+                        ]
+                    else:
+                        opening_hours = None
+
+                    phone_number = result_data.get('formatted_phone_number', 'Phone number not available')
+
+                    fuel_station = FuelStation(
+                        name=name,
+                        address=address,
+                        latitude=latitude,
+                        longitude=longitude,
+                        opening_hours=opening_hours,
+                        phone_number=phone_number,
+                        place_id=place_id
+                    )
+                    fuel_station.save()
+                    fuel_station_count += 1
 
     except Exception as e:
         print(f"An error occurred: {e}")
+
+    return fuel_station_count
 
 current_north = ireland_bounds['north']
 total_fuel_station_count = 0
