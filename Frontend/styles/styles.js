@@ -63,9 +63,8 @@ export const InputTxt = styled.TextInput`
 
 export const ButtonContainer = styled.View`
   margin-bottom: 30px;
-  margin-top: 10px;
+  margin-top: 15px;
   display: flex;
-  flex-direction: row;
   height: 40px;
 `;
 
@@ -220,7 +219,6 @@ export const Cardlrg = styled.View`
 export const Cardsml = styled.View`
   background-color: #ffffff;
   flex: 1;
-  min-height: 180px;
   border-radius: 8px;
   padding: 10px;
   margin: 10px;

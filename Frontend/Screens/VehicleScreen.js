@@ -77,11 +77,10 @@ const VehicleScreen = () => {
 
     return (
         <Main>
-            <MainLogo bButton={true}/>
+            <MainLogo bButton={true} PageTxt='Vehicle'/>
             <AccountWrapper>
                 <AccountRegularInfo>
                     <AccountContent>
-                        <H3 tmargin='20px' lmargin='20px' bmargin='10px'>Vehicle</H3>
                         <AccountTxtWrapper>
                             <H5 tmargin='10px' bmargin='10px'>My Car</H5>
                             <H6 bmargin='5px'>Make</H6>

@@ -75,6 +75,15 @@ export const H2 = styled.Text`
   ${applyWidth}
 `;
 
+export const H25 = styled.Text`
+  font-size: 25px;
+  font-family: ${props => getFontFamily(props.weight)};
+  ${applyMargins}
+  ${applyColor}
+  ${applyPosition}
+  ${applyWidth}
+`;
+
 export const H3 = styled.Text`
   font-size: 22px;
   font-family: ${props => getFontFamily(props.weight)};

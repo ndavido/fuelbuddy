@@ -133,12 +133,11 @@ const AccountScreen = () => {
 
     return (
         <Main>
-            <MainLogo/>
+            <MainLogo PageTxt='Account'/>
             <AccountWrapper>
 
                 <AccountTopInfo>
                     <AccountContent>
-                        <H3 weight='600' tmargin='20px' lmargin='20px' bmargin='10px'>Account</H3>
                         <AccountImg/>
                         <AccountUsername>@{userInfo.username} {userInfo.roles && userInfo.roles.includes("Developer") &&
                             <DeveloperTick>🧑‍💻</DeveloperTick>}</AccountUsername>
