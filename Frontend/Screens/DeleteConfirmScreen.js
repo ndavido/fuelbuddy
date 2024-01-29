@@ -90,7 +90,7 @@ const DeleteConfirmScreen = () => {
 
     return (
         <Main>
-            <MainLogo bButton={true}/>
+            <MainLogo bButton={true} PageTxt='Account'/>
             <AccountWrapper>
                 <AccountRegularInfo>
                     <AccountContent>

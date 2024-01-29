@@ -142,6 +142,7 @@ function LoadingScreen({isVisible}) {
                 const response = await axios.post(`${url}/account`, {phone_number: phone}, config);
 
                 if (response.data && response.data.user) {
+                    console.log(response.data.user)
                     await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
 
                 }

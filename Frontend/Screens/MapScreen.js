@@ -4,6 +4,8 @@ import BottomSheet from '@gorhom/bottom-sheet';
 import MyMarker from '../Components/mymarker';
 import * as Location from "expo-location";
 
+const jsonBig = require('json-bigint');
+
 const isWeb = Platform.OS !== "ios" && Platform.OS !== "android";
 
 let MapView;
@@ -34,6 +36,10 @@ const MapScreen = () => {
 
     const [heartActive, setHeartActive] = useState(false);
 
+    const [favoriteStations, setFavoriteStations] = useState([]);
+
+    const [favoriteStatus, setFavoriteStatus] = useState({});
+
     const mapRef = useRef(null);
     const [estimatedDuration, setEstimatedDuration] = useState(null);
     const [estimatedDistance, setEstimatedDistance] = useState(null);
@@ -55,16 +61,20 @@ const MapScreen = () => {
         const fetchUserInfo = async () => {
             try {
                 const userDataJson = await AsyncStorage.getItem('userData');
+
                 if (userDataJson) {
-                    setUserInfo(JSON.parse(userDataJson));
-                    await fetchFavoriteStations;
+                    const parsedUserData = jsonBig.parse(userDataJson);
+                    await setUserInfo(parsedUserData);
+
+                    // Now that user information is set, fetch location and petrol stations
+                    fetchLocationAndPetrolStations(parsedUserData);
                 }
             } catch (error) {
                 console.error('Error fetching user account information:', error);
             }
         };
 
-        const fetchLocationAndPetrolStations = async () => {
+        const fetchLocationAndPetrolStations = async (userData) => {
             let {status} = await Location.requestForegroundPermissionsAsync();
             if (status !== "granted") {
                 console.error("Permission to access location was denied");
@@ -85,7 +95,6 @@ const MapScreen = () => {
                 });
 
                 Location.watchPositionAsync({distanceInterval: 10}, (newLocation) => {
-
                     setLocation(newLocation);
 
                     mapRef.current?.animateToRegion({
@@ -96,18 +105,17 @@ const MapScreen = () => {
                     });
                 });
 
-                fetchPetrolStations(location);
-
+                // Pass user data to fetchPetrolStations
+                fetchPetrolStations(userData);
             } catch (error) {
                 console.error("Error fetching user location:", error);
             }
-        };
+        }
 
         fetchUserInfo();
-        fetchLocationAndPetrolStations();
     }, []);
 
-    const fetchPetrolStations = async (location) => {
+    const fetchPetrolStations = async (userData) => {
         try {
             const config = {
                 headers: {
@@ -118,36 +126,53 @@ const MapScreen = () => {
             const stations = await response.json();
 
             // TODO Remove Dev Only
-            console.log("Stations: ", stations)
+            console.log("Stations: ", stations);
 
             setPetrolStations(stations);
 
+            // Pass user data to fetchFavoriteStations
+            fetchFavoriteStations(userData);
         } catch (error) {
             console.error(error);
         }
     };
 
-    const fetchFavoriteStations = async () => {
-        const updatedUserData = {
-            username: userInfo.username,
-        };
+    const fetchFavoriteStations = async (userData) => {
+        try {
+            const updatedUserData = {
+                username: userData.username,
+            };
 
-        console.log(updatedUserData)
+            const fav_response = await axios.get(`${url}/get_favorite_fuel_stations`, {
+                params: updatedUserData,
+                headers: {
+                    "X-API-Key": apiKey,
+                },
+            });
 
-        const fav_response = await axios.get(`${url}/get_favorite_fuel_stations`, {
-            params: updatedUserData,
-            headers: {
-                "X-API-Key": apiKey,
-            },
-        });
+            if (fav_response.data && fav_response.data.favorite_stations) {
+                const initialFavoriteStatus = fav_response.data.favorite_stations.reduce(
+                    (status, favStation) => {
+                        status[favStation.station_id] = true;
+                        return status;
+                    },
+                    {}
+                );
 
-        if (fav_response.data) {
-            // Update local user info state and exit edit mode
-            console.log("Favourites: ", fav_response.data)
-        } else {
-            console.log("BN")
+                setFavoriteStations(fav_response.data.favorite_stations);
+                setFavoriteStatus(initialFavoriteStatus);
+                // TODO Remove Dev only!!
+                console.log("Fav Stations:", fav_response.data.favorite_stations)
+            } else {
+                console.log("No favorite stations found");
+                setFavoriteStations([]);
+                setFavoriteStatus({});
+            }
+        } catch (error) {
+            console.error('Error fetching favorite fuel stations:', error);
         }
     };
+
 
     const handleUpdatePress = async () => {
         try {
@@ -158,7 +183,6 @@ const MapScreen = () => {
                 },],
             };
 
-            // Make the API request
             const response = await fetch(`${url}/store_fuel_prices`, {
                 method: 'POST', headers: {
                     "X-API-Key": apiKey,
@@ -178,33 +202,40 @@ const MapScreen = () => {
         setUpdateModalVisible(false);
     };
 
-    const handleLikePress = async () => {
+    const handleLikePress = async (stationId) => {
         try {
-            if (selectedStation) {
-                const payload = {
-                    username: userInfo.username, station_id: selectedStation.id,
-                };
+            const payload = {
+                username: userInfo.username,
+                station_id: stationId,
+            };
 
-                console.log("Payload: ", payload)
+            const config = {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-API-Key': apiKey,
+                },
+                body: JSON.stringify(payload),
+            };
 
-                const config = {
-                    method: 'POST', headers: {
-                        'Content-Type': 'application/json', 'X-API-Key': apiKey,
-                    }, body: JSON.stringify(payload),
-                };
+            const response = await fetch(`${url}/manage_favorite_fuel_station`, config);
 
-                const response = await fetch(`${url}/manage_favorite_fuel_station`, config);
+            if (response.ok) {
+                console.log('Favorite status updated successfully');
 
-                if (response.ok) {
-                    console.log('Favorite status updated successfully');
-                } else {
-                    console.error('Failed to update favorite status');
-                }
+                // Update the favorite status for the specific station
+                setFavoriteStatus((prevStatus) => ({
+                    ...prevStatus,
+                    [stationId]: !prevStatus[stationId],
+                }));
+            } else {
+                console.error('Failed to update favorite status');
             }
         } catch (error) {
             console.error('Error updating favorite status:', error);
         }
     };
+
 
     const handleMarkerPress = (station) => {
         setSelectedStation(station);
@@ -299,6 +330,8 @@ const MapScreen = () => {
                         onPress={() => handleMarkerPress(station)}
                         petrolUpdatedAt={station.prices.petrol_updated_at}
                         dieselUpdatedAt={station.prices.diesel_updated_at}
+                        isFavorite={favoriteStations.some(favStation => favStation.station_id === station.id)}
+                        onHeartPress={() => handleLikePress(station.id)}
                     />
                 ))}
                 {selectedStation && location && showRouteInfo && (<MapViewDirections
@@ -331,10 +364,13 @@ const MapScreen = () => {
                     {selectedStation && showStationInfo && (
                         <Container>
                             <H3 weight='600' style={{lineHeight: 24}}>{selectedStation.name}</H3>
-                            <H6 style={{opacity: 0.6, lineHeight: 16}}>Fuel Station</H6>
+                            <H6 weight='400' style={{opacity: 0.6, lineHeight: 16}}>Fuel Station</H6>
                             <ButtonContainer>
                                 <TAnimatedGenericButton text="Route To Station" onPress={handleRoutePress}/>
-                                <AnimatedHeartButton initialIsActive={heartActive} onPress={handleLikePress}/>
+                                <AnimatedHeartButton
+                                    initialIsActive={favoriteStatus[selectedStation.id] || false}
+                                    onPress={() => handleLikePress(selectedStation.id)}
+                                />
                                 <AnimatedGenericButton onPress={() => setUpdateModalVisible(true)}/>
                             </ButtonContainer>
                             <H4>Current Prices</H4>

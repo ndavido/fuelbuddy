@@ -76,7 +76,7 @@ const DeveloperScreen = () => {
 
     return (
         <Main>
-            <MainLogo bButton={true}/>
+            <MainLogo bButton={true} PageTxt='Developer'/>
             <AccountWrapper>
                     <AccountRegularInfo>
                         <AccountContent>

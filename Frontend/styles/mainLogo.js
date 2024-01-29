@@ -18,23 +18,26 @@ const LogoContainer = styled.SafeAreaView`
 const LogoInner = styled.SafeAreaView`
   height: 25px;
   width:50%;
-  bottom: 10px;
+  bottom: 5px;
   z-index: 1000;
   margin: auto;
   position: absolute;
 `;
 
-const LogoImg = styled.Image`
-  flex: 1;
-  resizeMode: contain;
-  width: 100%;
+const ButtonText = styled.Text`
+  font-size: 16px;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  text-align: center;
+  font-family: 'Poppins_500Medium';
 `;
 
-const MainLogo = ({ bButton }) => (
+const MainLogo = ({ bButton, PageTxt }) => (
   <LogoContainer>
       {bButton ? <BackButton /> : null}
     <LogoInner>
-      <LogoImg source={require('../assets/fuelbuddyLogoShort.png')}/>
+        <ButtonText>{PageTxt}</ButtonText>
     </LogoInner>
   </LogoContainer>
 );

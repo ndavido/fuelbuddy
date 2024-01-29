@@ -119,14 +119,13 @@ const AccountScreen = () => {
 
     return (
         <Main>
-            <MainLogo bButton={true}/>
+            <MainLogo bButton={true} PageTxt='Account'/>
             <AccountWrapper>
                 <AccountRegularInfo>
                     <AccountContent>
-                        <H3 tmargin='20px' lmargin='20px' bmargin='10px'>Account</H3>
                         <AccountTxtWrapper>
                             <H5 tmargin='10px' bmargin='10px'>Personal Information</H5>
-                            <TAnimatedGenericButton text="Route To Station" onPress={() => {}}/>
+                            <TAnimatedGenericButton title={editMode ? "Cancel" : "Edit"} onPress={handleEditToggle}/>
                             {editMode ? (
                                 <>
                                     <H6 bmargin='5px'>Username</H6>

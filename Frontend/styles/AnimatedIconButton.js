@@ -7,6 +7,9 @@ import styled from 'styled-components/native';
 const HeartButton = styled(Animatable.View)`
   background-color: ${(props) => (props.isActive ? '#FFBABA' : '#eaedea')};
   padding: 7px;
+   position: absolute;
+  margin-right: 48px;
+  right: 0;
   border-radius: 10px;
   transform: scale(${(props) => (props.isActive ? 1.2 : 1)});
   opacity: ${(props) => (props.isActive ? 0.8 : 1)};
@@ -39,6 +42,8 @@ export const AnimatedHeartButton = ({ initialIsActive, onPress }) => {
 const GenericButton = styled(Animatable.View)`
   background-color: #6BFF91;
   padding: 7px;
+  position: absolute;
+  right: 0;
   border-radius: 10px;
   transform: scale(1);
   opacity: 1;
@@ -65,6 +70,8 @@ const TGenericButton = styled(Animatable.View)`
   align-items: center;
   background-color: #3891FA;
   padding: 7px;
+  align-self: normal;
+   position: absolute;
   border-radius: 10px;
   transform: scale(1);
   opacity: 1;

@@ -188,11 +188,11 @@ const FriendsScreen = () => {
 
     return (
         <Main>
-            <MainLogo/>
+            <MainLogo PageTxt='Friends'/>
             <AccountWrapper>
                 <AccountRegularInfo>
                     <AccountContent>
-                        <H3 tmargin='20px' lmargin='20px' bmargin='5px'>Friends</H3>
+                        <H3 tmargin='20px' lmargin='20px' bmargin='5px'></H3>
                         <H5 tmargin='10px' bmargin='5px' onPress={openSearchModal}>Add Friends</H5>
                         <AccountTxtWrapper>
 
