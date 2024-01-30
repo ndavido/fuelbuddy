@@ -671,7 +671,6 @@ def store_fuel_prices():
 
             fuel_station.petrol_prices.append(PetrolPrices(price=petrol_price, updated_at=datetime.utcnow()))
             fuel_station.diesel_prices.append(DieselPrices(price=diesel_price, updated_at=datetime.utcnow()))
-            fuel_station.updated_at = datetime.utcnow()
             fuel_station.save()
 
             new_price = FuelPrices(
@@ -735,36 +734,15 @@ def store_ev_prices():
 def search_fuel_stations():
     try:
         query_params = request.args
-
         name = query_params.get('name')
-        address = query_params.get('address')
-        latitude = query_params.get('latitude', type=float)
-        longitude = query_params.get('longitude', type=float)
-        radius = query_params.get('radius', default=5, type=float)
 
-        query = Q(is_fuel_station=True)
+        if not name:
+            return jsonify({'error': 'Name is required for the search.'})
 
-        if name:
-            query &= Q(name__icontains=name)
-        if address:
-            query &= Q(address__icontains=address)
-
+        query = Q(name__icontains=name)
         stations = FuelStation.objects(query)
 
-        if latitude is not None and longitude is not None:
-            near_stations = []
-            for station in stations:
-                if station.location:
-                    distance = radius_logic(
-                        (latitude, longitude),
-                        (station.location.latitude, station.location.longitude)
-                    )
-                    if distance <= radius:
-                        near_stations.append(station)
-            stations = near_stations
-
-        result = [{'name': station.name, 'address': station.address}
-                  for station in stations]
+        result = [{'name': station.name, 'address': station.address, 'latitude': station.latitude, 'longitude': station.longitude} for station in stations]
 
         return jsonify(result)
     except Exception as e:
