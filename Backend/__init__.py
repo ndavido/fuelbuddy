@@ -646,8 +646,6 @@ def favorite_fuel_station():
         return handle_api_error(e)
 
 # ! This is the route for storing petrol fuel prices info from Frontend
-
-
 @app.route('/store_fuel_prices', methods=['POST'])
 @require_api_key
 def store_fuel_prices():
@@ -662,7 +660,12 @@ def store_fuel_prices():
             if not fuel_station:
                 continue
 
-            # Update fuel prices within FuelStation model
+            # used pop to remove the last element in the list
+            if fuel_station.petrol_prices:
+                fuel_station.petrol_prices.pop()
+            if fuel_station.diesel_prices:
+                fuel_station.diesel_prices.pop()
+
             petrol_price = price_data.get('petrol_price')
             diesel_price = price_data.get('diesel_price')
 
@@ -671,33 +674,21 @@ def store_fuel_prices():
             fuel_station.updated_at = datetime.utcnow()
             fuel_station.save()
 
-            # new entry in FuelPrices collection, storing the history of fuel prices
             new_price = FuelPrices(
                 station=fuel_station,
-                petrol_prices=[{
-                    'price': petrol_price,
-                    'updated_at': datetime.utcnow()
-                }],
-                diesel_prices=[{
-                    'price': diesel_price,
-                    'updated_at': datetime.utcnow()
-                }],
+                petrol_prices=[PetrolPrices(price=petrol_price, updated_at=datetime.utcnow())],
+                diesel_prices=[DieselPrices(price=diesel_price, updated_at=datetime.utcnow())],
                 updated_at=datetime.utcnow()
             )
-
-            new_price.petrol_prices.append({
-                'price': petrol_price,
-                'updated_at': datetime.utcnow()
-            })
-            new_price.diesel_prices.append({
-                'price': diesel_price,
-                'updated_at': datetime.utcnow()
-            })
+            print('new_price', new_price)
             new_price.save()
 
         return jsonify({"message": "Fuel prices stored successfully"})
+    except DoesNotExist:
+        return jsonify({"error": "Fuel station not found"}), 404
     except Exception as e:
         return handle_api_error(e)
+
 
 @app.route('/store_ev_prices', methods=['POST'])
 @require_api_key
