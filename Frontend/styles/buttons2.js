@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components/native';
+import { FSButtonContainer } from './styles';
 
 const ButtonContainer2 = styled.TouchableOpacity`
   padding: 12px;
@@ -21,4 +22,11 @@ const PressableButton2 = ({ onPress, bgColor, txtColor, title }) => (
     <ButtonText2 txtColor={txtColor}>{title}</ButtonText2>
   </ButtonContainer2>
 );
+
+export const SearchButtons = ({ onPress, bgColor, txtColor, title }) => (
+  <FSButtonContainer onPress={onPress} bgColor={bgColor}>
+    <ButtonText2 txtColor={txtColor}>{title}</ButtonText2>
+  </FSButtonContainer>
+);
+
 export default PressableButton2;
