@@ -646,8 +646,6 @@ def favorite_fuel_station():
         return handle_api_error(e)
 
 # ! This is the route for storing petrol fuel prices info from Frontend
-
-
 @app.route('/store_fuel_prices', methods=['POST'])
 @require_api_key
 def store_fuel_prices():
@@ -662,42 +660,34 @@ def store_fuel_prices():
             if not fuel_station:
                 continue
 
-            # Update fuel prices within FuelStation model
+            # used pop to remove the last element in the list
+            if fuel_station.petrol_prices:
+                fuel_station.petrol_prices.pop()
+            if fuel_station.diesel_prices:
+                fuel_station.diesel_prices.pop()
+
             petrol_price = price_data.get('petrol_price')
             diesel_price = price_data.get('diesel_price')
 
             fuel_station.petrol_prices.append(PetrolPrices(price=petrol_price, updated_at=datetime.utcnow()))
             fuel_station.diesel_prices.append(DieselPrices(price=diesel_price, updated_at=datetime.utcnow()))
-            fuel_station.updated_at = datetime.utcnow()
             fuel_station.save()
 
-            # new entry in FuelPrices collection, storing the history of fuel prices
             new_price = FuelPrices(
                 station=fuel_station,
-                petrol_prices=[{
-                    'price': petrol_price,
-                    'updated_at': datetime.utcnow()
-                }],
-                diesel_prices=[{
-                    'price': diesel_price,
-                    'updated_at': datetime.utcnow()
-                }],
+                petrol_prices=[PetrolPrices(price=petrol_price, updated_at=datetime.utcnow())],
+                diesel_prices=[DieselPrices(price=diesel_price, updated_at=datetime.utcnow())],
                 updated_at=datetime.utcnow()
             )
-
-            new_price.petrol_prices.append({
-                'price': petrol_price,
-                'updated_at': datetime.utcnow()
-            })
-            new_price.diesel_prices.append({
-                'price': diesel_price,
-                'updated_at': datetime.utcnow()
-            })
+            print('new_price', new_price)
             new_price.save()
 
         return jsonify({"message": "Fuel prices stored successfully"})
+    except DoesNotExist:
+        return jsonify({"error": "Fuel station not found"}), 404
     except Exception as e:
         return handle_api_error(e)
+
 
 @app.route('/store_ev_prices', methods=['POST'])
 @require_api_key
@@ -744,36 +734,15 @@ def store_ev_prices():
 def search_fuel_stations():
     try:
         query_params = request.args
-
         name = query_params.get('name')
-        address = query_params.get('address')
-        latitude = query_params.get('latitude', type=float)
-        longitude = query_params.get('longitude', type=float)
-        radius = query_params.get('radius', default=5, type=float)
 
-        query = Q(is_fuel_station=True)
+        if not name:
+            return jsonify({'error': 'Name is required for the search.'})
 
-        if name:
-            query &= Q(name__icontains=name)
-        if address:
-            query &= Q(address__icontains=address)
-
+        query = Q(name__icontains=name)
         stations = FuelStation.objects(query)
 
-        if latitude is not None and longitude is not None:
-            near_stations = []
-            for station in stations:
-                if station.location:
-                    distance = radius_logic(
-                        (latitude, longitude),
-                        (station.location.latitude, station.location.longitude)
-                    )
-                    if distance <= radius:
-                        near_stations.append(station)
-            stations = near_stations
-
-        result = [{'name': station.name, 'address': station.address}
-                  for station in stations]
+        result = [{'name': station.name, 'address': station.address, 'latitude': station.latitude, 'longitude': station.longitude} for station in stations]
 
         return jsonify(result)
     except Exception as e:
