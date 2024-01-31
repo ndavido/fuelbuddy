@@ -218,7 +218,7 @@ const FriendsScreen = () => {
                                 }>
                     <AccountContent>
                         <H3 tmargin='20px' lmargin='20px' bmargin='5px'></H3>
-                        <H5 tmargin='10px' bmargin='5px' onPress={openSearchModal}>Add Friends</H5>
+                        <H5 style={styles.addFriendButton}tmargin='10px' lmargin='20px' onPress={openSearchModal}>Add Friends</H5>
                         <AccountTxtWrapper>
 
                             <Modal
@@ -229,7 +229,7 @@ const FriendsScreen = () => {
                             >
                                 <View style={styles.modalContainer}>
                                     <View style={styles.modalContent}>
-                                        <Text style={styles.modalTitle}>Search Friends</Text>
+                                        <Text style={styles.modalTitle}>🔍Search Friends</Text>
                                         <TextInput
                                             style={styles.searchInput}
                                             placeholder="Search Friends"
@@ -247,7 +247,7 @@ const FriendsScreen = () => {
                                                         style={{opacity: 0.5}}>{item.username}</H6>
                                                     <TouchableOpacity
                                                         onPress={() => handleMakeFriend(item.phone_number)}>
-                                                        <Text style={styles.deleteButton}>Friend</Text>
+                                                        <Text style={styles.addFriendButton}>🫂Add</Text>
                                                     </TouchableOpacity>
                                                 </View>
                                             )}
@@ -313,17 +313,22 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+    
+    
     },
     modalContent: {
         backgroundColor: 'white',
         padding: 20,
         borderRadius: 10,
         elevation: 5,
+        height:400,
+        width:250
     },
     modalTitle: {
         fontSize: 18,
         fontWeight: 'bold',
         marginBottom: 10,
+        textAlign:'center'
     },
     searchInput: {
         height: 40,
@@ -343,6 +348,9 @@ const styles = StyleSheet.create({
     deleteButton: {
         color: 'green',
     },
+    addFriendButton:{
+        color: '#6BFF91'
+    }
 });
 
 export default FriendsScreen;

@@ -118,14 +118,14 @@ const RegisterScreen = () => {
                     <LRContainer>
                         <PressableButton2
                             title='Register'
-                            bgColor='F7F7F7'
-                            txtColor='black'
+                            bgColor='#6bff91'
+                            txtColor='white'
                         />
                         <PressableButton2
                             onPress={() => navigation.navigate('Login')}
                             title='Login'
-                            bgColor='#6bff91'
-                            txtColor='white'
+                            bgColor='#F7F7F7'
+                            txtColor='black'
                         />
                     </LRContainer>
                     <Container>
