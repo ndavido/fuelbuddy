@@ -66,6 +66,7 @@ export const ButtonContainer = styled.View`
   margin-top: 15px;
   display: flex;
   height: 40px;
+  width: 100%
 `;
 
 const ButtContainer = styled.TouchableOpacity`
@@ -231,5 +232,27 @@ export const CardTitle = styled.Text`
   margin-bottom: 10px;
 `;
 
+/*Friends Screen*/
+export const FContainer = styled.View`
+flex-direction: row;
+justify-content: space-between;
+align-items: center;
+padding: 12px;
+ 
+`;
+
+export const FSButtonContainer = styled.TouchableOpacity`
+  padding: 8px;
+  width: ${props => props.width};
+  border-radius: 10px;
+  background-color: ${props => props.bgColor};
+  flex-direction: row;
+  display: inline-flex;
+  boxSizing: 'border-box'
+`;
+
+export const AddFriendButton = styled.Text`
+  color: green;
+`;
 
 /* Account Screen */

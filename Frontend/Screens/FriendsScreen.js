@@ -16,7 +16,7 @@ import {useNavigation} from '@react-navigation/native';
 
 import MainLogo from '../styles/mainLogo';
 import {MenuButton} from '../styles/accountButton';
-import {InputTxt, Main} from '../styles/styles';
+import {ButtonContainer, FContainer, InputTxt, Main, FSButtonContainer,AddFriendButton} from '../styles/styles';
 import {
     AccountWrapper,
     AccountContent,
@@ -26,6 +26,11 @@ import {
 } from '../styles/accountPage';
 import {jwtDecode} from "jwt-decode";
 import {H3, H5, H6} from "../styles/text";
+import PressableButton2 from '../styles/buttons2';
+import ButtonContainer2 from '../styles/buttons2';
+import buttonText from '../styles/buttons2';
+import { SearchButtons } from '../styles/buttons2';
+
 
 const apiKey = process.env.REACT_NATIVE_API_KEY;
 const url = process.env.REACT_APP_BACKEND_URL
@@ -218,7 +223,7 @@ const FriendsScreen = () => {
                                 }>
                     <AccountContent>
                         <H3 tmargin='20px' lmargin='20px' bmargin='5px'></H3>
-                        <H5 style={styles.addFriendButton}tmargin='10px' lmargin='20px' onPress={openSearchModal}>Add Friends</H5>
+                        <H5 style={[styles.addFriendButton, {color: "#6bff91"}]}tmargin='10px' lmargin='20px' onPress={openSearchModal}>Add Friends</H5>
                         <AccountTxtWrapper>
 
                             <Modal
@@ -236,8 +241,27 @@ const FriendsScreen = () => {
                                             value={searchTerm}
                                             onChangeText={(text) => setSearchTerm(text)}
                                         />
-                                        <Button title="Search" onPress={handleSearch}/>
-                                        <Button title="Close" onPress={closeSearchModal}/>
+                                        <FContainer>
+                                        <FSButtonContainer
+                                        style={[styles.FSButtonContainer, { width: '60%' }]}
+                                        >
+                                        <SearchButtons 
+                                            onPress={handleSearch}
+                                            title='Search'
+                                            bgColor='#6bff91'
+                                            txtColor='white'/>
+                                        </FSButtonContainer>
+                                        <FSButtonContainer
+                                        style={[styles.FSButtonContainer, { width: '50%' }]}
+                                        >
+                                        <SearchButtons
+                                            onPress={closeSearchModal}
+                                            title='Close'
+                                            bgColor='red'
+                                            txtColor='white'
+                                            />                                   
+                                        </FSButtonContainer>
+                                        </FContainer>
                                         <FlatList
                                             data={searchTerm ? searchResults : friends}
                                             keyExtractor={(item) => item.user_id}
@@ -247,7 +271,7 @@ const FriendsScreen = () => {
                                                         style={{opacity: 0.5}}>{item.username}</H6>
                                                     <TouchableOpacity
                                                         onPress={() => handleMakeFriend(item.phone_number)}>
-                                                        <Text style={styles.addFriendButton}>🫂Add</Text>
+                                                        <Text style={[styles.addFriendButton, {color: "#6bff91"}]}>🫂Add</Text>
                                                     </TouchableOpacity>
                                                 </View>
                                             )}
@@ -310,47 +334,55 @@ const FriendsScreen = () => {
 
 const styles = StyleSheet.create({
     modalContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    
-    
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     modalContent: {
-        backgroundColor: 'white',
-        padding: 20,
-        borderRadius: 10,
-        elevation: 5,
-        height:400,
-        width:250
+      backgroundColor: 'white',
+      padding: 20,
+      borderRadius: 10,
+      elevation: 5,
+      height: 400,
+      width: 250,
     },
     modalTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 10,
-        textAlign:'center'
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginBottom: 10,
+      textAlign: 'center',
     },
     searchInput: {
-        height: 40,
-        borderColor: 'gray',
-        borderWidth: 1,
-        marginBottom: 8,
-        paddingHorizontal: 8,
+      height: 40,
+      borderColor: 'gray',
+      borderWidth: 1,
+      marginBottom: 8,
+      paddingHorizontal: 8,
     },
     friendItem: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        borderTopWidth: 1,
-        borderTopColor: 'lightgray',
-        paddingVertical: 8,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      borderTopWidth: 1,
+      borderTopColor: 'lightgray',
+      paddingVertical: 8,
     },
-    deleteButton: {
-        color: 'green',
+    searchButton: {
+      flex: 1,
+      marginRight: 5,
+      backgroundColor: '#6BFF91', 
+      padding: 10,
+      borderRadius: 5,
+      alignItems: 'center',
     },
-    addFriendButton:{
-        color: '#6BFF91'
-    }
-});
-
-export default FriendsScreen;
+    closeButton: {
+      flex: 1,
+      marginLeft: 5,
+      backgroundColor: 'red', 
+      padding: 10,
+      borderRadius: 5,
+      alignItems: 'center',
+    },
+  });
+  
+  export default FriendsScreen;
