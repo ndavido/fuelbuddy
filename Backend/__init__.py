@@ -25,6 +25,7 @@ from Crypto.Util.Padding import pad, unpad
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 import pandas as pd
+from decimal import Decimal
 
 # from updated_user_monthly_predictions import main as nn
 
@@ -78,9 +79,9 @@ def radius_logic(coord1, coord2):
     return distance
 
 
-def standardize_irish_number(phone_number):
+def standardize_phone_number(phone_number):
     """
-    Standardize Irish phone numbers to include the country code.
+    Standardize UK and Irish phone numbers to include the country code.
     """
     if phone_number.startswith('353') and not phone_number.startswith('+353'):
         if len(phone_number) > 3 and phone_number[3] == '0':
@@ -89,9 +90,14 @@ def standardize_irish_number(phone_number):
             return '+353' + phone_number[3:]
     elif phone_number.startswith('+353'):
         return phone_number
+    elif phone_number.startswith('44') and not phone_number.startswith('+44'):
+        return '+44' + phone_number[2:]
+    elif phone_number.startswith('+44'):
+        return phone_number
     else:
         raise ValueError(
-            "Invalid Irish phone number format. Number should start with '353' or '+353'.")
+            "Invalid Irish or UK phone number format. Number should start with '353' or '+353', '44' or '+44'.")
+
 
 
 def validate_phone_number(phone_number):
@@ -162,7 +168,7 @@ def register():
         username = data.get('username')
         phone_number = data.get('phone_number')
 
-        full_phone_number = standardize_irish_number(phone_number)
+        full_phone_number = standardize_phone_number(phone_number)
         if not validate_phone_number(full_phone_number):
             return jsonify({"error": "Invalid phone number format"}), 400
 
@@ -244,7 +250,7 @@ def login():
             return jsonify({"error": "Phone number is required"}), 400
 
         try:
-            standardized_phone_number = standardize_irish_number(phone_number)
+            standardized_phone_number = standardize_phone_number(phone_number)
         except ValueError as err:
             return jsonify({"error": str(err)}), 400
 
@@ -292,7 +298,7 @@ def login_verify():
             return jsonify({"error": "Phone number and code are required"}), 400
 
         try:
-            standardized_phone_number = standardize_irish_number(phone_number)
+            standardized_phone_number = standardize_phone_number(phone_number)
         except ValueError as ve:
             return jsonify({"error": str(ve)}), 400
 
@@ -748,14 +754,11 @@ def search_fuel_stations():
     except Exception as e:
         return handle_api_error(e)
 
-
 '''
 Friends Routes
 '''
 
 # Changed By David C
-
-
 @app.route('/send_friend_request', methods=['POST'])
 @require_api_key
 def send_friend_request():
