@@ -10,7 +10,6 @@ class Location(Document):
     latitude = FloatField(required=True)
     longitude = FloatField(required=True)
 
-
 class Users(Document):
     username = StringField(required=True, unique=True)
     full_name = StringField()
@@ -36,13 +35,21 @@ class Users(Document):
         self.weekly_budget = new_budget
         self.save()
 
+class WeeklyBudget(EmbeddedDocument):
+    amount = DecimalField(precision=2)
+    updated_at = DateTimeField(default=datetime.now)
+
+class Deduction(EmbeddedDocument):
+    amount = DecimalField(precision=2)
+    updated_at = DateTimeField(default=datetime.now)
 
 class BudgetHistory(Document):
-    user = ReferenceField(Users, required=True)
-    new_budget = DecimalField(precision=2)
-    change_date = DateTimeField(required=True)
+    user = ReferenceField('Users', required=True)
+    weekly_budgets = ListField(EmbeddedDocumentField(WeeklyBudget))
+    deductions = ListField(EmbeddedDocumentField(Deduction))
+    change_date = DateTimeField(default=datetime.now)
     meta = {
-        'collection': 'BudgetHistory'
+        'collection': 'BudgetHistoryTest'
     }
 
 

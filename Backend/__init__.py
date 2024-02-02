@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from functools import wraps
 from models import FuelStation, Location, Users, FuelPrices, BudgetHistory, FriendRequest, Friends, Notification, \
-    ChargingStation, EVPrices, Trip, PetrolPrices, DieselPrices, FavoriteFuelStation
+    ChargingStation, EVPrices, Trip, PetrolPrices, DieselPrices, FavoriteFuelStation, Deduction, WeeklyBudget
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
 import re
@@ -448,6 +448,7 @@ def edit_account():
         return handle_api_error(e)
 
 
+# Modify update_budget route
 @app.route('/update_budget', methods=['POST'])
 @require_api_key
 def update_budget():
@@ -455,27 +456,37 @@ def update_budget():
         data = request.get_json()
         username = data.get('username')
 
-        if 'weekly_budget' not in data:
-            return jsonify({"error": "Weekly budget not provided"}), 400
-
-        try:
-            weekly_budget = float(data['weekly_budget'])
-        except ValueError:
-            return jsonify({"error": "Invalid budget format"}), 400
+        # Check if either weekly_budget or deductions is provided
+        if 'weekly_budget' not in data and 'deductions' not in data:
+            return jsonify({"error": "Weekly budget or deductions not provided"}), 400
 
         try:
             user = Users.objects.get(username=username)
-            print('weekly_budget', weekly_budget)
-            # Record the budget change in BudgetHistory
-            BudgetHistory(
-                user=user,
-                new_budget=weekly_budget,
-                change_date=datetime.now()
-            ).save()
-            print('budget', BudgetHistory.objects.all())
-            print('budget history saved')
 
-            user.weekly_budget = weekly_budget
+            budget_history = BudgetHistory.objects(user=user).first()
+
+            if budget_history is None:
+                budget_history = BudgetHistory(user=user)
+
+            if 'weekly_budget' in data:
+                try:
+                    weekly_budget = float(data['weekly_budget'])
+                    budget_history.weekly_budgets.append(WeeklyBudget(amount=weekly_budget))
+                    user.weekly_budget = weekly_budget
+                except ValueError:
+                    return jsonify({"error": "Invalid weekly budget format"}), 400
+
+            if 'deductions' in data:
+                deductions = data['deductions']
+                if isinstance(deductions, list):
+                    budget_history.deductions.extend([Deduction(amount=d) for d in deductions])
+                else:
+                    budget_history.deductions.append(Deduction(amount=deductions))
+
+            budget_history.change_date = datetime.now()
+
+            # Save the updated document
+            budget_history.save()
             user.save()
 
             return jsonify({"message": "Budget updated successfully"})
@@ -487,13 +498,10 @@ def update_budget():
     except Exception as e:
         return handle_api_error(e)
 
-
 '''
 Gas Station Routes
 '''
 # ! This is the route for sending fuel stations info to Frontend
-
-
 @app.route('/fuel_stations', methods=['GET'])
 @require_api_key
 def get_fuel_stations():
