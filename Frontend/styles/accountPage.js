@@ -48,7 +48,7 @@ export const DeveloperTick = styled.Text`
 export const AccountBottomInfo = styled(Animated.View)`
     position: relative;
     background-color: #F7F7F7;
-    height: 1000px;
+    height: auto;
     width: 100%; 
     border-top-left-radius: 20px;
     border-top-right-radius: 20px; 

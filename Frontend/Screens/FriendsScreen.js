@@ -26,9 +26,6 @@ import {
 } from '../styles/accountPage';
 import {jwtDecode} from "jwt-decode";
 import {H3, H5, H6} from "../styles/text";
-import PressableButton2 from '../styles/buttons2';
-import ButtonContainer2 from '../styles/buttons2';
-import buttonText from '../styles/buttons2';
 import { SearchButtons } from '../styles/buttons2';
 
 
@@ -78,7 +75,6 @@ const FriendsScreen = () => {
 
     const onRefresh = async () => {
         setRefreshing(true);
-        // Perform your refresh logic here, e.g., refetch data
         await fetchFriends();
         await fetchRequestedFriends();
         setRefreshing(false);
