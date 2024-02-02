@@ -64,7 +64,8 @@ export const InputTxt = styled.TextInput`
 export const ButtonContainer = styled.View`
   margin-bottom: 30px;
   margin-top: 15px;
-  display: flex;
+  justify-content: space-between;
+  flex-direction: row;
   height: 40px;
   width: 100%
 `;

@@ -23,6 +23,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import {AnimatedGenericButton, AnimatedHeartButton, TAnimatedGenericButton} from "../styles/AnimatedIconButton";
 import CustomMarker from "../Components/customMarker";
 import axios from "axios";
+import {right} from "core-js/internals/array-reduce";
 
 
 const apiMapKey = process.env.googleMapsApiKey;
@@ -63,6 +64,7 @@ const MapScreen = () => {
             await manualRefresh();
         }, 60000);
 
+        setShowStationInfo(false);
         const fetchUserInfo = async () => {
             try {
                 const userDataJson = await AsyncStorage.getItem('userData');
@@ -148,8 +150,6 @@ const MapScreen = () => {
             console.log("Stations: ", stations);
 
             setPetrolStations(stations);
-
-            // Pass user data to fetchFavoriteStations
 
         } catch (error) {
             console.error(error);
@@ -295,26 +295,6 @@ const MapScreen = () => {
                 longitude: selectedStation.location.longitude
             },], {edgePadding: {top: 50, right: 50, bottom: 50, left: 50}});
 
-            const apiUrl = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&key=${apiMapKey}`;
-
-            console.log("API URL: ", apiUrl)
-
-            fetch(apiUrl)
-                .then(response => response.json())
-                .then(data => {
-                    const duration = data.routes[0].legs[0].duration.text;
-                    const distance = data.routes[0].legs[0].distance.text;
-
-                    console.log('Estimated Duration:', duration);
-                    console.log('Distance:', distance);
-
-                    setEstimatedDuration(duration);
-                    setEstimatedDistance(distance);
-
-                })
-                .catch(error => {
-                    console.error('Error fetching directions:', error);
-                });
             setShowStationInfo(false);
             setShowRouteInfo(true);
         }
@@ -373,6 +353,12 @@ const MapScreen = () => {
                     apikey={apiMapKey}
                     strokeWidth={3}
                     strokeColor="hotpink"
+                    onReady={result => {
+                      console.log(`Distance: ${result.distance} km`)
+                      console.log(`Duration: ${result.duration} min.`)
+                        setEstimatedDistance(result.distance);
+                        setEstimatedDuration(result.duration);
+                    }}
                 />)}
             </MapView>);
         }
@@ -390,12 +376,15 @@ const MapScreen = () => {
                             <H3 weight='600' style={{lineHeight: 24}}>{selectedStation.name}</H3>
                             <H6 weight='400' style={{opacity: 0.6, lineHeight: 16}}>Fuel Station</H6>
                             <ButtonContainer>
-                                <TAnimatedGenericButton text="Route To Station" onPress={handleRoutePress}/>
-                                <AnimatedHeartButton
-                                    initialIsActive={favoriteStatus[selectedStation.id] || false}
-                                    onPress={() => handleLikePress(selectedStation.id)}
-                                />
-                                <AnimatedGenericButton onPress={() => setUpdateModalVisible(true)}/>
+                                <TAnimatedGenericButton icon="location-pin" text="Route To Station"
+                                                        onPress={handleRoutePress}/>
+                                <View style={{flexDirection: 'row'}}>
+                                    <AnimatedHeartButton
+                                        initialIsActive={favoriteStatus[selectedStation.id] || false}
+                                        onPress={() => handleLikePress(selectedStation.id)}
+                                    />
+                                    <AnimatedGenericButton onPress={() => setUpdateModalVisible(true)}/>
+                                </View>
                             </ButtonContainer>
                             <H4>Current Prices</H4>
                             <CardContainer>
@@ -429,34 +418,32 @@ const MapScreen = () => {
                             <H6>Address</H6>
                             <H6 style={{opacity: 0.6}}>{selectedStation.address},</H6>
                             <H6 style={{opacity: 0.6}}>Ireland</H6>
-                            <H4 tmargin="20px">Past Prices</H4>
                         </Container>)}
                 </BottomSheet>);
         } else {
-            return (<H4></H4>);
+            return null;
         }
     };
 
     const renderRouteInfoBottomSheet = () => {
         if (!isWeb && showRouteInfo) {
             return (
-                <BottomSheet snapPoints={['20%', '20%']} index={0} ref={bottomSheetRef}
+                <BottomSheet snapPoints={['20%', '90%']} index={0} ref={bottomSheetRef}
                              handleIndicatorStyle={{display: "none"}}>
                     <Container>
                         <H4 style={{flexDirection: 'row'}}>{estimatedDuration} ({estimatedDistance})</H4>
                         <H6>Estimated Price: €</H6>
                         <ButtonContainer>
-                            <Button title='Start Journey' onPress={() => {
+                            <TAnimatedGenericButton color="#6BFF91" icon="controller-play" text="Start" onPress={() => {
                             }}/>
-                            <Button title='Cancel' onPress={handleCancelPress}/>
-                            <Button title='Save Route' onPress={() => {
-                            }}/>
+                            <TAnimatedGenericButton style={{float: "left"}} icon="cross" text="Exit"
+                                                    onPress={handleCancelPress}/>
                         </ButtonContainer>
                     </Container>
                 </BottomSheet>
             );
         } else {
-            return (<H4></H4>);
+            return null;
         }
     };
 

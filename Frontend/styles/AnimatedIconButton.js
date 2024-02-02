@@ -7,9 +7,7 @@ import styled from 'styled-components/native';
 const HeartButton = styled(Animatable.View)`
   background-color: ${(props) => (props.isActive ? '#FFBABA' : '#eaedea')};
   padding: 7px;
-   position: absolute;
-  margin-right: 48px;
-  right: 0;
+   position: relative;
   border-radius: 10px;
   transform: scale(${(props) => (props.isActive ? 1.2 : 1)});
   opacity: ${(props) => (props.isActive ? 0.8 : 1)};
@@ -42,8 +40,8 @@ export const AnimatedHeartButton = ({ initialIsActive, onPress }) => {
 const GenericButton = styled(Animatable.View)`
   background-color: #6BFF91;
   padding: 7px;
-  position: absolute;
-  right: 0;
+  position: relative;
+  margin-left: 8px;
   border-radius: 10px;
   transform: scale(1);
   opacity: 1;
@@ -65,13 +63,24 @@ export const AnimatedGenericButton = ({ onPress }) => {
   );
 };
 
+const applyColor = props => {
+    if (props.color) {
+        return `background-color: ${props.color};`;
+    } else {
+        return `background-color: #3891FA;`;
+    }
+};
+
 const TGenericButton = styled(Animatable.View)`
   flex-direction: row;
   align-items: center;
-  background-color: #3891FA;
-  padding: 7px;
+  ${applyColor};
+  padding-left: 7px;
+  padding-top: 7px;
+  padding-bottom: 7px;
+  padding-right: 10px;
   align-self: normal;
-   position: absolute;
+   position: relative;
   border-radius: 10px;
   transform: scale(1);
   opacity: 1;
@@ -84,7 +93,7 @@ const ButtonText = styled.Text`
   font-family: 'Poppins_500Medium';
 `;
 
-export const TAnimatedGenericButton = ({ text, onPress }) => {
+export const TAnimatedGenericButton = ({color, icon, text, onPress }) => {
   const handlePress = () => {
     if (onPress) {
       onPress();
@@ -93,8 +102,8 @@ export const TAnimatedGenericButton = ({ text, onPress }) => {
 
   return (
     <TouchableOpacity onPress={handlePress}>
-      <TGenericButton animation="pulse">
-        <Entypo name="location-pin" size={26} color="#FFFFFF" />
+      <TGenericButton color={color}>
+        <Entypo name={icon} size={26} color="#FFFFFF" />
         <ButtonText>{text}</ButtonText>
       </TGenericButton>
     </TouchableOpacity>

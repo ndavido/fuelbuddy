@@ -17,7 +17,6 @@ import {
     LRContainer, LRButtonDiv
 } from "../styles/styles";
 import PressableButton from '../styles/buttons';
-import PressableButton2 from '../styles/buttons2';
 import Logo from '../styles/logo';
 import {H1, H2, H3, H4, H5, H6, Img, Txt} from '../styles/text.js';
 
@@ -84,16 +83,18 @@ const LoginScreen = () => {
             <Wrapper>
                 <Content>
                     <LRContainer>
-                        <PressableButton2
+                        <PressableButton
                             onPress={() => navigation.navigate('Register')}
                             title='Register'
-                            bgColor='#F7F7F7'
-                            txtColor='black'
-                        />
-                        <PressableButton2
-                            title='Login'
                             bgColor='#6bff91'
                             txtColor='white'
+                            width='50%'
+                        />
+                        <PressableButton
+                            title='Login'
+                            bgColor='#F7F7F7'
+                            txtColor='black'
+                            width='50%'
                         />
                     </LRContainer>
                     <Container>
