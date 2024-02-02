@@ -25,7 +25,6 @@ const url = process.env.REACT_APP_BACKEND_URL
 
 const PhoneContainer = styled(View)`
   flex-direction: row;
-  display: flex;
 `;
 
 const RegisterScreen = () => {
@@ -34,8 +33,9 @@ const RegisterScreen = () => {
         full_name: '',
         username: '',
         phone_number: '',
-        country_code: '',
     });
+
+    const countryCode = '353';
 
     const [message, setMessage] = useState('');
     const [nameError, setNameError] = useState('');
@@ -62,12 +62,8 @@ const RegisterScreen = () => {
             case 'phone_number':
                 setPhoneError(value.length < 1 ? 'Phone number is required' : '');
                 break;
-            case 'country_code':
-                setFormData({...formData, country_code: value});
-                break;
             default:
                 break;
-
         }
     };
 
@@ -76,7 +72,7 @@ const RegisterScreen = () => {
         try {
             const apiKey = process.env.REACT_NATIVE_API_KEY;
 
-            const fullNum = `${formData.country_code}${formData.phone_number}`;
+            const fullNum = `${countryCode}${formData.phone_number}`;
 
             const user = `${formData.username}`;
 
@@ -88,8 +84,6 @@ const RegisterScreen = () => {
                     'X-API-Key': apiKey,
                 },
             };
-
-            console.log(fullNum)
 
             const response = await axios.post(`${url}/register`, {
                 ...formData,
@@ -116,29 +110,22 @@ const RegisterScreen = () => {
     };
 
 
-    const options = [
-        {label: '+353', value: '353'},
-        {label: '+44', value: '44'},
-    ];
-
     return (
         <WelcomeMain>
             <Logo/>
             <Wrapper>
                 <Content>
                     <LRContainer>
-                        <PressableButton
+                        <PressableButton2
                             title='Register'
-                            bgColor='#F7F7F7'
-                            txtColor='black'
-                            width='50%'
-                        />
-                        <PressableButton
-                            onPress={() => navigation.navigate('Login')}
-                            title='Login'
                             bgColor='#6bff91'
                             txtColor='white'
-                            width='50%'
+                        />
+                        <PressableButton2
+                            onPress={() => navigation.navigate('Login')}
+                            title='Login'
+                            bgColor='#F7F7F7'
+                            txtColor='black'
                         />
                     </LRContainer>
                     <Container>
@@ -158,13 +145,12 @@ const RegisterScreen = () => {
 
                         <H6 bmargin='5px'>Phone Number</H6>
                         <PhoneContainer>
-                            <View>
-                                <RNPickerSelect
-    items={options}
-    onValueChange={(value) => handleChange('country_code', value)}
-    value={formData.country_code}
-/>
-                            </View>
+                            <CCTxt
+                                value="+353"
+                                editable={false}
+                                placeholder=""
+                                onChangeText={(text) => handleChange('country_code', text)}
+                            />
 
                             <PhoneTxt
                                 placeholder=""

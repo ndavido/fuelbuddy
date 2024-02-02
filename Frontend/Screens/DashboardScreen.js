@@ -352,7 +352,17 @@ const DashboardScreen = () => {
                         <Cardlrg>
                             <H8 style={{opacity: 0.5}}>Vehicle</H8>
                             <H5>My Car</H5>
-
+                            <View style={{
+                                flex: 1,
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                zIndex: 0,
+                                top: -20,
+                            }}>
+                                <Image source={require('../assets/welcome.png')} style={{height: 160, width: 300}}/>
+                            </View>
+                            <H5>Volkswagen Polo</H5>
+                            <H6 style={{opacity: 0.5}}>17Km/l Average</H6>
                         </Cardlrg>
                         <Cardlrg>
                             <H8 style={{opacity: 0.5}}>News</H8>

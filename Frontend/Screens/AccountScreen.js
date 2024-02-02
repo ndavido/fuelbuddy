@@ -142,7 +142,6 @@ const AccountScreen = () => {
                     refreshing={refreshing}
                 />
             }>
-
                 <AccountTopInfo>
                     <AccountContent>
                         <AccountImg/>
