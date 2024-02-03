@@ -1,8 +1,9 @@
 #! /usr/bin/python3
+import io
 import os
-
+import sys
 from bson import json_util, ObjectId
-from flask import Flask, request, jsonify, abort, current_app
+from flask import Flask, Response, request, jsonify, abort, current_app
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from flask_cors import CORS
 from database import Database, UserCollection, FuelStationsCollection, PetrolFuelPricesCollection
@@ -97,7 +98,6 @@ def standardize_phone_number(phone_number):
     else:
         raise ValueError(
             "Invalid Irish or UK phone number format. Number should start with '353' or '+353', '44' or '+44'.")
-
 
 
 def validate_phone_number(phone_number):
@@ -471,7 +471,8 @@ def update_budget():
             if 'weekly_budget' in data:
                 try:
                     weekly_budget = float(data['weekly_budget'])
-                    budget_history.weekly_budgets.append(WeeklyBudget(amount=weekly_budget))
+                    budget_history.weekly_budgets.append(
+                        WeeklyBudget(amount=weekly_budget))
                     user.weekly_budget = weekly_budget
                 except ValueError:
                     return jsonify({"error": "Invalid weekly budget format"}), 400
@@ -479,9 +480,11 @@ def update_budget():
             if 'deductions' in data:
                 deductions = data['deductions']
                 if isinstance(deductions, list):
-                    budget_history.deductions.extend([Deduction(amount=d) for d in deductions])
+                    budget_history.deductions.extend(
+                        [Deduction(amount=d) for d in deductions])
                 else:
-                    budget_history.deductions.append(Deduction(amount=deductions))
+                    budget_history.deductions.append(
+                        Deduction(amount=deductions))
 
             budget_history.change_date = datetime.now()
 
@@ -498,10 +501,13 @@ def update_budget():
     except Exception as e:
         return handle_api_error(e)
 
+
 '''
 Gas Station Routes
 '''
 # ! This is the route for sending fuel stations info to Frontend
+
+
 @app.route('/fuel_stations', methods=['GET'])
 @require_api_key
 def get_fuel_stations():
@@ -660,6 +666,8 @@ def favorite_fuel_station():
         return handle_api_error(e)
 
 # ! This is the route for storing petrol fuel prices info from Frontend
+
+
 @app.route('/store_fuel_prices', methods=['POST'])
 @require_api_key
 def store_fuel_prices():
@@ -683,14 +691,18 @@ def store_fuel_prices():
             petrol_price = price_data.get('petrol_price')
             diesel_price = price_data.get('diesel_price')
 
-            fuel_station.petrol_prices.append(PetrolPrices(price=petrol_price, updated_at=datetime.utcnow()))
-            fuel_station.diesel_prices.append(DieselPrices(price=diesel_price, updated_at=datetime.utcnow()))
+            fuel_station.petrol_prices.append(PetrolPrices(
+                price=petrol_price, updated_at=datetime.utcnow()))
+            fuel_station.diesel_prices.append(DieselPrices(
+                price=diesel_price, updated_at=datetime.utcnow()))
             fuel_station.save()
 
             new_price = FuelPrices(
                 station=fuel_station,
-                petrol_prices=[PetrolPrices(price=petrol_price, updated_at=datetime.utcnow())],
-                diesel_prices=[DieselPrices(price=diesel_price, updated_at=datetime.utcnow())],
+                petrol_prices=[PetrolPrices(
+                    price=petrol_price, updated_at=datetime.utcnow())],
+                diesel_prices=[DieselPrices(
+                    price=diesel_price, updated_at=datetime.utcnow())],
                 updated_at=datetime.utcnow()
             )
             print('new_price', new_price)
@@ -756,17 +768,21 @@ def search_fuel_stations():
         query = Q(name__icontains=name)
         stations = FuelStation.objects(query)
 
-        result = [{'name': station.name, 'address': station.address, 'latitude': station.latitude, 'longitude': station.longitude} for station in stations]
+        result = [{'name': station.name, 'address': station.address,
+                   'latitude': station.latitude, 'longitude': station.longitude} for station in stations]
 
         return jsonify(result)
     except Exception as e:
         return handle_api_error(e)
+
 
 '''
 Friends Routes
 '''
 
 # Changed By David C
+
+
 @app.route('/send_friend_request', methods=['POST'])
 @require_api_key
 def send_friend_request():
@@ -1242,6 +1258,7 @@ def save_trip():
 @require_api_key
 def user_suggested_budget():
     from keras.models import load_model
+
     def load_saved_model(model_path):
         return load_model(model_path)
 
@@ -1302,6 +1319,106 @@ def user_suggested_budget():
     print("Next Week's Predicted Price is: ", predicted_price)
     print("Adjusted Predicted Price to the nearest 10 is: ",
           adjusted_predicted_price)
+
+
+'''
+OCR Routes
+'''
+
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in {'png', 'jpg', 'jpeg'}
+
+
+def extract_receipt_info_single(receipt_text):
+    import re
+    from fuzzywuzzy import process
+    # Convert all text to lowercase to simplify matching
+    text_lower = receipt_text.lower()
+
+    # Initialize the result dictionary
+    info = {
+        'fuel_type': None,
+        'volume': None,
+        'price_per_litre': None,
+        'total': None
+    }
+
+    # https://stackoverflow.com/questions/1547574/regex-for-prices
+    volume_pattern = r"(?i)(?:volume|;|:|diesel|unleaded|pump\s*([a-z]|[0-9])|\))\s*(\d+(?:[.,]\d{2}))\s*°?\s*(ltr|l|net)?"
+
+    price_per_litre_pattern = r"(?:price|€)\s*([1-9][.,]\d{3})\s*(eur/l|/l|/)?\s*"
+
+    # Define fuel type choices for fuzzy matching
+    fuel_type_choices = ["unleaded", "diesel"]
+
+    # Search for fuel type with fuzzy match
+    fuel_type_match = process.extractOne(
+        text_lower, fuel_type_choices, score_cutoff=50)
+    if fuel_type_match:
+        info['fuel_type'] = fuel_type_match[0]
+
+    # Search for volume
+    volume_match = re.search(volume_pattern, text_lower)
+    if volume_match:
+        info['volume'] = next((m for m in volume_match.groups() if m), None)
+        if info['volume'] is not None:
+            info['volume'] = info['volume'].replace(',', '.')
+
+    # Search for price per litre
+    price_per_litre_match = re.search(price_per_litre_pattern, text_lower)
+    if price_per_litre_match:
+        info['price_per_litre'] = next(
+            (m for m in price_per_litre_match.groups() if m), None)
+        if info['price_per_litre'] is not None:
+            info['price_per_litre'] = info['price_per_litre'].replace(',', '.')
+
+    if info['volume'] is not None and info['price_per_litre'] is not None:
+        total = float(info['volume']) * float(info['price_per_litre'])
+        total = round(total, 2)
+        info['total'] = total
+    else:
+        info['total'] = None
+
+    return info
+
+
+@app.route('/ocr_uploaded_image', methods=['POST'])
+def upload_file():
+    import cv2
+    import numpy as np
+    import pytesseract
+
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+    if file and allowed_file(file.filename):
+        try:
+            # Read the file's content into a numpy array
+            in_memory_file = io.BytesIO()
+            file.save(in_memory_file)
+            data = np.frombuffer(in_memory_file.getvalue(), dtype=np.uint8)
+            image = cv2.imdecode(data, cv2.IMREAD_COLOR)
+
+            # Process the image
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            image = cv2.threshold(
+                image, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+            text = pytesseract.image_to_string(image)
+            filtered_text = '\n'.join(
+                line for line in text.split('\n') if line.strip() != '')
+
+            extracted_info_single = extract_receipt_info_single(filtered_text)
+
+            return jsonify(extracted_info_single)
+        except Exception as e:
+            # Handle general exceptions
+            return jsonify({'error': 'Failed to process image', 'details': str(e)}), 500
+    else:
+        return jsonify({'error': 'Invalid file format'}), 400
 
 
 if __name__ == '__main__':
