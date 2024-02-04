@@ -9,8 +9,10 @@ import {useAuth} from '../AuthContext';
 
 // Styling
 import {
+    AccountContainer,
+    ButtonContainer,
     DashboardContainer,
-    Main, WrapperScroll,
+    Main, TitleContainer, TopInfo, WrapperScroll,
 } from '../styles/styles.js';
 import {
     AccountWrapper,
@@ -28,6 +30,7 @@ import {H1, H2, H3, H4, H5, H6, H8} from '../styles/text.js';
 import {MenuButton, MenuButtonTop, MenuButtonMiddle, MenuButtonBottom} from "../styles/accountButton";
 import MainLogo from '../styles/mainLogo';
 import AccountImg from '../styles/accountImg';
+import {AnimatedGenericButton, AnimatedHeartButton, TAnimatedGenericButton} from "../styles/AnimatedIconButton";
 
 const AccountScreen = () => {
     const navigate = useNavigation();
@@ -142,62 +145,62 @@ const AccountScreen = () => {
                     refreshing={refreshing}
                 />
             }>
-                <AccountTopInfo>
-                    <AccountContent>
+                <TopInfo>
+                    <View style={{top: 50}}>
                         <AccountImg/>
-                        <H5>{userInfo.full_name}</H5>
-                        <H6>@{userInfo.username} {userInfo.roles && userInfo.roles.includes("Developer") &&
+                        <H4 tmargin="10px" style={{textAlign: 'center'}}>{userInfo.full_name}</H4>
+                        <H6 weight="400"
+                            style={{textAlign: 'center'}}>@{userInfo.username} {userInfo.roles && userInfo.roles.includes("Developer") &&
                             <DeveloperTick>🧑‍💻</DeveloperTick>}</H6>
-                    </AccountContent>
-                </AccountTopInfo>
+                    </View>
+
+                </TopInfo>
                 <DashboardContainer>
-                    <AccountContent>
-                        <AccountTxtWrapper>
-                            <MenuButtonTop title='my Information'
-                                           bgColor='white'
-                                           txtColor='black'
-                                           emoji="🕴️"
-                                           onPress={handleInfo}/>
-                            <MenuButtonBottom title='my vehicle'
-                                              bgColor='white'
-                                              txtColor='black'
-                                              emoji="🚗"
-                                              onPress={handleVehicle}/>
-                            <MenuButtonTop title='my stations (NA)'
-                                           bgColor='white'
-                                           txtColor='black'
-                                           emoji="⛽"/>
-                            <MenuButtonBottom title='my friends'
-                                              bgColor='white'
-                                              txtColor='black'
-                                              emoji="🧑‍🤝‍🧑"
-                                              onPress={handleFriends}/>
-                            <MenuButton title='Privacy Settings (NA)'
-                                        bgColor='white'
-                                        txtColor='black'
-                                        emoji="🔏"/>
-                            <MenuButton title='Support (NA)'
-                                        bgColor='white'
-                                        txtColor='black'
-                                        emoji="👷‍♂️"/>
+                        <MenuButtonTop title='my Information'
+                                       bgColor='white'
+                                       txtColor='black'
+                                       emoji="🕴️"
+                                       onPress={handleInfo}/>
+                        <MenuButtonBottom title='my vehicle'
+                                          bgColor='white'
+                                          txtColor='black'
+                                          emoji="🚗"
+                                          onPress={handleVehicle}/>
+                        <MenuButtonTop title='my stations (NA)'
+                                       bgColor='white'
+                                       txtColor='black'
+                                       emoji="⛽"/>
+                        <MenuButtonBottom title='my friends'
+                                          bgColor='white'
+                                          txtColor='black'
+                                          emoji="🧑‍🤝‍🧑"
+                                          onPress={handleFriends}/>
+                        <MenuButton title='Privacy Settings (NA)'
+                                    bgColor='white'
+                                    txtColor='black'
+                                    emoji="🔏"/>
+                        <MenuButton title='Support (NA)'
+                                    bgColor='white'
+                                    txtColor='black'
+                                    emoji="👷‍♂️"/>
 
-                            {/*Display the Developer button only if the user is a developer*/}
-                            {userInfo.roles && userInfo.roles.includes("Developer") &&
-                                <MenuButton title='Developer Menu'
-                                            bgColor='white'
-                                            txtColor='black'
-                                            onPress={handleDev}
-                                            emoji="✨"/>}
-
-                            <MenuButton title='Log Out'
+                        {/*Display the Developer button only if the user is a developer*/}
+                        {userInfo.roles && userInfo.roles.includes("Developer") &&
+                            <MenuButton title='Developer Menu'
                                         bgColor='white'
                                         txtColor='black'
-                                        onPress={handleLogout}
-                                        emoji="🥲"/>
-                            <H8 bmargin='5px' width='100%' style={{textAlign: 'center'}}>Version Alpha</H8>
-                            <H8 bmargin='5px' width='100%' style={{textAlign: 'center'}}>Made with 💖 by Team fuelbuddy</H8>
-                        </AccountTxtWrapper>
-                    </AccountContent>
+                                        onPress={handleDev}
+                                        emoji="✨"/>}
+
+                        <MenuButton title='Log Out'
+                                    bgColor='white'
+                                    txtColor='black'
+                                    onPress={handleLogout}
+                                    emoji="🥲"/>
+                        <H8 bmargin='5px' width='100%' style={{textAlign: 'center'}}>Version Alpha</H8>
+                        <H8 bmargin='5px' width='100%' style={{textAlign: 'center'}}>Made with 💖 by Team
+                            fuelbuddy</H8>
+
                 </DashboardContainer>
 
             </WrapperScroll>

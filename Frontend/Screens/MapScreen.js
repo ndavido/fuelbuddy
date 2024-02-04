@@ -29,7 +29,7 @@ if (!isWeb) {
 
 // Styling
 import {H2, H3, H4, H5, H6, H7, H8} from "../styles/text";
-import {Container, ButtonContainer, MenuButton, Cardsml, CardContainer} from "../styles/styles";
+import {Container, ButtonContainer, CardContainer, Card} from "../styles/styles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {AnimatedGenericButton, AnimatedHeartButton, TAnimatedGenericButton} from "../styles/AnimatedIconButton";
 import CustomMarker from "../Components/customMarker";
@@ -569,20 +569,20 @@ const MapScreen = () => {
                             </ButtonContainer>
                             <H4>Current Prices</H4>
                             <CardContainer style={{marginRight: -10, marginLeft: -10, marginBottom: 20}}>
-                                <Cardsml>
+                                <Card>
                                     <H5 style={{opacity: 0.6, textAlign: 'center'}}>Petrol</H5>
-                                    <H2 weight='600'
-                                        style={{textAlign: 'center'}}>{selectedStation.prices.petrol_price}</H2>
+                                    <H3 weight='600'
+                                        style={{textAlign: 'center'}}>{selectedStation.prices.petrol_price}</H3>
                                     <H8 style={{opacity: 0.6, textAlign: 'center'}}>Last
                                         Updated: {selectedStation.prices.petrol_updated_at}</H8>
-                                </Cardsml>
-                                <Cardsml>
+                                </Card>
+                                <Card>
                                     <H5 style={{opacity: 0.6, textAlign: 'center'}}>Diesel</H5>
-                                    <H2 weight='600'
-                                        style={{textAlign: 'center'}}>{selectedStation.prices.diesel_price}</H2>
+                                    <H3 weight='600'
+                                        style={{textAlign: 'center'}}>{selectedStation.prices.diesel_price}</H3>
                                     <H8 style={{opacity: 0.6, textAlign: 'center'}}>Last
                                         Updated: {selectedStation.prices.diesel_updated_at}</H8>
-                                </Cardsml>
+                                </Card>
                             </CardContainer>
                             <H4>About</H4>
                             <H6>Opening Hours</H6>
@@ -643,7 +643,7 @@ const MapScreen = () => {
                     <ButtonContainer style={{position: 'absolute', bottom: 200, marginLeft: 'auto'}}>
                         <TAnimatedGenericButton icon="arrow-with-circle-up" onPress={handleCameraMove}/>
                     </ButtonContainer>
-                    <BottomSheet snapPoints={['20%', '20%']} index={0} ref={bottomSheetRef}
+                    <BottomSheet snapPoints={['15%', '15%']} index={0} ref={bottomSheetRef}
                                  handleIndicatorStyle={{display: "none"}}>
                         <Container>
                             <H4 style={{flexDirection: 'row'}}>Arriving at {estimatedTime ? estimatedTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Loading...'}</H4>
@@ -651,7 +651,7 @@ const MapScreen = () => {
 
                             <ButtonContainer style={{position: 'absolute', marginTop: 10, marginLeft: 10}}>
                                 <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
-                                    <AnimatedGenericButton onPress={handleCancelPress}/>
+                                    <TAnimatedGenericButton icon="cross" onPress={handleCancelPress}/>
                                 </View>
                             </ButtonContainer>
                         </Container>

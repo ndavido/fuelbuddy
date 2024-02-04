@@ -1,7 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useFocusEffect} from '@react-navigation/native';
 import {View, Image, Text, RefreshControl, Button, TextInput, Modal, StyleSheet} from 'react-native';
 import {BarChart, LineChart, PieChart} from "react-native-gifted-charts"
 import {jwtDecode} from "jwt-decode";
@@ -12,8 +11,8 @@ import {
     WrapperScroll,
     Content,
     DashboardContainer,
-    TitleContainer, Cardsml, Cardlrg,
-    CardOverlap, DashboardLegal, CardContainer, ButtonContainer
+    TitleContainer,
+    CardOverlap, CardContainer, ButtonContainer, Card
 } from '../styles/styles.js';
 import MainLogo from '../styles/mainLogo';
 import {H2, H3, H4, H5, H6, H7, H8} from "../styles/text";
@@ -38,6 +37,17 @@ const DashboardScreen = () => {
     const [newWeeklyBudgetInput, setNewWeeklyBudgetInput] = useState('');
     const [isModalVisible, setIsModalVisible] = useState(false);
 
+    const [weeklyBudget, setWeeklyBudget] = useState(false);
+
+    const [lineData, setLineData] = useState([]);
+    const [barData, setBarData] = useState([]);
+    const [pieData, setPieData] = useState([]);
+
+    const labels = ["Mon", "", "Wed", "", "Fri", "", "Sun"];
+
+    const barLabels = ["Nov", "Dec", "Jan"];
+
+
     useEffect(() => {
         const fetchUserInfo = async () => {
             try {
@@ -46,12 +56,15 @@ const DashboardScreen = () => {
                     const userData = JSON.parse(userDataJson);
                     setUserInfo(userData);
 
+                   await collectDashboardInfo();
+
                 }
             } catch (error) {
                 console.error('Error fetching user account information:', error);
             }
         };
 
+        fetchNews();
         fetchUserInfo();
     }, []);
 
@@ -143,6 +156,8 @@ const DashboardScreen = () => {
                     },
                 };
 
+                collectDashboardInfo();
+
                 const response = await axios.post(`${url}/account`, {phone_number: phone}, config);
 
                 if (response.data && response.data.user) {
@@ -156,34 +171,56 @@ const DashboardScreen = () => {
         }
     };
 
-    const weekly_budget = userInfo.weekly_budget - 0;
+    const collectDashboardInfo = async () => {
 
-    const lineData = [
-        {value: 0},
-        {value: 0},
-        {value: 0},
-        {value: 0},
-        {value: 0},
-        {value: 0},
-        {value: 0},
-    ];
+        setWeeklyBudget(userInfo.weekly_budget);
 
-    const labels = ["Mon", "", "Wed", "", "Fri", "", "Sun"];
+        const lineData = [
+            {value: 0},
+            {value: 0},
+            {value: 0},
+            {value: 0},
+            {value: 0},
+            {value: 0},
+            {value: 0},
+        ];
 
-    console.log(weekly_budget)
+        setLineData(lineData);
 
-    const barData = [
-        {value: 0},
-        {value: 0},
-        {value: 2},
-    ];
+        console.log(weeklyBudget)
 
-    const barLabels = ["Nov", "Dec", "Jan"];
+        if (!userInfo.weekly_budget) {
+            const pieData = [
+                {value: 0, color: '#6BFF91'},
+                {value: 1, color: '#F7F7F7'}
+            ];
+            const barData = [
+                {value: 0},
+                {value: 0},
+                {value: 0},
+            ];
+            console.log(weeklyBudget)
+            setBarData(barData);
+            setPieData(pieData);
+        } else {
+            const pieData = [
+                {value: 0, color: '#6BFF91'},
+                {value: weeklyBudget, color: '#F7F7F7'}
+            ];
+            const barData = [
+                {value: 30},
+                {value: 10},
+                {value: 20},
+            ];
+            console.log(weeklyBudget)
+            setBarData(barData);
+            setPieData(pieData);
+        }
 
-    const pieData = [
-        {value: 0, color: '#6BFF91'},
-        {value: weekly_budget, color: '#F7F7F7'}
-    ];
+
+
+    };
+
 
     const updateWeeklyBudget = async (newWeeklyBudget) => {
         try {
@@ -250,12 +287,12 @@ const DashboardScreen = () => {
                 />
             }>
                 <TitleContainer>
-                    <H3 weight='500' tmargin='110px' lmargin='20px' bmargin='10px'>Hey, {userInfo.username}</H3>
+                    <H3 weight='500' tmargin='50px' lmargin='20px' bmargin='10px'>Hey, {userInfo.username}</H3>
                 </TitleContainer>
                 <DashboardContainer>
                     <CardOverlap>
                         <CardContainer>
-                            <Cardsml>
+                            <Card>
                                 <H8 style={{opacity: 0.5}}>Total Budget</H8>
                                 <H5>Spending</H5>
                                 <View style={{
@@ -287,15 +324,15 @@ const DashboardScreen = () => {
                                         color="#6BFF91"
                                     />
                                 </View>
-                            </Cardsml>
-                            <Cardsml>
+                            </Card>
+                            <Card>
                                 <H8 style={{opacity: 0.5}}>Total Budget</H8>
                                 <H5>Past Budgets</H5>
                                 <View style={{
                                     flex: 1,
                                     justifyContent: 'center',
                                     alignItems: 'center',
-                                    left: -20,
+                                    left: -15,
                                     marginTop: 5
                                 }}>
                                     <BarChart
@@ -333,21 +370,25 @@ const DashboardScreen = () => {
                                         hideDataPoints={true}
                                     />
                                 </View>
-                            </Cardsml>
+                            </Card>
                         </CardContainer>
-                        <Cardlrg>
+                        <Card>
                             <H8 style={{opacity: 0.5}}>Total Budget</H8>
                             <H5>Breakdown</H5>
                             <ButtonContainer style={{position: 'absolute', marginTop: 10, marginLeft: 10}}>
-                                <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
-                                    <AnimatedGenericButton onPress={handleUpdateButtonPress}/>
+                                <View style={{ zIndex: 1, marginLeft: 'auto', marginRight: 0 }}>
+                                  {userInfo.weekly_budget ? (
+                                    <TAnimatedGenericButton icon='plus' color='#6BFF91' onPress={handleUpdateButtonPress} />
+                                  ) : (
+                                    <TAnimatedGenericButton icon='plus' text='add' onPress={handleUpdateButtonPress} />
+                                  )}
                                 </View>
                             </ButtonContainer>
                             <View style={{
                                 flex: 1,
                                 justifyContent: 'center',
                                 alignItems: 'center',
-                                top: -20,
+                                top: -10,
                                 zIndex: 0
                             }}
                                   onLayout={({nativeEvent}) => setBarParentWidth(nativeEvent.layout.width)}>
@@ -370,16 +411,13 @@ const DashboardScreen = () => {
                                     }}
                                 />
                             </View>
-                        </Cardlrg>
-                        <Cardlrg>
+                            <View style={{top: -10}}>
+
+                            </View>
+                        </Card>
+                        <Card>
                             <H8 style={{opacity: 0.5}}>Vehicle</H8>
                             <H5>My Car</H5>
-                            <ButtonContainer style={{position: 'absolute', marginTop: 10, marginLeft: 10}}>
-                                <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
-                                    <AnimatedGenericButton onPress={() => {
-                                    }}/>
-                                </View>
-                            </ButtonContainer>
                             <View style={{
                                 flex: 1,
                                 justifyContent: 'center',
@@ -393,8 +431,8 @@ const DashboardScreen = () => {
                                 <H5>Volkswagen Polo</H5>
                                 <H6 style={{opacity: 0.5}}>18Km/l Average</H6>
                             </View>
-                        </Cardlrg>
-                        {/*<Cardlrg>
+                        </Card>
+                        <Card>
                             <H8 style={{opacity: 0.5}}>News</H8>
                             <H5>Trending Stories</H5>
                             {loadingNews ? (
@@ -420,7 +458,7 @@ const DashboardScreen = () => {
                                     ))}
                                 </View>
                             )}
-                        </Cardlrg>*/}
+                        </Card>
                     </CardOverlap>
                 </DashboardContainer>
                 <Modal

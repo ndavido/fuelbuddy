@@ -17,6 +17,7 @@ export const Wrapper = styled.View`
 export const WrapperScroll = styled.ScrollView`
   height: 100%;
   width: 100%;
+  top: 60px;
   margin: auto;
 `;
 
@@ -48,7 +49,7 @@ export const ButtonDiv = styled.View`
 
 export const TitleContainer = styled.View`
   position: relative;
-  height: 200px;
+  height: 150px;
   width: 100%;
 `;
 
@@ -189,8 +190,7 @@ export const DashboardContainer = styled.View`
   display: inline-block;
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
-  margin-bottom: 20px;
-  padding: 10px;
+  padding-bottom: 80px;
 `;
 
 export const CardOverlap = styled.View`
@@ -203,15 +203,7 @@ export const CardContainer = styled.View`
   flex-direction: row;
 `;
 
-export const Cardlrg = styled.View`
-  background-color: #ffffff;
-  min-height: 300px;
-  border-radius: 8px;
-  padding: 10px;
-  margin: 10px;
-`;
-
-export const Cardsml = styled.View`
+export const Card = styled.View`
   background-color: #ffffff;
   flex: 1;
   border-radius: 8px;
@@ -250,3 +242,17 @@ export const AddFriendButton = styled.Text`
 `;
 
 /* Account Screen */
+export const TopInfo = styled.View`
+  position: relative;
+  height: 260px;
+  top: 20px;
+  width: 100%;
+`;
+
+export const AccountContainer = styled.View`
+  background-color: #F7F7F7;
+  position: relative;
+  display: inline-block;
+  padding-bottom: 80px;
+`;
+

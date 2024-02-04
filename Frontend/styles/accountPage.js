@@ -16,13 +16,6 @@ export const AccountContent = styled.View`
   width: 100%;
 `;
 
-export const AccountTopInfo = styled.View`
-  position: relative;
-  height: 280px;
-  top: 85px;
-  width: 100%;
-`;
-
 export const AccountTitle = styled.Text`
   font-size: 30px;
   margin: 10px;
@@ -42,7 +35,7 @@ export const AccountUsername = styled.Text`
 `;
 
 export const DeveloperTick = styled.Text`
-  font-size: 20px;
+  font-size: 14px;
 `;
 
 export const AccountBottomInfo = styled(Animated.View)`
@@ -57,13 +50,13 @@ export const AccountBottomInfo = styled(Animated.View)`
 export const AccountRegularInfo = styled.ScrollView`
     position: relative;
     background-color: #F7F7F7;
-    height: auto;
+    height: 100%;
     width: 100%;
-  padding-top: 85px;
+    padding-top: 20px;
 `;
 
 export const AccountTxtWrapper = styled.View`
-  margin: 20px;
+  margin: 10px;
   height: auto;
 `;
 
