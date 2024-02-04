@@ -167,10 +167,6 @@ const AccountScreen = () => {
                                            bgColor='white'
                                            txtColor='black'
                                            emoji="⛽"/>
-                            <MenuButtonMiddle title='my savings (NA)'
-                                              bgColor='white'
-                                              txtColor='black'
-                                              emoji="💵"/>
                             <MenuButtonBottom title='my friends'
                                               bgColor='white'
                                               txtColor='black'
@@ -198,7 +194,8 @@ const AccountScreen = () => {
                                         txtColor='black'
                                         onPress={handleLogout}
                                         emoji="🥲"/>
-                            <H8>Version 0.1</H8>
+                            <H8 bmargin='5px' width='100%' style={{textAlign: 'center'}}>Version Alpha</H8>
+                            <H8 bmargin='5px' width='100%' style={{textAlign: 'center'}}>Made with 💖 by Team fuelbuddy</H8>
                         </AccountTxtWrapper>
                     </AccountContent>
                 </DashboardContainer>

@@ -16,7 +16,7 @@ import {useNavigation} from '@react-navigation/native';
 
 import MainLogo from '../styles/mainLogo';
 import {MenuButton} from '../styles/accountButton';
-import {ButtonContainer, FContainer, InputTxt, Main, FSButtonContainer,AddFriendButton} from '../styles/styles';
+import {ButtonContainer, FContainer, InputTxt, Main, FSButtonContainer, AddFriendButton} from '../styles/styles';
 import {
     AccountWrapper,
     AccountContent,
@@ -26,7 +26,8 @@ import {
 } from '../styles/accountPage';
 import {jwtDecode} from "jwt-decode";
 import {H3, H5, H6} from "../styles/text";
-import { SearchButtons } from '../styles/buttons2';
+import {SearchButtons} from '../styles/buttons2';
+import {AnimatedGenericButton, TAnimatedGenericButton} from "../styles/AnimatedIconButton";
 
 
 const apiKey = process.env.REACT_NATIVE_API_KEY;
@@ -194,7 +195,7 @@ const FriendsScreen = () => {
             );
 
             console.log(response.data.message);
-            // Handle the response as needed, for example, update UI or show a notification
+            onRefresh();
 
         } catch (error) {
             console.error('Error responding to friend request:', error);
@@ -212,14 +213,18 @@ const FriendsScreen = () => {
             <MainLogo PageTxt='Friends'/>
             <AccountWrapper>
                 <AccountRegularInfo refreshControl={
-                                    <RefreshControl
-                                        refreshing={refreshing}
-                                        onRefresh={onRefresh}
-                                    />
-                                }>
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                    />
+                }>
                     <AccountContent>
-                        <H3 tmargin='20px' lmargin='20px' bmargin='5px'></H3>
-                        <H5 style={[styles.addFriendButton, {color: "#6bff91"}]}tmargin='10px' lmargin='20px' onPress={openSearchModal}>Add Friends</H5>
+                        <H3 tmargin='20px' lmargin='20px' bmargin='5px'>Friends</H3>
+                        <ButtonContainer style={{position: 'absolute'}}>
+                            <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 10}}>
+                                <TAnimatedGenericButton text="Add Friends" onPress={openSearchModal}/>
+                            </View>
+                        </ButtonContainer>
                         <AccountTxtWrapper>
 
                             <Modal
@@ -238,25 +243,25 @@ const FriendsScreen = () => {
                                             onChangeText={(text) => setSearchTerm(text)}
                                         />
                                         <FContainer>
-                                        <FSButtonContainer
-                                        style={[styles.FSButtonContainer, { width: '60%' }]}
-                                        >
-                                        <SearchButtons 
-                                            onPress={handleSearch}
-                                            title='Search'
-                                            bgColor='#6bff91'
-                                            txtColor='white'/>
-                                        </FSButtonContainer>
-                                        <FSButtonContainer
-                                        style={[styles.FSButtonContainer, { width: '50%' }]}
-                                        >
-                                        <SearchButtons
-                                            onPress={closeSearchModal}
-                                            title='Close'
-                                            bgColor='red'
-                                            txtColor='white'
-                                            />                                   
-                                        </FSButtonContainer>
+                                            <FSButtonContainer
+                                                style={[styles.FSButtonContainer, {width: '60%'}]}
+                                            >
+                                                <SearchButtons
+                                                    onPress={handleSearch}
+                                                    title='Search'
+                                                    bgColor='#6bff91'
+                                                    txtColor='white'/>
+                                            </FSButtonContainer>
+                                            <FSButtonContainer
+                                                style={[styles.FSButtonContainer, {width: '50%'}]}
+                                            >
+                                                <SearchButtons
+                                                    onPress={closeSearchModal}
+                                                    title='Close'
+                                                    bgColor='red'
+                                                    txtColor='white'
+                                                />
+                                            </FSButtonContainer>
                                         </FContainer>
                                         <FlatList
                                             data={searchTerm ? searchResults : friends}
@@ -267,7 +272,8 @@ const FriendsScreen = () => {
                                                         style={{opacity: 0.5}}>{item.username}</H6>
                                                     <TouchableOpacity
                                                         onPress={() => handleMakeFriend(item.phone_number)}>
-                                                        <Text style={[styles.addFriendButton, {color: "#6bff91"}]}>🫂Add</Text>
+                                                        <Text
+                                                            style={[styles.addFriendButton, {color: "#6bff91"}]}>🫂Add</Text>
                                                     </TouchableOpacity>
                                                 </View>
                                             )}
@@ -282,7 +288,7 @@ const FriendsScreen = () => {
                                 </View>
                             </Modal>
                             {hasRequestedFriends && (
-                                <>
+                                <AccountTxtWrapper>
                                     <H5 tmargin='10px' bmargin='10px'>Added Me</H5>
                                     <FlatList
                                         data={searchTerm ? searchResults : requestedFriends}
@@ -291,26 +297,19 @@ const FriendsScreen = () => {
                                             <View style={styles.friendItem}>
                                                 <H6 weight="400" bmargin='5px'
                                                     style={{opacity: 0.5}}>{item.friend_name}</H6>
-                                                <View style={styles.buttonContainer}>
-                                                    <TouchableOpacity
-                                                        style={styles.acceptButton}
-                                                        onPress={() => decideFriend(item.request_id, 'accept')}
-                                                    >
-                                                        <Text style={styles.buttonText}>Accept</Text>
-                                                    </TouchableOpacity>
-                                                    <TouchableOpacity
-                                                        style={styles.rejectButton}
-                                                        onPress={() => decideFriend(item.request_id, 'reject')}
-                                                    >
-                                                        <Text style={styles.buttonText}>Reject</Text>
-                                                    </TouchableOpacity>
+                                                <View style={{zIndex: 1, marginLeft: 'auto', flexDirection: "row"}}>
+                                                    <TAnimatedGenericButton text={"Accept"} color={"#6BFF91"}
+                                                                            onPress={() => decideFriend(item.request_id, 'accept')}/>
+                                                    <TAnimatedGenericButton color={"#3891FA"}
+                                                                            text={"Deny"}
+                                                                            onPress={() => decideFriend(item.request_id, 'reject')}/>
                                                 </View>
+
                                             </View>
-                                        )}
-                                    />
-                                </>
-                            )}
-                            <H5 tmargin='10px' bmargin='10px'>Friends</H5>
+                                            )}
+                                        />
+                                </AccountTxtWrapper>
+                                )}
                             <FlatList
                                 data={friends}
                                 keyExtractor={(item) => item.friend_id.toString()} // Assuming friend_id is a number
@@ -330,55 +329,55 @@ const FriendsScreen = () => {
 
 const styles = StyleSheet.create({
     modalContainer: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     modalContent: {
-      backgroundColor: 'white',
-      padding: 20,
-      borderRadius: 10,
-      elevation: 5,
-      height: 400,
-      width: 250,
+        backgroundColor: 'white',
+        padding: 20,
+        borderRadius: 10,
+        elevation: 5,
+        height: 400,
+        width: 250,
     },
     modalTitle: {
-      fontSize: 18,
-      fontWeight: 'bold',
-      marginBottom: 10,
-      textAlign: 'center',
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 10,
+        textAlign: 'center',
     },
     searchInput: {
-      height: 40,
-      borderColor: 'gray',
-      borderWidth: 1,
-      marginBottom: 8,
-      paddingHorizontal: 8,
+        height: 40,
+        borderColor: 'gray',
+        borderWidth: 1,
+        marginBottom: 8,
+        paddingHorizontal: 8,
     },
     friendItem: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      borderTopWidth: 1,
-      borderTopColor: 'lightgray',
-      paddingVertical: 8,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        borderTopWidth: 1,
+        borderTopColor: 'lightgray',
+        paddingVertical: 8,
     },
     searchButton: {
-      flex: 1,
-      marginRight: 5,
-      backgroundColor: '#6BFF91', 
-      padding: 10,
-      borderRadius: 5,
-      alignItems: 'center',
+        flex: 1,
+        marginRight: 5,
+        backgroundColor: '#6BFF91',
+        padding: 10,
+        borderRadius: 5,
+        alignItems: 'center',
     },
     closeButton: {
-      flex: 1,
-      marginLeft: 5,
-      backgroundColor: 'red', 
-      padding: 10,
-      borderRadius: 5,
-      alignItems: 'center',
+        flex: 1,
+        marginLeft: 5,
+        backgroundColor: 'red',
+        padding: 10,
+        borderRadius: 5,
+        alignItems: 'center',
     },
-  });
-  
-  export default FriendsScreen;
+});
+
+export default FriendsScreen;

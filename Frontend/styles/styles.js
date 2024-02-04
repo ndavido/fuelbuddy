@@ -189,15 +189,8 @@ export const DashboardContainer = styled.View`
   display: inline-block;
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
+  margin-bottom: 20px;
   padding: 10px;
-`;
-
-export const DashboardLegal = styled.View`
-  background-color: #F7F7F7;
-  position: relative;
-  text-align: center;
-  height: auto;
-  padding: 20px;
 `;
 
 export const CardOverlap = styled.View`
