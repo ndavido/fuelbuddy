@@ -78,7 +78,7 @@ const TGenericButton = styled(Animatable.View)`
   padding-left: 7px;
   padding-top: 7px;
   padding-bottom: 7px;
-  padding-right: 10px;
+  padding-right: ${(props) => (props.hasText ? '10px' : '7px')};
   align-self: normal;
    position: relative;
   border-radius: 10px;
@@ -102,9 +102,9 @@ export const TAnimatedGenericButton = ({color, icon, text, onPress }) => {
 
   return (
     <TouchableOpacity onPress={handlePress}>
-      <TGenericButton color={color}>
+      <TGenericButton color={color} hasText={!!text}>
         <Entypo name={icon} size={26} color="#FFFFFF" />
-        <ButtonText>{text}</ButtonText>
+        {text ? <ButtonText>{text}</ButtonText> : null}
       </TGenericButton>
     </TouchableOpacity>
   );

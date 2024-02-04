@@ -122,17 +122,39 @@ const DashboardScreen = () => {
 
     // TODO How to Quickly reload info on the dashboard
     const collectUserInfo = async () => {
-            try {
-                const userDataJson = await AsyncStorage.getItem('userData');
-                if (userDataJson) {
-                    const userData = JSON.parse(userDataJson);
-                    setUserInfo(userData);
+        try {
+            const apiKey = process.env.REACT_NATIVE_API_KEY;
+            const storedToken = await AsyncStorage.getItem('token');
+
+            console.log("Testing")
+
+            if (storedToken) {
+                const decodedToken = jwtDecode(storedToken);
+
+                console.log(decodedToken)
+
+                const phone = decodedToken.sub;
+
+                console.log(phone)
+
+                const config = {
+                    headers: {
+                        'X-API-Key': apiKey,
+                    },
+                };
+
+                const response = await axios.post(`${url}/account`, {phone_number: phone}, config);
+
+                if (response.data && response.data.user) {
+                    console.log(response.data.user)
+                    await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
 
                 }
-            } catch (error) {
-                console.error('Error fetching user account information:', error);
             }
-        };
+        } catch (error) {
+            console.error('Error fetching user account information:', error);
+        }
+    };
 
     const weekly_budget = userInfo.weekly_budget - 0;
 
@@ -187,7 +209,7 @@ const DashboardScreen = () => {
                 setUserInfo((prevUserInfo) => ({
                     ...prevUserInfo,
                     weekly_budget: newWeeklyBudget,
-                  }));
+                }));
                 await onRefresh();
             } else {
                 console.error('Failed to update weekly budget:', response.data.error);
@@ -316,7 +338,7 @@ const DashboardScreen = () => {
                         <Cardlrg>
                             <H8 style={{opacity: 0.5}}>Total Budget</H8>
                             <H5>Breakdown</H5>
-                            <ButtonContainer style={{position: 'absolute'}}>
+                            <ButtonContainer style={{position: 'absolute', marginTop: 10, marginLeft: 10}}>
                                 <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
                                     <AnimatedGenericButton onPress={handleUpdateButtonPress}/>
                                 </View>
@@ -352,9 +374,27 @@ const DashboardScreen = () => {
                         <Cardlrg>
                             <H8 style={{opacity: 0.5}}>Vehicle</H8>
                             <H5>My Car</H5>
-
+                            <ButtonContainer style={{position: 'absolute', marginTop: 10, marginLeft: 10}}>
+                                <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
+                                    <AnimatedGenericButton onPress={() => {
+                                    }}/>
+                                </View>
+                            </ButtonContainer>
+                            <View style={{
+                                flex: 1,
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                zIndex: 0,
+                                top: -20,
+                            }}>
+                                <Image source={require('../assets/car.png')} style={{height: 200, width: 250}}/>
+                            </View>
+                            <View style={{top: -10}}>
+                                <H5>Volkswagen Polo</H5>
+                                <H6 style={{opacity: 0.5}}>18Km/l Average</H6>
+                            </View>
                         </Cardlrg>
-                        <Cardlrg>
+                        {/*<Cardlrg>
                             <H8 style={{opacity: 0.5}}>News</H8>
                             <H5>Trending Stories</H5>
                             {loadingNews ? (
@@ -380,12 +420,9 @@ const DashboardScreen = () => {
                                     ))}
                                 </View>
                             )}
-                        </Cardlrg>
+                        </Cardlrg>*/}
                     </CardOverlap>
                 </DashboardContainer>
-                <DashboardLegal>
-                    <H6 bmargin='5px' width='100%' style={{textAlign: 'center'}}>Made with 💖 by Team fuelbuddy</H6>
-                </DashboardLegal>
                 <Modal
                     visible={isModalVisible}
                     onRequestClose={() => setIsModalVisible(false)}

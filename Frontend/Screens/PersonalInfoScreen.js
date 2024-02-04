@@ -24,8 +24,8 @@ import MainLogo from '../styles/mainLogo';
 import AccountImg from '../styles/accountImg';
 import {MenuButton} from "../styles/accountButton";
 import {H3, H4, H5, H6} from "../styles/text";
-import {InputTxt, Main} from "../styles/styles";
-import {TAnimatedGenericButton} from "../styles/AnimatedIconButton";
+import {ButtonContainer, InputTxt, Main} from "../styles/styles";
+import {AnimatedGenericButton, TAnimatedGenericButton} from "../styles/AnimatedIconButton";
 
 const url = process.env.REACT_APP_BACKEND_URL
 
@@ -124,8 +124,14 @@ const AccountScreen = () => {
                 <AccountRegularInfo>
                     <AccountContent>
                         <AccountTxtWrapper>
-                            <H5 tmargin='10px' bmargin='10px'>Personal Information</H5>
-                            <TAnimatedGenericButton title={editMode ? "Cancel" : "Edit"} onPress={handleEditToggle}/>
+                            <H3 tmargin='20px' bmargin='5px'>Personal Information</H3>
+                            <ButtonContainer style={{position: 'absolute'}}>
+                                <View style={{zIndex: 1, marginLeft: 'auto', flexDirection: "row"}}>
+                                    {editMode ? (<TAnimatedGenericButton text={"Save"} color={"#6BFF91"} onPress={handleSave}/>) : null}
+                                    <TAnimatedGenericButton color={editMode ? "red" : "#3891FA"} text={editMode ? "Cancel" : "Edit"} onPress={handleEditToggle}/>
+                                </View>
+                            </ButtonContainer>
+
                             {editMode ? (
                                 <>
                                     <H6 bmargin='5px'>Username</H6>
@@ -138,7 +144,6 @@ const AccountScreen = () => {
                                     <H6 bmargin='5px'>Email</H6>
                                     <InputTxt bcolor='white' value={editedEmail} onChangeText={setEditedEmail}
                                                placeholder="Email"/>
-                                    <Button title="Save" onPress={handleSave}/>
                                 </>
                             ) : (
                                 <>
@@ -152,7 +157,6 @@ const AccountScreen = () => {
                                     <AccountTxt bgColor='#FFFFFF'>{userInfo.email}</AccountTxt>
                                 </>
                             )}
-                            <Button title={editMode ? "Cancel" : "Edit"} onPress={handleEditToggle}/>
                             <H6 tmargin='10px' bmargin='10px'>{message}</H6>
                             <H5 tmargin='40px' bmargin='5px'>Delete Account</H5>
                             <H6 style={{opacity: 0.6}} bmargin='20px' weight='400'>Not comfortable? Deleting your

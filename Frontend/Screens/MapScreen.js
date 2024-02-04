@@ -1,7 +1,18 @@
 import React, {useState, useEffect, useRef, useMemo} from "react";
-import {View, Text, StyleSheet, Animated, Platform, Linking, Button, TextInput, Modal, StatusBar} from "react-native";
+import {
+    View,
+    Text,
+    StyleSheet,
+    Animated,
+    Platform,
+    Linking,
+    Button,
+    TextInput,
+    Modal,
+    StatusBar,
+    ScrollView
+} from "react-native";
 import BottomSheet from '@gorhom/bottom-sheet';
-import MyMarker from '../Components/mymarker';
 import * as Location from "expo-location";
 
 const jsonBig = require('json-bigint');
@@ -11,8 +22,8 @@ const isWeb = Platform.OS !== "ios" && Platform.OS !== "android";
 let MapView;
 let MapViewDirections;
 if (!isWeb) {
-    // MapView = require("react-native-map-clustering").default;
-    MapView = require("react-native-maps").default;
+    MapView = require("react-native-map-clustering").default;
+    // MapView = require("react-native-maps").default;
     MapViewDirections = require("react-native-maps-directions").default;
 }
 
@@ -23,7 +34,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import {AnimatedGenericButton, AnimatedHeartButton, TAnimatedGenericButton} from "../styles/AnimatedIconButton";
 import CustomMarker from "../Components/customMarker";
 import axios from "axios";
-import {right} from "core-js/internals/array-reduce";
 
 
 const apiMapKey = process.env.googleMapsApiKey;
@@ -31,9 +41,12 @@ const apiKey = process.env.REACT_NATIVE_API_KEY;
 const url = process.env.REACT_APP_BACKEND_URL
 
 const MapScreen = () => {
+    const [currentTime, setCurrentTime] = useState(new Date());
     const [petrolStations, setPetrolStations] = useState([]);
+
     const [location, setLocation] = useState(null);
     const [userInfo, setUserInfo] = useState({});
+    const [userHeading, setUserHeading] = useState(null);
 
     const [favoriteStations, setFavoriteStations] = useState([]);
 
@@ -42,6 +55,13 @@ const MapScreen = () => {
     const mapRef = useRef(null);
     const [estimatedDuration, setEstimatedDuration] = useState(null);
     const [estimatedDistance, setEstimatedDistance] = useState(null);
+    const [estimatedTime, setEstimatedTime] = useState(null);
+
+    const [detailedSteps, setDetailedSteps] = useState([]);
+
+    const [isJourneyActive, setIsJourneyActive] = useState(false);
+    const [journeyCoordinates, setJourneyCoordinates] = useState([]);
+    const [journeyMode, setJourneyMode] = useState(false);
 
     const [selectedStation, setSelectedStation] = useState(null);
     const [updateModalVisible, setUpdateModalVisible] = useState(false);
@@ -54,11 +74,52 @@ const MapScreen = () => {
 
     const [refreshing, setRefreshing] = useState(false);
 
+    const [currentDirectionIndex, setCurrentDirectionIndex] = useState(0);
+
     const snapPoints = useMemo(() => ['20%', '40%', '90%'], []);
 
-    console.log(url)
+    const updateDirectionIndexBasedOnLocation = (userLocation) => {
+        if (detailedSteps.length === 0) {
+            return;
+        }
+
+        for (let i = 0; i < detailedSteps.length; i++) {
+            const step = detailedSteps[i];
+            const stepEndLocation = {
+                latitude: step.end_location.lat,
+                longitude: step.end_location.lng,
+            };
+
+            const distanceToStepEnd = getDistanceBetweenLocations(userLocation, stepEndLocation);
+
+            if (distanceToStepEnd < 50) {
+                setCurrentDirectionIndex(i + 1);
+                break;
+            }
+        }
+    };
+
+    const getDistanceBetweenLocations = (location1, location2) => {
+        const R = 6371;
+        const dLat = deg2rad(location2.latitude - location1.latitude);
+        const dLon = deg2rad(location2.longitude - location1.longitude);
+        const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(deg2rad(location1.latitude)) * Math.cos(deg2rad(location2.latitude)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const distance = R * c;
+
+        return distance * 1000;
+    };
+
+    const deg2rad = (deg) => deg * (Math.PI / 180);
 
     useEffect(() => {
+        const intervalId = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 1000);
+
         const refreshInterval = setInterval(async () => {
             console.log('Refreshing data...');
             await manualRefresh();
@@ -73,7 +134,6 @@ const MapScreen = () => {
                     const parsedUserData = jsonBig.parse(userDataJson);
                     await setUserInfo(parsedUserData);
 
-                    // Now that user information is set, fetch location and petrol stations
                     fetchLocationAndPetrolStations(parsedUserData);
                 }
             } catch (error) {
@@ -110,16 +170,21 @@ const MapScreen = () => {
                         latitudeDelta: 0.0922,
                         longitudeDelta: 0.0421,
                     });
+
+                    updateDirectionIndexBasedOnLocation(newLocation.coords);
                 });
 
-                // Pass user data to fetchPetrolStations
                 fetchFavoriteStations(userData);
             } catch (error) {
                 console.error("Error fetching user location:", error);
             }
         }
+
         fetchUserInfo();
-        return () => clearInterval(refreshInterval);
+        return () => {
+            clearInterval(refreshInterval);
+            clearInterval(intervalId);
+        };
     }, []);
 
     const manualRefresh = async () => {
@@ -130,7 +195,6 @@ const MapScreen = () => {
             const parsedUserData = jsonBig.parse(userDataJson);
             await setUserInfo(parsedUserData);
 
-            // Now that user information is set, fetch location and petrol stations
             await fetchFavoriteStations(parsedUserData);
         }
         setRefreshing(false);
@@ -262,47 +326,164 @@ const MapScreen = () => {
 
     const handleMarkerPress = (station) => {
         setSelectedStation(station);
-
+        setJourneyMode(false);
+        setIsJourneyActive(false);
         setShowStationInfo(true);
         setShowRouteInfo(false);
         // TODO Remove Dev Only
         console.log("Selected Station: ", station);
     };
 
-    const handleRoutePress = () => {
+    const getDirectionsInfo = async (origin, destination) => {
+        try {
+            const apiUrl = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&key=${apiMapKey}`;
+
+            const response = await fetch(apiUrl);
+            const data = await response.json();
+
+            return data.routes[0].legs[0];
+        } catch (error) {
+            console.error('Error fetching directions:', error);
+            return {};
+        }
+    };
+
+    const updateCurrentDirectionIndex = (index) => {
+        setCurrentDirectionIndex(index);
+    };
+
+    const handleRoutePress = async () => {
         if (selectedStation && location) {
+            setShowStationInfo(false);
+            setShowRouteInfo(true);
+
             const origin = {
-                latitude: location.coords.latitude, longitude: location.coords.longitude,
+                latitude: location.coords.latitude,
+                longitude: location.coords.longitude,
             };
 
             const destination = {
-                latitude: selectedStation.location.latitude, longitude: selectedStation.location.longitude,
-            };
-
-            const directionsOptions = {
-                origin, destination, waypoints: [{
-                    latitude: location.coords.latitude, longitude: location.coords.longitude,
-                },], optimizeWaypoints: true, travelMode: 'DRIVING', unitSystem: 'METRIC',
+                latitude: selectedStation.location.latitude,
+                longitude: selectedStation.location.longitude,
             };
 
             setUpdateModalVisible(false);
 
-            mapRef.current.fitToCoordinates([{
-                latitude: location.coords.latitude,
-                longitude: location.coords.longitude
-            }, {
-                latitude: selectedStation.location.latitude,
-                longitude: selectedStation.location.longitude
-            },], {edgePadding: {top: 50, right: 50, bottom: 50, left: 50}});
+            const directionsInfo = await getDirectionsInfo(origin, destination);
 
-            setShowStationInfo(false);
-            setShowRouteInfo(true);
+            setDetailedSteps(directionsInfo.steps);
+            setEstimatedDuration(directionsInfo.duration.text);
+            setEstimatedDistance(directionsInfo.distance.text);
+            setCurrentDirectionIndex(0);
+
+            const [durationValue, durationUnit] = directionsInfo.duration.text.split(" ");
+
+            if (durationValue && durationUnit) {
+              const newEstimatedTime = new Date(currentTime.getTime() + parseInt(durationValue, 10) * 60000);
+              setEstimatedTime(newEstimatedTime);
+              console.log("New Estimated Time:", newEstimatedTime);
+            }
+
+            mapRef.current.fitToCoordinates([origin, destination], {
+                edgePadding: {top: 50, right: 50, bottom: 200, left: 50},
+            });
         }
     };
 
     const handleCancelPress = () => {
-        setShowStationInfo(true);
-        setShowRouteInfo(false);
+        if (journeyMode) {
+            setJourneyMode(false);
+            setIsJourneyActive(false);
+            setShowStationInfo(false);
+            setShowRouteInfo(true);
+        } else {
+            setShowStationInfo(true);
+            setShowRouteInfo(false);
+            if (selectedStation) {
+                mapRef.current?.animateCamera(
+                    {
+                        center: {
+                            latitude: selectedStation.location.latitude,
+                            longitude: selectedStation.location.longitude,
+                        },
+                        altitude: 50000,
+                        pitch: 0,
+                        heading: 1,
+                    },
+                    {duration: 1500}
+                );
+            } else {
+                mapRef.current?.animateCamera(
+                    {
+                        center: {
+                            latitude: location.coords.latitude,
+                            longitude: location.coords.longitude,
+                        },
+                        altitude: 50000,
+                        pitch: 0,
+                        heading: 1,
+                    },
+                    {duration: 1500}
+                );
+            }
+        }
+    };
+
+    const handleCameraMove = () => {
+        mapRef.current?.animateCamera(
+            {
+                center: {
+                    latitude: location.coords.latitude,
+                    longitude: location.coords.longitude,
+                },
+                altitude: 160, // Adjust the altitude to control the zoom level
+                pitch: 45, // Adjust the pitch angle
+                heading: location.coords.heading, // Use the user's heading for orientation
+            },
+            {duration: 1000}
+        );
+    }
+
+    const handleJourney = async () => {
+        if (selectedStation && location) {
+            const origin = {
+                latitude: location.coords.latitude,
+                longitude: location.coords.longitude,
+            };
+
+            const destination = {
+                latitude: selectedStation.location.latitude,
+                longitude: selectedStation.location.longitude,
+            };
+
+            const directionsInfo = await getDirectionsInfo(origin, destination);
+
+            setJourneyMode(true);
+            setEstimatedDuration(directionsInfo.duration.text);
+            setEstimatedDistance(directionsInfo.distance.text);
+            setCurrentDirectionIndex(0);
+
+            setShowStationInfo(false);
+            setShowRouteInfo(false);
+            setIsJourneyActive(true);
+            setJourneyCoordinates(directionsInfo.steps.map(step => ({
+                latitude: step.end_location.lat,
+                longitude: step.end_location.lng,
+            })));
+
+            mapRef.current?.animateCamera(
+                {
+                    center: {
+                        latitude: location.coords.latitude,
+                        longitude: location.coords.longitude,
+                    },
+                    altitude: 160,
+                    pitch: 45,
+                    heading: location.coords.heading,
+                },
+                {duration: 1000}
+            );
+        }
     };
 
     const renderMap = () => {
@@ -322,6 +503,7 @@ const MapScreen = () => {
                 ref={mapRef}
                 showsUserLocation={true}
                 userInterfaceStyle={"dark"}
+                pitchEnabled={journeyMode}
             >
                 {petrolStations.map((station, index) => (
                     <CustomMarker
@@ -338,28 +520,27 @@ const MapScreen = () => {
                         isSelected={selectedStation && selectedStation.id === station.id}
                     />
                 ))}
-                {selectedStation && location && showRouteInfo && (<MapViewDirections
-                    timePrecision="now"
-                    origin={{
-                        latitude: location.coords.latitude, longitude: location.coords.longitude,
-                    }}
-                    destination={{
-                        latitude: selectedStation.location.latitude,
-                        longitude: selectedStation.location.longitude,
-                    }}
-                    waypoints={[{
-                        latitude: location.coords.latitude, longitude: location.coords.longitude,
-                    },]}
-                    apikey={apiMapKey}
-                    strokeWidth={3}
-                    strokeColor="hotpink"
-                    onReady={result => {
-                      console.log(`Distance: ${result.distance} km`)
-                      console.log(`Duration: ${result.duration} min.`)
-                        setEstimatedDistance(result.distance);
-                        setEstimatedDuration(result.duration);
-                    }}
-                />)}
+                {selectedStation && location && (showRouteInfo || isJourneyActive) && (
+                    <MapViewDirections
+                        timePrecision="now"
+                        origin={isJourneyActive ? journeyCoordinates[0] : {
+                            latitude: location.coords.latitude,
+                            longitude: location.coords.longitude,
+                        }}
+                        destination={isJourneyActive ? journeyCoordinates[journeyCoordinates.length - 1] : {
+                            latitude: selectedStation.location.latitude,
+                            longitude: selectedStation.location.longitude,
+                        }}
+                        waypoints={isJourneyActive ? journeyCoordinates.slice(1, -1) : []}
+                        apikey={apiMapKey}
+                        strokeWidth={5}
+                        strokeColor="#6BFF91"
+                        onReady={result => {
+                            console.log(`Distance 2: ${result.distance} km`)
+                            console.log(`Duration 2: ${result.duration} min.`)
+                        }}
+                    />
+                )}
             </MapView>);
         }
     };
@@ -387,18 +568,18 @@ const MapScreen = () => {
                                 </View>
                             </ButtonContainer>
                             <H4>Current Prices</H4>
-                            <CardContainer>
+                            <CardContainer style={{marginRight: -10, marginLeft: -10, marginBottom: 20}}>
                                 <Cardsml>
                                     <H5 style={{opacity: 0.6, textAlign: 'center'}}>Petrol</H5>
-                                    <H3 weight='600'
-                                        style={{textAlign: 'center'}}>{selectedStation.prices.petrol_price}</H3>
+                                    <H2 weight='600'
+                                        style={{textAlign: 'center'}}>{selectedStation.prices.petrol_price}</H2>
                                     <H8 style={{opacity: 0.6, textAlign: 'center'}}>Last
                                         Updated: {selectedStation.prices.petrol_updated_at}</H8>
                                 </Cardsml>
                                 <Cardsml>
                                     <H5 style={{opacity: 0.6, textAlign: 'center'}}>Diesel</H5>
-                                    <H3 weight='600'
-                                        style={{textAlign: 'center'}}>{selectedStation.prices.diesel_price}</H3>
+                                    <H2 weight='600'
+                                        style={{textAlign: 'center'}}>{selectedStation.prices.diesel_price}</H2>
                                     <H8 style={{opacity: 0.6, textAlign: 'center'}}>Last
                                         Updated: {selectedStation.prices.diesel_updated_at}</H8>
                                 </Cardsml>
@@ -428,19 +609,71 @@ const MapScreen = () => {
     const renderRouteInfoBottomSheet = () => {
         if (!isWeb && showRouteInfo) {
             return (
-                <BottomSheet snapPoints={['20%', '90%']} index={0} ref={bottomSheetRef}
-                             handleIndicatorStyle={{display: "none"}}>
+                <BottomSheet snapPoints={['20%', '90%']} index={0} ref={bottomSheetRef}>
                     <Container>
                         <H4 style={{flexDirection: 'row'}}>{estimatedDuration} ({estimatedDistance})</H4>
                         <H6>Estimated Price: €</H6>
                         <ButtonContainer>
-                            <TAnimatedGenericButton color="#6BFF91" icon="controller-play" text="Start" onPress={() => {
-                            }}/>
+                            <TAnimatedGenericButton icon="arrow-with-circle-up" text="Start Journey"
+                                                    onPress={handleJourney}/>
                             <TAnimatedGenericButton style={{float: "left"}} icon="cross" text="Exit"
                                                     onPress={handleCancelPress}/>
                         </ButtonContainer>
+                        <H4 style={{flexDirection: 'row'}}>Directions</H4>
+                        <ScrollView>
+                            {detailedSteps.map((step, index) => (
+                                <View key={index}>
+                                    <H6>{step.html_instructions.replace(/<[^>]*>/g, '')}</H6>
+                                    <H6 style={{opacity: 0.6}}>{step.distance.text}</H6>
+                                </View>
+                            ))}
+                        </ScrollView>
                     </Container>
                 </BottomSheet>
+            );
+        } else {
+            return null;
+        }
+    };
+
+    const renderJourneyBottomSheet = () => {
+        if (!isWeb && journeyMode && isJourneyActive) {
+            return (
+                <>
+                    <ButtonContainer style={{position: 'absolute', bottom: 200, marginLeft: 'auto'}}>
+                        <TAnimatedGenericButton icon="arrow-with-circle-up" onPress={handleCameraMove}/>
+                    </ButtonContainer>
+                    <BottomSheet snapPoints={['20%', '20%']} index={0} ref={bottomSheetRef}
+                                 handleIndicatorStyle={{display: "none"}}>
+                        <Container>
+                            <H4 style={{flexDirection: 'row'}}>Arriving at {estimatedTime ? estimatedTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Loading...'}</H4>
+                            <H4>{estimatedDuration} ({estimatedDistance})</H4>
+
+                            <ButtonContainer style={{position: 'absolute', marginTop: 10, marginLeft: 10}}>
+                                <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
+                                    <AnimatedGenericButton onPress={handleCancelPress}/>
+                                </View>
+                            </ButtonContainer>
+                        </Container>
+                    </BottomSheet>
+                </>
+            );
+        } else {
+            return null;
+        }
+    };
+
+    const renderUpcomingDirectionView = () => {
+        if (!isWeb && journeyMode && isJourneyActive) {
+            const upcomingDirection = detailedSteps[currentDirectionIndex];
+
+            console.log("Upcoming Direction:", upcomingDirection);
+
+            return (
+                <View style={styles.upcomingDirectionContainer}>
+                    <H4>{upcomingDirection.html_instructions.replace(/<[^>]*>/g, "")}</H4>
+                    <H6 style={{opacity: 0.6}}>{upcomingDirection.distance.text}</H6>
+                </View>
             );
         } else {
             return null;
@@ -451,6 +684,8 @@ const MapScreen = () => {
         {renderMap()}
         {renderStationBottomSheet()}
         {renderRouteInfoBottomSheet()}
+        {renderJourneyBottomSheet()}
+        {renderUpcomingDirectionView()}
         <Modal
             animationType="slide"
             transparent={true}
@@ -519,6 +754,17 @@ const styles = StyleSheet.create({
         },
         shadowOpacity: 0.25,
         shadowRadius: 4,
+        elevation: 5,
+    },
+    upcomingDirectionContainer: {
+        position: "absolute",
+        top: 50,
+        left: 0,
+        right: 0,
+        backgroundColor: "white",
+        padding: 16,
+        margin: 16,
+        borderRadius: 10,
         elevation: 5,
     },
 });
