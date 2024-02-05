@@ -31,8 +31,7 @@ import {
 } from '../styles/accountPage';
 import {jwtDecode} from "jwt-decode";
 import {H3, H4, H5, H6} from "../styles/text";
-import {SearchButtons} from '../styles/buttons2';
-import {AnimatedGenericButton, ButtonButton} from "../styles/AnimatedIconButton";
+import {ButtonButton} from "../styles/AnimatedIconButton";
 
 
 const apiKey = process.env.REACT_NATIVE_API_KEY;
@@ -122,34 +121,47 @@ const FriendsScreen = () => {
         setSearchModalVisible(false);
     };
 
-    const searchUsers = async () => {
-        try {
-            const token = await AsyncStorage.getItem('token');
+    useEffect(() => {
+        const searchUsers = async () => {
+            try {
+                const token = await AsyncStorage.getItem('token');
+                const phone = jwtDecode(token).sub;
 
-            const phone = jwtDecode(token).sub;
-
-            const response = await axios.post(
-                `${url}/search_users`,
-                {
-                    phone_number: phone,
-                    search_term: searchTerm,
-                },
-                {
-                    headers: {
-                        'X-API-Key': apiKey,
+                const response = await axios.post(
+                    `${url}/search_users`,
+                    {
+                        phone_number: phone,
+                        search_term: searchTerm,
                     },
-                }
-            );
+                    {
+                        headers: {
+                            'X-API-Key': apiKey,
+                        },
+                    }
+                );
 
-            setSearchResults(response.data.users);
-        } catch (error) {
-            console.error('Error searching users:', error);
-        }
-    };
+                const filteredResults = response.data.users.filter(user => (
+                    !friends.some(friend => friend.friend_id === user.user_id)
+                ));
+
+                setSearchResults(filteredResults);
+            } catch (error) {
+                console.error('Error searching users:', error);
+            }
+        };
+
+        const delaySearch = setTimeout(() => {
+            if (searchTerm.length > 1) {
+                searchUsers();
+            }
+        }, 100);
+
+        return () => clearTimeout(delaySearch);
+    }, [searchTerm]);
 
     const handleSearch = async (text) => {
         setSearchTerm(text);
-        searchUsers();
+
     };
 
     const handleDeleteFriend = (friendId) => {
@@ -224,12 +236,53 @@ const FriendsScreen = () => {
             }>
                 <AccountContainer style={{minHeight: 800}}>
                     <H3 tmargin='20px' lmargin='10px' bmargin='5px'>Friends</H3>
-                    <ButtonContainer style={{position: 'absolute', marginTop: 15}}>
+                    <ButtonContainer style={{position: 'absolute', marginTop: 15, marginLeft: 10}}>
                         <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
                             <ButtonButton text="Add Friends" onPress={openSearchModal}/>
                         </View>
                     </ButtonContainer>
                     <AccountTxtWrapper>
+                        {hasRequestedFriends && (
+                            <>
+                                <H5 tmargin='10px' bmargin='10px'>Added Me</H5>
+                                <View>
+                                    {searchTerm ? (
+                                        searchResults.map(item => (
+                                            <View style={styles.friendItem} key={item.request_id}>
+                                                <H6 weight="400" bmargin='5px' style={{opacity: 0.5}}>{item.friend_name}</H6>
+                                                <View style={{zIndex: 1, marginLeft: 'auto', flexDirection: "row"}}>
+                                                    <ButtonButton text={"Accept"} color={"#6BFF91"}
+                                                                  onPress={() => decideFriend(item.request_id, 'accept')}/>
+                                                    <ButtonButton color={"#3891FA"}
+                                                                  text={"Deny"}
+                                                                  onPress={() => decideFriend(item.request_id, 'reject')}/>
+                                                </View>
+                                            </View>
+                                        ))
+                                    ) : (
+                                        requestedFriends.map(item => (
+                                            <View style={styles.friendItem} key={item.request_id}>
+                                                <H6 weight="400" bmargin='5px' style={{opacity: 0.5}}>{item.friend_name}</H6>
+                                                <View style={{zIndex: 1, marginLeft: 'auto', flexDirection: "row"}}>
+                                                    <ButtonButton text={"Accept"} color={"#6BFF91"}
+                                                                  onPress={() => decideFriend(item.request_id, 'accept')}/>
+                                                    <ButtonButton color={"#3891FA"}
+                                                                  text={"Deny"}
+                                                                  onPress={() => decideFriend(item.request_id, 'reject')}/>
+                                                </View>
+                                            </View>
+                                        ))
+                                    )}
+                                </View>
+                            </>
+                        )}
+                        <View>
+                            {friends.map(item => (
+                                <View style={styles.friendItem} key={item.friend_id}>
+                                    <H6 weight="400" bmargin='5px' style={{opacity: 0.5}}>{item.friend_name}</H6>
+                                </View>
+                            ))}
+                        </View>
                         <Modal
                             animationType="fade"
                             transparent={true}
@@ -238,10 +291,11 @@ const FriendsScreen = () => {
                         >
                             <View style={styles.modalContainer}>
                                 <ModalContent>
-                                    <H4 bmargin="20px">Add Friends</H4>
-                                    <ButtonContainer style={{position: 'absolute', marginTop: 10, marginLeft: 20}}>
+                                    <H5 tmargin="10px" bmargin="30px" style={{textAlign: 'center'}}>Add Friends</H5>
+                                    <ButtonContainer style={{position: 'absolute', marginTop: 20, marginLeft: 20}}>
                                         <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
-                                            <ButtonButton icon="cross" color="" onPress={closeSearchModal}/>
+                                            <ButtonButton icon="cross" color="#eaedea" iconColor="#b8bec2"
+                                                          onPress={closeSearchModal}/>
                                         </View>
                                     </ButtonContainer>
                                     <SearchBox
@@ -249,63 +303,26 @@ const FriendsScreen = () => {
                                         value={searchTerm}
                                         onChangeText={handleSearch}
                                     />
-                                    <H5 tmargin="40px">Results</H5>
-                                    <FlatList
-                                        data={searchTerm ? searchResults : friends}
-                                        keyExtractor={(item) => item.user_id}
-                                        renderItem={({item}) => (
-                                            <View style={styles.friendItem}>
-                                                <H6 weight="400" bmargin='5px'
-                                                    style={{opacity: 0.5}}>{item.username}</H6>
-                                                <TouchableOpacity
-                                                    onPress={() => handleMakeFriend(item.phone_number)}>
-                                                    <Text
-                                                        style={[styles.addFriendButton, {color: "#6bff91"}]}>🫂Add</Text>
-                                                </TouchableOpacity>
+                                    {searchTerm && searchResults && (
+                                        <>
+                                            <H5 tmargin="40px" bmargin="10px">Results</H5>
+                                            <View>
+                                                {searchResults.map(item => (
+                                                    <View style={styles.friendItem} key={item.user_id}>
+                                                        <H6 weight="400" bmargin='5px'
+                                                            style={{opacity: 0.5}}>{item.username}</H6>
+                                                        <View style={{zIndex: 1, marginLeft: 'auto', flexDirection: "row"}}>
+                                                            <ButtonButton text={"Add"} color={"#6BFF91"}
+                                                                          onPress={() => handleMakeFriend(item.phone_number)}/>
+                                                        </View>
+                                                    </View>
+                                                ))}
                                             </View>
-                                        )}
-                                        refreshControl={
-                                            <RefreshControl
-                                                refreshing={refreshing}
-                                                onRefresh={onRefresh}
-                                            />
-                                        }
-                                    />
+                                        </>
+                                    )}
                                 </ModalContent>
                             </View>
                         </Modal>
-                        {hasRequestedFriends && (
-                            <AccountTxtWrapper>
-                                <H5 tmargin='10px' bmargin='10px'>Added Me</H5>
-                                <FlatList
-                                    data={searchTerm ? searchResults : requestedFriends}
-                                    keyExtractor={(item) => item.friend_id}
-                                    renderItem={({item}) => (
-                                        <View style={styles.friendItem}>
-                                            <H6 weight="400" bmargin='5px'
-                                                style={{opacity: 0.5}}>{item.friend_name}</H6>
-                                            <View style={{zIndex: 1, marginLeft: 'auto', flexDirection: "row"}}>
-                                                <ButtonButton text={"Accept"} color={"#6BFF91"}
-                                                              onPress={() => decideFriend(item.request_id, 'accept')}/>
-                                                <ButtonButton color={"#3891FA"}
-                                                              text={"Deny"}
-                                                              onPress={() => decideFriend(item.request_id, 'reject')}/>
-                                            </View>
-
-                                        </View>
-                                    )}
-                                />
-                            </AccountTxtWrapper>
-                        )}
-                        <FlatList
-                            data={friends}
-                            keyExtractor={(item) => item.friend_id.toString()} // Assuming friend_id is a number
-                            renderItem={({item}) => (
-                                <View style={styles.friendItem} key={item.friend_id}>
-                                    <H6 weight="400" bmargin='5px' style={{opacity: 0.5}}>{item.friend_name}</H6>
-                                </View>
-                            )}
-                        />
                     </AccountTxtWrapper>
                 </AccountContainer>
             </WrapperScroll>
@@ -339,22 +356,6 @@ const styles = StyleSheet.create({
         borderTopWidth: 1,
         borderTopColor: 'lightgray',
         paddingVertical: 8,
-    },
-    searchButton: {
-        flex: 1,
-        marginRight: 5,
-        backgroundColor: '#6BFF91',
-        padding: 10,
-        borderRadius: 5,
-        alignItems: 'center',
-    },
-    closeButton: {
-        flex: 1,
-        marginLeft: 5,
-        backgroundColor: 'red',
-        padding: 10,
-        borderRadius: 5,
-        alignItems: 'center',
     },
 });
 

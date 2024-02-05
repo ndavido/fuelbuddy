@@ -12,6 +12,7 @@ export const Main = styled.View`
 export const Wrapper = styled.View`
   height: 100%;
   width: 100%;
+  top: 80px;
   margin: auto;
 `;
 
@@ -266,14 +267,14 @@ export const AccountContainer = styled.View`
   background-color: #F7F7F7;
   position: relative;
   display: inline-block;
-  padding-left: 10px;
-  padding-right: 10px;
+  padding-left: 20px;
+  padding-right: 20px;
   padding-bottom: 70px;
 `;
 
 /* Modals */
 export const ModalContent = styled.View`
-  background-color: #F7F7F7;
+  background-color: white;
     padding: 20px;
     border-radius: 20px;
     margin: 50px;
@@ -285,7 +286,7 @@ export const ModalContent = styled.View`
 const SearchContainer = styled.View`
   flex-direction: row;
   align-items: center;
-  background-color: #fff;
+  background-color: #F7F7F7;
   border-radius: 10px;
   padding: 8px;
 `;

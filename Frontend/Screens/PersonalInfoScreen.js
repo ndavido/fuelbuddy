@@ -20,7 +20,7 @@ import MainLogo from '../styles/mainLogo';
 import {MenuButton} from "../styles/accountButton";
 import {H3, H4, H5, H6} from "../styles/text";
 import {ButtonContainer, InputTxt, Main} from "../styles/styles";
-import {AnimatedGenericButton, ButtonButton} from "../styles/AnimatedIconButton";
+import {ButtonButton} from "../styles/AnimatedIconButton";
 
 const url = process.env.REACT_APP_BACKEND_URL
 
