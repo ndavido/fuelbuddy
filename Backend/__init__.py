@@ -514,7 +514,11 @@ def get_deductions():
         if budget_history is None:
             return jsonify({"error": "No budget history found for the user"}), 404
 
-        deductions = [deduction.amount for deduction in budget_history.deductions]
+        deductions = [{
+            "amount": deduction.amount,
+            "updated_at": deduction.updated_at.strftime("%Y-%m-%d %H:%M:%S") if deduction.updated_at else None
+        } for deduction in budget_history.deductions]
+
         return jsonify({"deductions": deductions})
 
     except DoesNotExist:
