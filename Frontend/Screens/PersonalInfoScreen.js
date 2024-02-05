@@ -9,11 +9,7 @@ import * as Updates from 'expo-updates';
 // Styling
 import {
     AccountWrapper,
-    AccountInner,
     AccountContent,
-    AccountTopInfo,
-    AccountBottomInfo,
-    AccountTitle,
     AccountRegularInfo,
     AccountTxt,
     AccountTxtWrapper,
@@ -21,11 +17,10 @@ import {
     DeveloperTick
 } from '../styles/accountPage';
 import MainLogo from '../styles/mainLogo';
-import AccountImg from '../styles/accountImg';
 import {MenuButton} from "../styles/accountButton";
 import {H3, H4, H5, H6} from "../styles/text";
 import {ButtonContainer, InputTxt, Main} from "../styles/styles";
-import {AnimatedGenericButton, TAnimatedGenericButton} from "../styles/AnimatedIconButton";
+import {AnimatedGenericButton, ButtonButton} from "../styles/AnimatedIconButton";
 
 const url = process.env.REACT_APP_BACKEND_URL
 
@@ -124,11 +119,11 @@ const AccountScreen = () => {
                 <AccountRegularInfo>
                     <AccountContent>
                         <AccountTxtWrapper>
-                            <H3 tmargin='20px' bmargin='5px'>Personal Information</H3>
+                            <H3 tmargin='20px' bmargin='5px'>Personal Info</H3>
                             <ButtonContainer style={{position: 'absolute'}}>
                                 <View style={{zIndex: 1, marginLeft: 'auto', flexDirection: "row"}}>
-                                    {editMode ? (<TAnimatedGenericButton text={"Save"} color={"#6BFF91"} onPress={handleSave}/>) : null}
-                                    <TAnimatedGenericButton color={editMode ? "red" : "#3891FA"} text={editMode ? "Cancel" : "Edit"} onPress={handleEditToggle}/>
+                                    {editMode ? (<ButtonButton text={"Save"} color={"#6BFF91"} onPress={handleSave}/>) : null}
+                                    <ButtonButton color={editMode ? "red" : "#3891FA"} text={editMode ? "Cancel" : "Edit"} onPress={handleEditToggle}/>
                                 </View>
                             </ButtonContainer>
 

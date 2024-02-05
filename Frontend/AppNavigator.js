@@ -235,12 +235,12 @@ const AppNavigator = () => {
                                 } else if (route.name === 'Friends') {
                                     iconName = 'user-friends';
                                 } else if (route.name === 'Account') {
-                                    iconName = 'user-alt';
+                                    iconName = 'user-astronaut';
                                 }
 
                                 let iconColor = focused ? '#6BFF91' : '#515151';
 
-                                return <FontAwesome5 name={iconName} size={iconSize} color={iconColor} style={iconStyle}/>; // Use FontAwesome5 from Expo
+                                return <FontAwesome5 name={iconName} size={iconSize} color={iconColor} style={iconStyle}/>;
                             },
                         })}
                     >

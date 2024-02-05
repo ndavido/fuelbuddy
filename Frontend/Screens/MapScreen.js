@@ -31,7 +31,7 @@ if (!isWeb) {
 import {H2, H3, H4, H5, H6, H7, H8} from "../styles/text";
 import {Container, ButtonContainer, CardContainer, Card} from "../styles/styles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {AnimatedGenericButton, AnimatedHeartButton, TAnimatedGenericButton} from "../styles/AnimatedIconButton";
+import {AnimatedGenericButton, AnimatedHeartButton, ButtonButton} from "../styles/AnimatedIconButton";
 import CustomMarker from "../Components/customMarker";
 import axios from "axios";
 
@@ -557,7 +557,7 @@ const MapScreen = () => {
                             <H3 weight='600' style={{lineHeight: 24}}>{selectedStation.name}</H3>
                             <H6 weight='400' style={{opacity: 0.6, lineHeight: 16}}>Fuel Station</H6>
                             <ButtonContainer>
-                                <TAnimatedGenericButton icon="location-pin" text="Route To Station"
+                                <ButtonButton icon="location-pin" text="Route To Station"
                                                         onPress={handleRoutePress}/>
                                 <View style={{flexDirection: 'row'}}>
                                     <AnimatedHeartButton
@@ -614,9 +614,9 @@ const MapScreen = () => {
                         <H4 style={{flexDirection: 'row'}}>{estimatedDuration} ({estimatedDistance})</H4>
                         <H6>Estimated Price: €</H6>
                         <ButtonContainer>
-                            <TAnimatedGenericButton icon="arrow-with-circle-up" text="Start Journey"
+                            <ButtonButton icon="arrow-with-circle-up" text="Start Journey"
                                                     onPress={handleJourney}/>
-                            <TAnimatedGenericButton style={{float: "left"}} icon="cross" text="Exit"
+                            <ButtonButton style={{float: "left"}} icon="cross" text="Exit"
                                                     onPress={handleCancelPress}/>
                         </ButtonContainer>
                         <H4 style={{flexDirection: 'row'}}>Directions</H4>
@@ -641,7 +641,7 @@ const MapScreen = () => {
             return (
                 <>
                     <ButtonContainer style={{position: 'absolute', bottom: 200, marginLeft: 'auto'}}>
-                        <TAnimatedGenericButton icon="arrow-with-circle-up" onPress={handleCameraMove}/>
+                        <ButtonButton icon="arrow-with-circle-up" onPress={handleCameraMove}/>
                     </ButtonContainer>
                     <BottomSheet snapPoints={['15%', '15%']} index={0} ref={bottomSheetRef}
                                  handleIndicatorStyle={{display: "none"}}>
@@ -651,7 +651,7 @@ const MapScreen = () => {
 
                             <ButtonContainer style={{position: 'absolute', marginTop: 10, marginLeft: 10}}>
                                 <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
-                                    <TAnimatedGenericButton icon="cross" onPress={handleCancelPress}/>
+                                    <ButtonButton icon="cross" onPress={handleCancelPress}/>
                                 </View>
                             </ButtonContainer>
                         </Container>

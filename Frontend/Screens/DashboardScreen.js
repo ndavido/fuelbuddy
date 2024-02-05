@@ -9,14 +9,13 @@ import {jwtDecode} from "jwt-decode";
 import {
     Main,
     WrapperScroll,
-    Content,
     DashboardContainer,
     TitleContainer,
     CardOverlap, CardContainer, ButtonContainer, Card
 } from '../styles/styles.js';
 import MainLogo from '../styles/mainLogo';
 import {H2, H3, H4, H5, H6, H7, H8} from "../styles/text";
-import {AnimatedGenericButton, AnimatedHeartButton, TAnimatedGenericButton} from "../styles/AnimatedIconButton";
+import {ButtonButton} from "../styles/AnimatedIconButton";
 
 const apiKey = process.env.REACT_NATIVE_API_KEY;
 const url = process.env.REACT_APP_BACKEND_URL
@@ -64,7 +63,6 @@ const DashboardScreen = () => {
             }
         };
 
-        fetchNews();
         fetchUserInfo();
     }, []);
 
@@ -287,7 +285,7 @@ const DashboardScreen = () => {
                 />
             }>
                 <TitleContainer>
-                    <H3 weight='500' tmargin='50px' lmargin='20px' bmargin='10px'>Hey, {userInfo.username}</H3>
+                    <H3 weight='500' tmargin='30px' lmargin='20px' bmargin='10px'>Hey, {userInfo.username}</H3>
                 </TitleContainer>
                 <DashboardContainer>
                     <CardOverlap>
@@ -378,9 +376,9 @@ const DashboardScreen = () => {
                             <ButtonContainer style={{position: 'absolute', marginTop: 10, marginLeft: 10}}>
                                 <View style={{ zIndex: 1, marginLeft: 'auto', marginRight: 0 }}>
                                   {userInfo.weekly_budget ? (
-                                    <TAnimatedGenericButton icon='plus' color='#6BFF91' onPress={handleUpdateButtonPress} />
+                                    <ButtonButton icon='plus' color='#6BFF91' onPress={handleUpdateButtonPress} />
                                   ) : (
-                                    <TAnimatedGenericButton icon='plus' text='add' onPress={handleUpdateButtonPress} />
+                                    <ButtonButton icon='plus' text='add' onPress={handleUpdateButtonPress} />
                                   )}
                                 </View>
                             </ButtonContainer>
@@ -432,7 +430,7 @@ const DashboardScreen = () => {
                                 <H6 style={{opacity: 0.5}}>18Km/l Average</H6>
                             </View>
                         </Card>
-                        <Card>
+                        {/*<Card>
                             <H8 style={{opacity: 0.5}}>News</H8>
                             <H5>Trending Stories</H5>
                             {loadingNews ? (
@@ -458,7 +456,7 @@ const DashboardScreen = () => {
                                     ))}
                                 </View>
                             )}
-                        </Card>
+                        </Card>*/}
                     </CardOverlap>
                 </DashboardContainer>
                 <Modal

@@ -17,9 +17,7 @@ const LogoImg = styled.Image`
 
 const AccountImg = () => (
   <LogoContainer>
-
-      <LogoImg source={require('../assets/fuelbuddyDropWhite.png') }/>
-
+      <LogoImg source={require('../assets/testAccountImg.jpg') }/>
   </LogoContainer>
 );
 export default AccountImg;

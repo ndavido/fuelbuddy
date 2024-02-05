@@ -17,16 +17,8 @@ const ButtonText2 = styled.Text`
   color: ${props => props.txtColor};
 `;
 
-const PressableButton2 = ({ onPress, bgColor, txtColor, title }) => (
-  <ButtonContainer2 onPress={onPress} bgColor={bgColor}>
-    <ButtonText2 txtColor={txtColor}>{title}</ButtonText2>
-  </ButtonContainer2>
-);
-
 export const SearchButtons = ({ onPress, bgColor, txtColor, title }) => (
   <FSButtonContainer onPress={onPress} bgColor={bgColor}>
     <ButtonText2 txtColor={txtColor}>{title}</ButtonText2>
   </FSButtonContainer>
 );
-
-export default PressableButton2;

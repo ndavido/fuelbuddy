@@ -16,18 +16,23 @@ import {useNavigation} from '@react-navigation/native';
 
 import MainLogo from '../styles/mainLogo';
 import {MenuButton} from '../styles/accountButton';
-import {ButtonContainer, FContainer, InputTxt, Main, FSButtonContainer, AddFriendButton} from '../styles/styles';
 import {
-    AccountWrapper,
-    AccountContent,
+    ButtonContainer,
+    FContainer,
+    InputTxt,
+    Main,
+    FSButtonContainer,
+    AddFriendButton,
+    WrapperScroll, AccountContainer,
+    ModalContent, SearchBox
+} from '../styles/styles';
+import {
     AccountTxtWrapper,
-    AccountRegularInfo,
-    AccountTxt,
 } from '../styles/accountPage';
 import {jwtDecode} from "jwt-decode";
-import {H3, H5, H6} from "../styles/text";
+import {H3, H4, H5, H6} from "../styles/text";
 import {SearchButtons} from '../styles/buttons2';
-import {AnimatedGenericButton, TAnimatedGenericButton} from "../styles/AnimatedIconButton";
+import {AnimatedGenericButton, ButtonButton} from "../styles/AnimatedIconButton";
 
 
 const apiKey = process.env.REACT_NATIVE_API_KEY;
@@ -142,7 +147,8 @@ const FriendsScreen = () => {
         }
     };
 
-    const handleSearch = async () => {
+    const handleSearch = async (text) => {
+        setSearchTerm(text);
         searchUsers();
     };
 
@@ -211,118 +217,98 @@ const FriendsScreen = () => {
     return (
         <Main>
             <MainLogo PageTxt='Friends'/>
-            <AccountWrapper>
-                <AccountRegularInfo refreshControl={
-                    <RefreshControl
-                        refreshing={refreshing}
-                        onRefresh={onRefresh}
-                    />
-                }>
-                    <AccountContent>
-                        <H3 tmargin='20px' lmargin='20px' bmargin='5px'>Friends</H3>
-                        <ButtonContainer style={{position: 'absolute'}}>
-                            <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 10}}>
-                                <TAnimatedGenericButton text="Add Friends" onPress={openSearchModal}/>
-                            </View>
-                        </ButtonContainer>
-                        <AccountTxtWrapper>
-
-                            <Modal
-                                animationType="fade"
-                                transparent={true}
-                                visible={isSearchModalVisible}
-                                onRequestClose={closeSearchModal}
-                            >
-                                <View style={styles.modalContainer}>
-                                    <View style={styles.modalContent}>
-                                        <Text style={styles.modalTitle}>🔍Search Friends</Text>
-                                        <TextInput
-                                            style={styles.searchInput}
-                                            placeholder="Search Friends"
-                                            value={searchTerm}
-                                            onChangeText={(text) => setSearchTerm(text)}
-                                        />
-                                        <FContainer>
-                                            <FSButtonContainer
-                                                style={[styles.FSButtonContainer, {width: '60%'}]}
-                                            >
-                                                <SearchButtons
-                                                    onPress={handleSearch}
-                                                    title='Search'
-                                                    bgColor='#6bff91'
-                                                    txtColor='white'/>
-                                            </FSButtonContainer>
-                                            <FSButtonContainer
-                                                style={[styles.FSButtonContainer, {width: '50%'}]}
-                                            >
-                                                <SearchButtons
-                                                    onPress={closeSearchModal}
-                                                    title='Close'
-                                                    bgColor='red'
-                                                    txtColor='white'
-                                                />
-                                            </FSButtonContainer>
-                                        </FContainer>
-                                        <FlatList
-                                            data={searchTerm ? searchResults : friends}
-                                            keyExtractor={(item) => item.user_id}
-                                            renderItem={({item}) => (
-                                                <View style={styles.friendItem}>
-                                                    <H6 weight="400" bmargin='5px'
-                                                        style={{opacity: 0.5}}>{item.username}</H6>
-                                                    <TouchableOpacity
-                                                        onPress={() => handleMakeFriend(item.phone_number)}>
-                                                        <Text
-                                                            style={[styles.addFriendButton, {color: "#6bff91"}]}>🫂Add</Text>
-                                                    </TouchableOpacity>
-                                                </View>
-                                            )}
-                                            refreshControl={
-                                                <RefreshControl
-                                                    refreshing={refreshing}
-                                                    onRefresh={onRefresh}
-                                                />
-                                            }
-                                        />
-                                    </View>
-                                </View>
-                            </Modal>
-                            {hasRequestedFriends && (
-                                <AccountTxtWrapper>
-                                    <H5 tmargin='10px' bmargin='10px'>Added Me</H5>
+            <WrapperScroll refreshControl={
+                <RefreshControl
+                    refreshing={refreshing}
+                />
+            }>
+                <AccountContainer style={{minHeight: 800}}>
+                    <H3 tmargin='20px' lmargin='10px' bmargin='5px'>Friends</H3>
+                    <ButtonContainer style={{position: 'absolute', marginTop: 15}}>
+                        <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
+                            <ButtonButton text="Add Friends" onPress={openSearchModal}/>
+                        </View>
+                    </ButtonContainer>
+                    <AccountTxtWrapper>
+                        <Modal
+                            animationType="fade"
+                            transparent={true}
+                            visible={isSearchModalVisible}
+                            onRequestClose={closeSearchModal}
+                        >
+                            <View style={styles.modalContainer}>
+                                <ModalContent>
+                                    <H4 bmargin="20px">Add Friends</H4>
+                                    <ButtonContainer style={{position: 'absolute', marginTop: 10, marginLeft: 20}}>
+                                        <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
+                                            <ButtonButton icon="cross" color="" onPress={closeSearchModal}/>
+                                        </View>
+                                    </ButtonContainer>
+                                    <SearchBox
+                                        placeholder="Search Friends"
+                                        value={searchTerm}
+                                        onChangeText={handleSearch}
+                                    />
+                                    <H5 tmargin="40px">Results</H5>
                                     <FlatList
-                                        data={searchTerm ? searchResults : requestedFriends}
-                                        keyExtractor={(item) => item.friend_id}
+                                        data={searchTerm ? searchResults : friends}
+                                        keyExtractor={(item) => item.user_id}
                                         renderItem={({item}) => (
                                             <View style={styles.friendItem}>
                                                 <H6 weight="400" bmargin='5px'
-                                                    style={{opacity: 0.5}}>{item.friend_name}</H6>
-                                                <View style={{zIndex: 1, marginLeft: 'auto', flexDirection: "row"}}>
-                                                    <TAnimatedGenericButton text={"Accept"} color={"#6BFF91"}
-                                                                            onPress={() => decideFriend(item.request_id, 'accept')}/>
-                                                    <TAnimatedGenericButton color={"#3891FA"}
-                                                                            text={"Deny"}
-                                                                            onPress={() => decideFriend(item.request_id, 'reject')}/>
-                                                </View>
-
+                                                    style={{opacity: 0.5}}>{item.username}</H6>
+                                                <TouchableOpacity
+                                                    onPress={() => handleMakeFriend(item.phone_number)}>
+                                                    <Text
+                                                        style={[styles.addFriendButton, {color: "#6bff91"}]}>🫂Add</Text>
+                                                </TouchableOpacity>
                                             </View>
-                                            )}
-                                        />
-                                </AccountTxtWrapper>
-                                )}
-                            <FlatList
-                                data={friends}
-                                keyExtractor={(item) => item.friend_id.toString()} // Assuming friend_id is a number
-                                renderItem={({item}) => (
-                                    <View style={styles.friendItem} key={item.friend_id}>
-                                        <H6 weight="400" bmargin='5px' style={{opacity: 0.5}}>{item.friend_name}</H6>
-                                    </View>
-                                )}
-                            />
-                        </AccountTxtWrapper>
-                    </AccountContent>
-                </AccountRegularInfo>
-            </AccountWrapper>
+                                        )}
+                                        refreshControl={
+                                            <RefreshControl
+                                                refreshing={refreshing}
+                                                onRefresh={onRefresh}
+                                            />
+                                        }
+                                    />
+                                </ModalContent>
+                            </View>
+                        </Modal>
+                        {hasRequestedFriends && (
+                            <AccountTxtWrapper>
+                                <H5 tmargin='10px' bmargin='10px'>Added Me</H5>
+                                <FlatList
+                                    data={searchTerm ? searchResults : requestedFriends}
+                                    keyExtractor={(item) => item.friend_id}
+                                    renderItem={({item}) => (
+                                        <View style={styles.friendItem}>
+                                            <H6 weight="400" bmargin='5px'
+                                                style={{opacity: 0.5}}>{item.friend_name}</H6>
+                                            <View style={{zIndex: 1, marginLeft: 'auto', flexDirection: "row"}}>
+                                                <ButtonButton text={"Accept"} color={"#6BFF91"}
+                                                              onPress={() => decideFriend(item.request_id, 'accept')}/>
+                                                <ButtonButton color={"#3891FA"}
+                                                              text={"Deny"}
+                                                              onPress={() => decideFriend(item.request_id, 'reject')}/>
+                                            </View>
+
+                                        </View>
+                                    )}
+                                />
+                            </AccountTxtWrapper>
+                        )}
+                        <FlatList
+                            data={friends}
+                            keyExtractor={(item) => item.friend_id.toString()} // Assuming friend_id is a number
+                            renderItem={({item}) => (
+                                <View style={styles.friendItem} key={item.friend_id}>
+                                    <H6 weight="400" bmargin='5px' style={{opacity: 0.5}}>{item.friend_name}</H6>
+                                </View>
+                            )}
+                        />
+                    </AccountTxtWrapper>
+                </AccountContainer>
+            </WrapperScroll>
         </Main>
     );
 };
@@ -332,14 +318,6 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-    },
-    modalContent: {
-        backgroundColor: 'white',
-        padding: 20,
-        borderRadius: 10,
-        elevation: 5,
-        height: 400,
-        width: 250,
     },
     modalTitle: {
         fontSize: 18,

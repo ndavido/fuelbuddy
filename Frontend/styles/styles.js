@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from "styled-components/native";
+import {FontAwesome5} from "@expo/vector-icons";
 
 /* Main Styling */
 export const Main = styled.View`
@@ -17,7 +18,7 @@ export const Wrapper = styled.View`
 export const WrapperScroll = styled.ScrollView`
   height: 100%;
   width: 100%;
-  top: 60px;
+  top: 80px;
   margin: auto;
 `;
 
@@ -49,7 +50,7 @@ export const ButtonDiv = styled.View`
 
 export const TitleContainer = styled.View`
   position: relative;
-  height: 150px;
+  height: 130px;
   width: 100%;
 `;
 
@@ -208,6 +209,7 @@ export const Card = styled.View`
   flex: 1;
   border-radius: 8px;
   padding: 10px;
+  box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);
   margin: 10px;
 `;
 
@@ -244,15 +246,67 @@ export const AddFriendButton = styled.Text`
 /* Account Screen */
 export const TopInfo = styled.View`
   position: relative;
-  height: 260px;
-  top: 20px;
+  height: 220px;
+  top: 10px;
   width: 100%;
+`;
+
+export const TopDesign = styled.View`
+  position: absolute;
+  background-color: #F7F7F7;
+  height: 150px;
+  bottom: 0px;
+  width: 100%;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  z-index: 0;
 `;
 
 export const AccountContainer = styled.View`
   background-color: #F7F7F7;
   position: relative;
   display: inline-block;
-  padding-bottom: 80px;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-bottom: 70px;
 `;
 
+/* Modals */
+export const ModalContent = styled.View`
+  background-color: #F7F7F7;
+    padding: 20px;
+    border-radius: 20px;
+    margin: 50px;
+    min-width: 350px;
+    height: 400px;
+    border: 1px solid #ddd;
+`;
+
+const SearchContainer = styled.View`
+  flex-direction: row;
+  align-items: center;
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 8px;
+`;
+
+const SearchInput = styled.TextInput`
+  flex: 1;
+  margin-left: 8px;
+  font-size: 16px;
+  color: #333;
+`;
+
+export const SearchBox = ({ placeholder, onChangeText, value }) => {
+  return (
+    <SearchContainer>
+      <FontAwesome5 name="search" size={18} color="#b8bec2" />
+      <SearchInput
+        placeholder={placeholder}
+        placeholderTextColor="#888"
+        onChangeText={onChangeText}
+        value={value}
+      />
+    </SearchContainer>
+  );
+};
