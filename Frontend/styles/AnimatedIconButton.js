@@ -117,7 +117,7 @@ const applyTextColor = props => {
 
 const applyTextMargin = props => {
     if (props.txtMargin) {
-        return `margin-left: ${props.txtMargin}; opacity: 0.5;`;
+        return `margin-left: ${props.txtMargin}; opacity: 0.6;`;
     } else {
         return `margin-left: 5px;`;
     }
