@@ -35,12 +35,15 @@ const DashboardScreen = () => {
 
     const [newWeeklyBudgetInput, setNewWeeklyBudgetInput] = useState('');
     const [isModalVisible, setIsModalVisible] = useState(false);
+    const [isDeductionModalVisible, setIsDeductionModalVisible] = useState(false);
 
     const [weeklyBudget, setWeeklyBudget] = useState(false);
 
     const [lineData, setLineData] = useState([]);
     const [barData, setBarData] = useState([]);
     const [pieData, setPieData] = useState([]);
+
+    const [newDeductionInput, setNewDeductionInput] = useState('');
 
     const [cumulativeValue, setCumulativeValue] = useState(0);
 
@@ -172,61 +175,114 @@ const DashboardScreen = () => {
     };
 
     const collectDashboardInfo = async () => {
+        try {
+            setWeeklyBudget(userInfo.weekly_budget);
 
-        setWeeklyBudget(userInfo.weekly_budget);
+            const deductionsResponse = await axios.post(`${url}/get_deductions`, {username: userInfo.username}, {
+                headers: {
+                    'X-API-Key': apiKey,
+                },
+            });
 
-        const deductionsResponse = await axios.post(`${url}/get_deductions`, {username: userInfo.username}, {
-            headers: {
-                'X-API-Key': apiKey,
-            },
-        });
+            const deductions = deductionsResponse.data.deductions || [];
+            console.log('Deductions:', deductions);
 
-        const deductions = deductionsResponse.data.deductions;
-        console.log('Deductions:', deductions);
+            let cumulativeValue = 0;
 
-        let cumulativeValue = 0;
+            const lineData = new Array(7).fill(0).map((_, index) => {
+                if (index < deductions.length) {
+                    cumulativeValue += parseFloat(deductions[index].amount);
+                }
+                return {value: cumulativeValue};
+            });
 
-        const lineData = new Array(7).fill(0).map((_, index) => {
-            if (index < deductions.length) {
-                cumulativeValue += parseFloat(deductions[index].amount);
+            setLineData(lineData);
+            setCumulativeValue(cumulativeValue);
+
+            console.log(lineData);
+
+            console.log(weeklyBudget);
+
+            if (typeof userInfo.weekly_budget !== 'number') {
+                const pieData = [
+                    {value: 0, color: '#6BFF91'},
+                    {value: 1, color: '#F7F7F7'}
+                ];
+                const barData = [
+                    {value: 0},
+                    {value: 0},
+                    {value: 0},
+                ];
+                setBarData(barData);
+                setPieData(pieData);
+            } else {
+                const pieData = [
+                    {value: cumulativeValue, color: '#6BFF91'},
+                    {value: userInfo.weekly_budget - cumulativeValue, color: '#F7F7F7'}
+                ];
+                const barData = [
+                    {value: 10},
+                    {value: 15},
+                    {value: 10},
+                ];
+                setBarData(barData);
+                setPieData(pieData);
             }
-            return {value: cumulativeValue};
-        });
-
-        setLineData(lineData);
-        setCumulativeValue(cumulativeValue);
-
-        console.log(lineData)
-
-        console.log(weeklyBudget)
-
-        if (!userInfo.weekly_budget) {
-            const pieData = [
-                {value: 0, color: '#6BFF91'},
-                {value: 1, color: '#F7F7F7'}
-            ];
-            const barData = [
-                {value: 0},
-                {value: 0},
-                {value: 0},
-            ];
-            setBarData(barData);
-            setPieData(pieData);
-        } else {
-            const pieData = [
-                {value: cumulativeValue, color: '#6BFF91'},
-                {value: userInfo.weekly_budget - cumulativeValue, color: '#F7F7F7'}
-            ];
-            const barData = [
-                {value: 10},
-                {value: 15},
-                {value: 10},
-            ];
-            setBarData(barData);
-            setPieData(pieData);
+        } catch (error) {
+            console.log('Error collecting dashboard information:');
         }
     };
 
+    const handleAddDeductionPress = () => {
+        setIsDeductionModalVisible(true);
+    };
+
+    const handleDeductionModalSubmit = () => {
+        if (!newDeductionInput.trim()) {
+            console.error('Please enter a valid deduction amount');
+            return;
+        }
+
+        addDeduction(parseFloat(newDeductionInput));
+
+        setIsDeductionModalVisible(false);
+        setNewDeductionInput('');
+    };
+
+    const handleDeductionModalCancel = () => {
+        setIsDeductionModalVisible(false);
+        setNewDeductionInput('');
+    };
+
+    const addDeduction = async (newDeduction) => {
+        try {
+            const userDataJson = await AsyncStorage.getItem('userData');
+            const userInfo = JSON.parse(userDataJson);
+
+            const apiUrl = `${url}/update_budget`;
+
+            const requestBody = {
+                username: userInfo.username,
+                deductions: newDeduction,
+            };
+
+            const response = await axios.post(apiUrl, requestBody, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-API-Key': apiKey,
+                },
+            });
+
+            if (response.data.message) {
+                console.log(response.data.message);
+                await onRefresh();
+            } else {
+                console.error('Failed to add deduction:', response.data.error);
+            }
+        } catch (error) {
+            console.error('Error adding deduction:', error);
+        }
+    };
 
     const updateWeeklyBudget = async (newWeeklyBudget) => {
         try {
@@ -389,7 +445,7 @@ const DashboardScreen = () => {
                             <ButtonContainer style={{position: 'absolute', marginTop: 10, marginLeft: 10}}>
                                 <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
                                     {userInfo.weekly_budget ? (
-                                        <ButtonButton icon='plus' color='#6BFF91' onPress={handleUpdateButtonPress}/>
+                                        <ButtonButton icon='plus' color='#6BFF91' onPress={handleAddDeductionPress}/>
                                     ) : (
                                         <ButtonButton icon='plus' text='add' onPress={handleUpdateButtonPress}/>
                                     )}
@@ -496,6 +552,34 @@ const DashboardScreen = () => {
                             <ButtonContainer style={{width: "auto", position: "relative"}}>
                                 <ButtonButton icon="plus" color="#6BFF91" text="Add Budget"
                                               onPress={handleModalSubmit}/>
+                            </ButtonContainer>
+                        </ModalContent>
+                    </View>
+                </Modal>
+                <Modal
+                    visible={isDeductionModalVisible}
+                    onRequestClose={() => setIsDeductionModalVisible(false)}
+                    animationType="slide"
+                    transparent={true}
+                >
+                    <View style={styles.modalContainer}>
+                        <ModalContent>
+                            <H5 tmargin="10px" bmargin="30px" style={{textAlign: 'center'}}>Add Deduction</H5>
+                            <ButtonContainer style={{position: 'absolute', marginTop: 20, marginLeft: 20}}>
+                                <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
+                                    <ButtonButton icon="cross" color="#eaedea" iconColor="#b8bec2"
+                                                  onPress={handleDeductionModalCancel}/>
+                                </View>
+                            </ButtonContainer>
+                            <InputTxt
+                                value={newDeductionInput}
+                                onChangeText={(text) => setNewDeductionInput(text)}
+                                keyboardType="numeric"
+                                placeholder="Enter deduction amount"
+                            />
+                            <ButtonContainer style={{width: "auto", position: "relative"}}>
+                                <ButtonButton icon="plus" color="#6BFF91" text="Add Deduction"
+                                              onPress={handleDeductionModalSubmit}/>
                             </ButtonContainer>
                         </ModalContent>
                     </View>
