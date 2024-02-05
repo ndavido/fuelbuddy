@@ -24,20 +24,20 @@ look_back = 10
 X_train = X_train.reshape(-1, look_back, 1)
 X_test = X_test.reshape(-1, look_back, 1)
 
-# Adjusted model architecture
+# RNN model architecture
 from tensorflow.keras.layers import SimpleRNN
 
 model = Sequential()
-model.add(SimpleRNN(64, return_sequences=True, activation='relu', kernel_regularizer=l2(0.01)))
+model.add(SimpleRNN(64, return_sequences=True, activation='relu', kernel_regularizer=l2(0.01), input_shape=(look_back, 1)))
 model.add(Dropout(0.2))
-model.add(SimpleRNN(32, activation='relu'))
+model.add(SimpleRNN(32, activation='relu', kernel_regularizer=l2(0.01)))
 model.add(Dropout(0.2))
 model.add(Dense(1))
-model.compile(optimizer=Adam(learning_rate=0.001), loss='mean_squared_error')
+model.compile(optimizer=Adam(learning_rate=0.01), loss='mean_squared_error')
 
 # Train the model
 early_stopping = EarlyStopping(monitor='val_loss', patience=10, mode='min')
-history = model.fit(X_train, y_train, epochs=100, batch_size=32, validation_split=0.2, callbacks=[early_stopping], verbose=1)
+history = model.fit(X_train, y_train, epochs=50, batch_size=32, validation_split=0.2, callbacks=[early_stopping], verbose=1)
 
 # Plot the loss
 import matplotlib.pyplot as plt

@@ -49,7 +49,7 @@ class BudgetHistory(Document):
     deductions = ListField(EmbeddedDocumentField(Deduction))
     change_date = DateTimeField(default=datetime.now)
     meta = {
-        'collection': 'BudgetHistoryTest'
+        'collection': 'BudgetHistory'
     }
 
 
