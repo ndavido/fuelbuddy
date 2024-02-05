@@ -501,7 +501,26 @@ def update_budget():
     except Exception as e:
         return handle_api_error(e)
 
+@app.route('/get_deductions', methods=['POST'])
+@require_api_key
+def get_deductions():
+    try:
+        data = request.get_json()
+        username = data.get('username')
 
+        user = Users.objects.get(username=username)
+        budget_history = BudgetHistory.objects(user=user).first()
+
+        if budget_history is None:
+            return jsonify({"error": "No budget history found for the user"}), 404
+
+        deductions = [deduction.amount for deduction in budget_history.deductions]
+        return jsonify({"deductions": deductions})
+
+    except DoesNotExist:
+        return jsonify({"error": "User not found"}), 404
+    except Exception as e:
+        return handle_api_error(e)
 '''
 Gas Station Routes
 '''
