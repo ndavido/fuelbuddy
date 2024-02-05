@@ -210,7 +210,7 @@ export const Card = styled.View`
   flex: 1;
   border-radius: 8px;
   padding: 10px;
-  box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);
+  
   margin: 10px;
 `;
 
@@ -267,8 +267,8 @@ export const AccountContainer = styled.View`
   background-color: #F7F7F7;
   position: relative;
   display: inline-block;
-  padding-left: 20px;
-  padding-right: 20px;
+  padding-left: 10px;
+  padding-right: 10px;
   padding-bottom: 70px;
 `;
 
@@ -279,7 +279,7 @@ export const ModalContent = styled.View`
     border-radius: 20px;
     margin: 50px;
     min-width: 350px;
-    height: 400px;
+    min-height: 200px;
     border: 1px solid #ddd;
 `;
 

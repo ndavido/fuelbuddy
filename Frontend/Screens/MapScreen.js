@@ -29,7 +29,7 @@ if (!isWeb) {
 
 // Styling
 import {H2, H3, H4, H5, H6, H7, H8} from "../styles/text";
-import {Container, ButtonContainer, CardContainer, Card} from "../styles/styles";
+import {Container, ButtonContainer, CardContainer, Card, ModalContent, InputTxt} from "../styles/styles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {AnimatedGenericButton, AnimatedHeartButton, ButtonButton} from "../styles/AnimatedIconButton";
 import CustomMarker from "../Components/customMarker";
@@ -379,9 +379,9 @@ const MapScreen = () => {
             const [durationValue, durationUnit] = directionsInfo.duration.text.split(" ");
 
             if (durationValue && durationUnit) {
-              const newEstimatedTime = new Date(currentTime.getTime() + parseInt(durationValue, 10) * 60000);
-              setEstimatedTime(newEstimatedTime);
-              console.log("New Estimated Time:", newEstimatedTime);
+                const newEstimatedTime = new Date(currentTime.getTime() + parseInt(durationValue, 10) * 60000);
+                setEstimatedTime(newEstimatedTime);
+                console.log("New Estimated Time:", newEstimatedTime);
             }
 
             mapRef.current.fitToCoordinates([origin, destination], {
@@ -558,7 +558,7 @@ const MapScreen = () => {
                             <H6 weight='400' style={{opacity: 0.6, lineHeight: 16}}>Fuel Station</H6>
                             <ButtonContainer>
                                 <ButtonButton icon="location-pin" text="Route To Station"
-                                                        onPress={handleRoutePress}/>
+                                              onPress={handleRoutePress}/>
                                 <View style={{flexDirection: 'row'}}>
                                     <AnimatedHeartButton
                                         initialIsActive={favoriteStatus[selectedStation.id] || false}
@@ -615,9 +615,9 @@ const MapScreen = () => {
                         <H6>Estimated Price: €</H6>
                         <ButtonContainer>
                             <ButtonButton icon="arrow-with-circle-up" text="Start Journey"
-                                                    onPress={handleJourney}/>
+                                          onPress={handleJourney}/>
                             <ButtonButton style={{float: "left"}} icon="cross" text="Exit"
-                                                    onPress={handleCancelPress}/>
+                                          onPress={handleCancelPress}/>
                         </ButtonContainer>
                         <H4 style={{flexDirection: 'row'}}>Directions</H4>
                         <ScrollView>
@@ -646,7 +646,11 @@ const MapScreen = () => {
                     <BottomSheet snapPoints={['15%', '15%']} index={0} ref={bottomSheetRef}
                                  handleIndicatorStyle={{display: "none"}}>
                         <Container>
-                            <H4 style={{flexDirection: 'row'}}>Arriving at {estimatedTime ? estimatedTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Loading...'}</H4>
+                            <H4 style={{flexDirection: 'row'}}>Arriving
+                                at {estimatedTime ? estimatedTime.toLocaleTimeString([], {
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                }) : 'Loading...'}</H4>
                             <H4>{estimatedDuration} ({estimatedDistance})</H4>
 
                             <ButtonContainer style={{position: 'absolute', marginTop: 10, marginLeft: 10}}>
@@ -692,27 +696,33 @@ const MapScreen = () => {
             visible={updateModalVisible}
             onRequestClose={() => setUpdateModalVisible(false)}
         >
-            <View style={styles.centeredView}>
-                <View style={styles.modalView}>
-                    <Text>Update Fuel Prices</Text>
-                    <TextInput
+            <View style={styles.modalContainer}>
+                <ModalContent>
+                    <H5 tmargin="10px" bmargin="30px" style={{textAlign: 'center'}}>Update Price</H5>
+                    <ButtonContainer style={{position: 'absolute', marginTop: 20, marginLeft: 20}}>
+                            <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
+                                <ButtonButton icon="cross" color="#eaedea" iconColor="#b8bec2"
+                                      onPress={() => setUpdateModalVisible(false)}/>
+                            </View>
+                    </ButtonContainer>
+                    <InputTxt
                         placeholder="New Petrol Price"
                         keyboardType="numeric"
                         value={newPetrolPrice}
                         onChangeText={(text) => setNewPetrolPrice(text)}
                     />
-                    <TextInput
+                    <InputTxt
                         placeholder="New Diesel Price"
                         keyboardType="numeric"
                         value={newDieselPrice}
                         onChangeText={(text) => setNewDieselPrice(text)}
                     />
-                    <Button title="Update" onPress={handleUpdatePress}/>
-                    <Button title="Cancel" onPress={() => setUpdateModalVisible(false)}/>
-                </View>
+                    <ButtonContainer style={{width: "auto", position: "relative"}}>
+                        <ButtonButton icon="plus" color="#6BFF91" text="Update" onPress={handleUpdatePress}/>
+                    </ButtonContainer>
+                </ModalContent>
             </View>
         </Modal>
-
     </View>);
 }
 
@@ -735,26 +745,10 @@ const styles = StyleSheet.create({
         marginTop: 8,
         borderRadius: 2,
     },
-    centeredView: {
+    modalContainer: {
         flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        marginTop: 22,
-    },
-    modalView: {
-        margin: 20,
-        backgroundColor: "white",
-        borderRadius: 20,
-        padding: 35,
-        alignItems: "center",
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     upcomingDirectionContainer: {
         position: "absolute",

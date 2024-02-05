@@ -11,7 +11,7 @@ import {
     WrapperScroll,
     DashboardContainer,
     TitleContainer,
-    CardOverlap, CardContainer, ButtonContainer, Card
+    CardOverlap, CardContainer, ButtonContainer, Card, ModalContent, InputTxt
 } from '../styles/styles.js';
 import MainLogo from '../styles/mainLogo';
 import {H2, H3, H4, H5, H6, H7, H8} from "../styles/text";
@@ -42,6 +42,8 @@ const DashboardScreen = () => {
     const [barData, setBarData] = useState([]);
     const [pieData, setPieData] = useState([]);
 
+    const [cumulativeValue, setCumulativeValue] = useState(0);
+
     const labels = ["Mon", "", "Wed", "", "Fri", "", "Sun"];
 
     const barLabels = ["Nov", "Dec", "Jan"];
@@ -55,7 +57,7 @@ const DashboardScreen = () => {
                     const userData = JSON.parse(userDataJson);
                     setUserInfo(userData);
 
-                   await collectDashboardInfo();
+                    await collectDashboardInfo();
 
                 }
             } catch (error) {
@@ -173,17 +175,28 @@ const DashboardScreen = () => {
 
         setWeeklyBudget(userInfo.weekly_budget);
 
-        const lineData = [
-            {value: 0},
-            {value: 0},
-            {value: 0},
-            {value: 0},
-            {value: 0},
-            {value: 0},
-            {value: 0},
-        ];
+        const deductionsResponse = await axios.post(`${url}/get_deductions`, {username: userInfo.username}, {
+            headers: {
+                'X-API-Key': apiKey,
+            },
+        });
+
+        const deductions = deductionsResponse.data.deductions;
+        console.log('Deductions:', deductions);
+
+        let cumulativeValue = 0;
+
+        const lineData = new Array(7).fill(0).map((_, index) => {
+            if (index < deductions.length) {
+                cumulativeValue += parseFloat(deductions[index].amount);
+            }
+            return {value: cumulativeValue};
+        });
 
         setLineData(lineData);
+        setCumulativeValue(cumulativeValue);
+
+        console.log(lineData)
 
         console.log(weeklyBudget)
 
@@ -197,26 +210,21 @@ const DashboardScreen = () => {
                 {value: 0},
                 {value: 0},
             ];
-            console.log(weeklyBudget)
             setBarData(barData);
             setPieData(pieData);
         } else {
             const pieData = [
-                {value: 0, color: '#6BFF91'},
-                {value: weeklyBudget, color: '#F7F7F7'}
+                {value: cumulativeValue, color: '#6BFF91'},
+                {value: userInfo.weekly_budget - cumulativeValue, color: '#F7F7F7'}
             ];
             const barData = [
-                {value: 30},
                 {value: 10},
-                {value: 20},
+                {value: 15},
+                {value: 10},
             ];
-            console.log(weeklyBudget)
             setBarData(barData);
             setPieData(pieData);
         }
-
-
-
     };
 
 
@@ -301,7 +309,12 @@ const DashboardScreen = () => {
                                     marginTop: 5
                                 }}
                                       onLayout={({nativeEvent}) => setChartParentWidth(nativeEvent.layout.width)}>
-                                    <H3 style={{opacity: 0.5, position: "absolute", top: 10, left: 20}}>€0</H3>
+                                    <H3 style={{
+                                        opacity: 0.5,
+                                        position: "absolute",
+                                        top: 10,
+                                        left: 20
+                                    }}>€{cumulativeValue}</H3>
                                     <LineChart
                                         data={lineData}
                                         adjustToWidth={true}
@@ -374,12 +387,12 @@ const DashboardScreen = () => {
                             <H8 style={{opacity: 0.5}}>Total Budget</H8>
                             <H5>Breakdown</H5>
                             <ButtonContainer style={{position: 'absolute', marginTop: 10, marginLeft: 10}}>
-                                <View style={{ zIndex: 1, marginLeft: 'auto', marginRight: 0 }}>
-                                  {userInfo.weekly_budget ? (
-                                    <ButtonButton icon='plus' color='#6BFF91' onPress={handleUpdateButtonPress} />
-                                  ) : (
-                                    <ButtonButton icon='plus' text='add' onPress={handleUpdateButtonPress} />
-                                  )}
+                                <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
+                                    {userInfo.weekly_budget ? (
+                                        <ButtonButton icon='plus' color='#6BFF91' onPress={handleUpdateButtonPress}/>
+                                    ) : (
+                                        <ButtonButton icon='plus' text='add' onPress={handleUpdateButtonPress}/>
+                                    )}
                                 </View>
                             </ButtonContainer>
                             <View style={{
@@ -403,7 +416,7 @@ const DashboardScreen = () => {
                                                 alignItems: 'center',
                                             }}>
                                                 <H8 style={{opacity: 0.5}}>Spent</H8>
-                                                <Text><H5>€</H5><H2>0/</H2><H5>€</H5><H2>{userInfo.weekly_budget}</H2></Text>
+                                                <Text><H5>€</H5><H2>{cumulativeValue}/</H2><H5>€</H5><H2>{userInfo.weekly_budget}</H2></Text>
                                             </View>
                                         );
                                     }}
@@ -466,17 +479,25 @@ const DashboardScreen = () => {
                     transparent={true}
                 >
                     <View style={styles.modalContainer}>
-                        <View style={styles.modalContent}>
-                            <Text>Enter new weekly budget:</Text>
-                            <TextInput
+                        <ModalContent>
+                            <H5 tmargin="10px" bmargin="30px" style={{textAlign: 'center'}}>Add Budget</H5>
+                            <ButtonContainer style={{position: 'absolute', marginTop: 20, marginLeft: 20}}>
+                                <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
+                                    <ButtonButton icon="cross" color="#eaedea" iconColor="#b8bec2"
+                                                  onPress={handleModalCancel}/>
+                                </View>
+                            </ButtonContainer>
+                            <InputTxt
                                 value={newWeeklyBudgetInput}
                                 onChangeText={(text) => setNewWeeklyBudgetInput(text)}
                                 keyboardType="numeric"
                                 placeholder="Enter amount"
                             />
-                            <Button title="Update" onPress={handleModalSubmit}/>
-                            <Button title="Cancel" onPress={handleModalCancel}/>
-                        </View>
+                            <ButtonContainer style={{width: "auto", position: "relative"}}>
+                                <ButtonButton icon="plus" color="#6BFF91" text="Add Budget"
+                                              onPress={handleModalSubmit}/>
+                            </ButtonContainer>
+                        </ModalContent>
                     </View>
                 </Modal>
             </WrapperScroll>
@@ -489,20 +510,6 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-    },
-    modalContent: {
-        backgroundColor: 'white',
-        padding: 20,
-        borderRadius: 10,
-        elevation: 5,
-        height: 400,
-        width: 250,
-    },
-    modalTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 10,
-        textAlign: 'center',
     },
 });
 

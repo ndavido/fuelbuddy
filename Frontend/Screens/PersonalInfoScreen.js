@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, Button, TextInput} from 'react-native';
+import {View, Text, Button, TextInput, RefreshControl} from 'react-native';
 import axios from 'axios';
 import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -19,7 +19,7 @@ import {
 import MainLogo from '../styles/mainLogo';
 import {MenuButton} from "../styles/accountButton";
 import {H3, H4, H5, H6} from "../styles/text";
-import {ButtonContainer, InputTxt, Main} from "../styles/styles";
+import {AccountContainer, ButtonContainer, InputTxt, Main, WrapperScroll} from "../styles/styles";
 import {ButtonButton} from "../styles/AnimatedIconButton";
 
 const url = process.env.REACT_APP_BACKEND_URL
@@ -115,57 +115,54 @@ const AccountScreen = () => {
     return (
         <Main>
             <MainLogo bButton={true} PageTxt='Account'/>
-            <AccountWrapper>
-                <AccountRegularInfo>
-                    <AccountContent>
-                        <AccountTxtWrapper>
-                            <H3 tmargin='20px' bmargin='5px'>Personal Info</H3>
-                            <ButtonContainer style={{position: 'absolute'}}>
-                                <View style={{zIndex: 1, marginLeft: 'auto', flexDirection: "row"}}>
-                                    {editMode ? (<ButtonButton text={"Save"} color={"#6BFF91"} onPress={handleSave}/>) : null}
-                                    <ButtonButton color={editMode ? "red" : "#3891FA"} text={editMode ? "Cancel" : "Edit"} onPress={handleEditToggle}/>
-                                </View>
-                            </ButtonContainer>
+            <WrapperScroll>
+                <AccountContainer style={{minHeight: 800}}>
+                    <H3 tmargin='20px' bmargin='20px'>my Info</H3>
+                    <ButtonContainer style={{position: 'absolute', marginTop: 15, marginLeft: 10}}>
+                        <View style={{zIndex: 1, marginLeft: 'auto', flexDirection: "row"}}>
+                            {editMode ? (<ButtonButton text={"Save"} color={"#6BFF91"} onPress={handleSave}/>) : null}
+                            <ButtonButton color={editMode ? "red" : "#3891FA"} text={editMode ? "Cancel" : "Edit"}
+                                          onPress={handleEditToggle}/>
+                        </View>
+                    </ButtonContainer>
 
-                            {editMode ? (
-                                <>
-                                    <H6 bmargin='5px'>Username</H6>
-                                    <AccountTxt bgColor='grey'>@{userInfo.username}</AccountTxt>
-                                    <H6 bmargin='5px'>Phone Number</H6>
-                                    <AccountTxt bgColor='grey'>{userInfo.phone_number}</AccountTxt>
-                                    <H6 bmargin='5px'>Name</H6>
-                                    <InputTxt bcolor='white' value={editedFullName} onChangeText={setEditedFullName}
-                                               placeholder="Full Name"/>
-                                    <H6 bmargin='5px'>Email</H6>
-                                    <InputTxt bcolor='white' value={editedEmail} onChangeText={setEditedEmail}
-                                               placeholder="Email"/>
-                                </>
-                            ) : (
-                                <>
-                                    <H6 bmargin='5px'>Username</H6>
-                                    <AccountTxt bgColor='grey'>@{userInfo.username}</AccountTxt>
-                                    <H6 bmargin='5px'>Phone Number</H6>
-                                    <AccountTxt bgColor='grey'>{userInfo.phone_number}</AccountTxt>
-                                    <H6 bmargin='5px'>Name</H6>
-                                    <AccountTxt bgColor='#FFFFFF'>{userInfo.full_name}</AccountTxt>
-                                    <H6 bmargin='5px'>Email</H6>
-                                    <AccountTxt bgColor='#FFFFFF'>{userInfo.email}</AccountTxt>
-                                </>
-                            )}
-                            <H6 tmargin='10px' bmargin='10px'>{message}</H6>
-                            <H5 tmargin='40px' bmargin='5px'>Delete Account</H5>
-                            <H6 style={{opacity: 0.6}} bmargin='20px' weight='400'>Not comfortable? Deleting your
-                                account will
-                                remove all data from our servers</H6>
-                            <MenuButton title='Delete Account'
-                                        bgColor='red'
-                                        txtColor='white'
-                                        onPress={handleDelete}
-                                        emoji="🥲"/>
-                        </AccountTxtWrapper>
-                    </AccountContent>
-                </AccountRegularInfo>
-            </AccountWrapper>
+                    {editMode ? (
+                        <>
+                            <H6 bmargin='5px'>Username</H6>
+                            <AccountTxt bgColor='grey'>@{userInfo.username}</AccountTxt>
+                            <H6 bmargin='5px'>Phone Number</H6>
+                            <AccountTxt bgColor='grey'>{userInfo.phone_number}</AccountTxt>
+                            <H6 bmargin='5px'>Name</H6>
+                            <InputTxt bcolor='white' value={editedFullName} onChangeText={setEditedFullName}
+                                      placeholder="Full Name"/>
+                            <H6 bmargin='5px'>Email</H6>
+                            <InputTxt bcolor='white' value={editedEmail} onChangeText={setEditedEmail}
+                                      placeholder="Email"/>
+                        </>
+                    ) : (
+                        <>
+                            <H6 bmargin='5px'>Username</H6>
+                            <AccountTxt bgColor='grey'>@{userInfo.username}</AccountTxt>
+                            <H6 bmargin='5px'>Phone Number</H6>
+                            <AccountTxt bgColor='grey'>{userInfo.phone_number}</AccountTxt>
+                            <H6 bmargin='5px'>Name</H6>
+                            <AccountTxt bgColor='#FFFFFF'>{userInfo.full_name}</AccountTxt>
+                            <H6 bmargin='5px'>Email</H6>
+                            <AccountTxt bgColor='#FFFFFF'>{userInfo.email}</AccountTxt>
+                        </>
+                    )}
+                    <H6 tmargin='10px' bmargin='10px'>{message}</H6>
+                    <H5 tmargin='40px' bmargin='5px'>Delete Account</H5>
+                    <H6 style={{opacity: 0.6}} bmargin='20px' weight='400'>Not comfortable? Deleting your
+                        account will
+                        remove all data from our servers</H6>
+                    <MenuButton title='Delete Account'
+                                bgColor='red'
+                                txtColor='white'
+                                onPress={handleDelete}
+                                emoji="🥲"/>
+                </AccountContainer>
+            </WrapperScroll>
         </Main>
     );
 };

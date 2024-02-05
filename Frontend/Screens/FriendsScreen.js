@@ -46,6 +46,8 @@ const FriendsScreen = () => {
     const [loading, setLoading] = useState(true);
     const hasRequestedFriends = requestedFriends.length > 0;
 
+    const [pendingRequests, setPendingRequests] = useState([]);
+
     const [refreshing, setRefreshing] = useState(false);
 
     console.log(url)
@@ -172,8 +174,19 @@ const FriendsScreen = () => {
         try {
             console.log(`Making friend with ID: ${friendId}`);
             const token = await AsyncStorage.getItem('token');
-
             const phone = jwtDecode(token).sub;
+
+            setPendingRequests(prevRequests => [...prevRequests, friendId]);
+
+            // Introduce a loading state for the specific friend
+            setFriends(prevFriends => {
+                return prevFriends.map(friend => {
+                    if (friend.friend_id === friendId) {
+                        return {...friend, loading: true};
+                    }
+                    return friend;
+                });
+            });
 
             const response = await axios.post(
                 `${url}/send_friend_request`,
@@ -188,8 +201,30 @@ const FriendsScreen = () => {
                 }
             );
 
+            setPendingRequests(prevRequests => prevRequests.filter(id => id !== friendId));
+
+            setFriends(prevFriends => {
+                return prevFriends.map(friend => {
+                    if (friend.friend_id === friendId) {
+                        return {...friend, loading: false};
+                    }
+                    return friend;
+                });
+            });
+
         } catch (error) {
-            console.error('Error searching users:', error);
+            console.error('Error sending friend request:', error);
+
+            setPendingRequests(prevRequests => prevRequests.filter(id => id !== friendId));
+
+            setFriends(prevFriends => {
+                return prevFriends.map(friend => {
+                    if (friend.friend_id === friendId) {
+                        return {...friend, loading: false};
+                    }
+                    return friend;
+                });
+            });
         }
     };
 
@@ -235,7 +270,7 @@ const FriendsScreen = () => {
                 />
             }>
                 <AccountContainer style={{minHeight: 800}}>
-                    <H3 tmargin='20px' lmargin='10px' bmargin='5px'>Friends</H3>
+                    <H3 tmargin='20px' lmargin='0px' bmargin='5px'>Friends</H3>
                     <ButtonContainer style={{position: 'absolute', marginTop: 15, marginLeft: 10}}>
                         <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
                             <ButtonButton text="Add Friends" onPress={openSearchModal}/>
@@ -249,7 +284,8 @@ const FriendsScreen = () => {
                                     {searchTerm ? (
                                         searchResults.map(item => (
                                             <View style={styles.friendItem} key={item.request_id}>
-                                                <H6 weight="400" bmargin='5px' style={{opacity: 0.5}}>{item.friend_name}</H6>
+                                                <H6 weight="400" bmargin='5px'
+                                                    style={{opacity: 0.5}}>{item.friend_name}</H6>
                                                 <View style={{zIndex: 1, marginLeft: 'auto', flexDirection: "row"}}>
                                                     <ButtonButton text={"Accept"} color={"#6BFF91"}
                                                                   onPress={() => decideFriend(item.request_id, 'accept')}/>
@@ -262,7 +298,8 @@ const FriendsScreen = () => {
                                     ) : (
                                         requestedFriends.map(item => (
                                             <View style={styles.friendItem} key={item.request_id}>
-                                                <H6 weight="400" bmargin='5px' style={{opacity: 0.5}}>{item.friend_name}</H6>
+                                                <H6 weight="400" bmargin='5px'
+                                                    style={{opacity: 0.5}}>{item.friend_name}</H6>
                                                 <View style={{zIndex: 1, marginLeft: 'auto', flexDirection: "row"}}>
                                                     <ButtonButton text={"Accept"} color={"#6BFF91"}
                                                                   onPress={() => decideFriend(item.request_id, 'accept')}/>
@@ -311,9 +348,18 @@ const FriendsScreen = () => {
                                                     <View style={styles.friendItem} key={item.user_id}>
                                                         <H6 weight="400" bmargin='5px'
                                                             style={{opacity: 0.5}}>{item.username}</H6>
-                                                        <View style={{zIndex: 1, marginLeft: 'auto', flexDirection: "row"}}>
-                                                            <ButtonButton text={"Add"} color={"#6BFF91"}
-                                                                          onPress={() => handleMakeFriend(item.phone_number)}/>
+                                                        <View style={{
+                                                            zIndex: 1,
+                                                            marginLeft: 'auto',
+                                                            flexDirection: "row"
+                                                        }}>
+                                                            {pendingRequests.includes(item.phone_number) ? (
+                                                                <ButtonButton text={"Pending"} color={"#FFD700"}
+                                                                              disabled={true}/>
+                                                            ) : (
+                                                                <ButtonButton text={"Add"} color={"#6BFF91"}
+                                                                              onPress={() => handleMakeFriend(item.phone_number)}/>
+                                                            )}
                                                         </View>
                                                     </View>
                                                 ))}
@@ -335,19 +381,6 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-    },
-    modalTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 10,
-        textAlign: 'center',
-    },
-    searchInput: {
-        height: 40,
-        borderColor: 'gray',
-        borderWidth: 1,
-        marginBottom: 8,
-        paddingHorizontal: 8,
     },
     friendItem: {
         flexDirection: 'row',
