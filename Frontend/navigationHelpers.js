@@ -1,4 +1,4 @@
-import { navigationRef } from './AppNavigator'; // Update this path accordingly
+import { navigationRef } from './AppNavigator';
 
 export function navigateToWelcome() {
     if (navigationRef.isReady()) {

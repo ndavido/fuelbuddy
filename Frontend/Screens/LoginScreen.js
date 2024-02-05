@@ -48,7 +48,6 @@ const LoginScreen = () => {
 
             const fullNum = `${countryCode}${formData.phone_number}`;
 
-            // Add the API key to the request headers
             const config = {
                 headers: {
                     'X-API-Key': apiKey,
@@ -67,10 +66,10 @@ const LoginScreen = () => {
                 setMessage(response.data.message);
 
                 if (response.data.message === 'Login code sent successfully!') {
-                    navigation.navigate('LoginVerify', {phone: fullNum}); // Navigate to code verification screen
+                    navigation.navigate('LoginVerify', {phone: fullNum});
                 }
             } else {
-                // Handle other cases or errors if needed
+                // TODO Handle errors
             }
         } catch (error) {
             setMessage(error.response?.data?.error || 'An error occurred.');

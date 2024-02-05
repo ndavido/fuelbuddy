@@ -78,7 +78,6 @@ const RegisterScreen = () => {
 
             const username = user.toLowerCase();
 
-            // Add the API key to the request headers
             const config = {
                 headers: {
                     'X-API-Key': apiKey,
@@ -102,7 +101,7 @@ const RegisterScreen = () => {
                     });
                 }
             } else {
-                // else
+                // TODO else
             }
         } catch (error) {
             setMessage(error.response?.data?.error || 'An error occurred.');

@@ -14,7 +14,7 @@ const Container = styled.View`
 const BackButtonContainer = styled(TouchableOpacity)`
   padding: 5px;
   margin-left: 5px;
-  background-color: transparent; // You can customize the color
+  background-color: transparent;
   border-radius: 5px;
   align-items: center;
 `;

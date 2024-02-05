@@ -60,7 +60,7 @@ const DashboardScreen = () => {
                     const userData = JSON.parse(userDataJson);
                     setUserInfo(userData);
 
-                    await collectDashboardInfo();
+                    await collectDashboardInfo(userData);
 
                 }
             } catch (error) {
@@ -71,37 +71,37 @@ const DashboardScreen = () => {
         fetchUserInfo();
     }, []);
 
-    const fetchNews = async () => {
+    /*const fetchNews = async () => {
         try {
-            const apiKey = process.env.NEWSAPI_KEY; // Replace with your actual API key
+            const apiKey = process.env.NEWSAPI_KEY;
             const newsApiUrl = 'https://newsapi.org/v2/everything';
             const carResponse = await axios.get(newsApiUrl, {
                 params: {
                     apiKey,
-                    q: 'car fuel', // Add keywords related to petrol
+                    q: 'car fuel',
                     language: 'en',
                     sortBy: 'publishedAt',
-                    pageSize: 50, // Adjust the number of articles as needed
+                    pageSize: 50,
                 },
             });
 
             const petrolResponse = await axios.get(newsApiUrl, {
                 params: {
                     apiKey,
-                    q: 'petrol', // Add keywords related to petrol
+                    q: 'petrol',
                     language: 'en',
                     sortBy: 'publishedAt',
-                    pageSize: 50, // Adjust the number of articles as needed
+                    pageSize: 50,
                 },
             });
 
             const dieselResponse = await axios.get(newsApiUrl, {
                 params: {
                     apiKey,
-                    q: 'road', // Add keywords related to petrol
+                    q: 'road',
                     language: 'en',
                     sortBy: 'publishedAt',
-                    pageSize: 50, // Adjust the number of articles as needed
+                    pageSize: 50,
                 },
             });
 
@@ -117,16 +117,16 @@ const DashboardScreen = () => {
         } finally {
             setLoadingNews(false);
         }
-    };
+    };*/
 
-    const filterRemovedArticles = (articles) => {
+    /*const filterRemovedArticles = (articles) => {
         return articles.filter(article => !article.title.includes('[Removed]') && !article.description.includes('[Removed]'));
     };
 
     const containsUKOrIreland = (article) => {
-        const content = `${article.title} ${article.description}`; // Add other fields as needed
+        const content = `${article.title} ${article.description}`;
         return content.toLowerCase().includes('uk ') || content.toLowerCase().includes('ireland');
-    };
+    };*/
 
     const onRefresh = async () => {
         setRefreshing(true);
@@ -159,7 +159,7 @@ const DashboardScreen = () => {
                     },
                 };
 
-                collectDashboardInfo();
+                collectDashboardInfo(userInfo);
 
                 const response = await axios.post(`${url}/account`, {phone_number: phone}, config);
 
@@ -174,11 +174,12 @@ const DashboardScreen = () => {
         }
     };
 
-    const collectDashboardInfo = async () => {
+    const collectDashboardInfo = async (userData) => {
         try {
-            setWeeklyBudget(userInfo.weekly_budget);
+            const weeklyBudget = typeof userData.weekly_budget === 'number' ? userData.weekly_budget : 0;
+            setWeeklyBudget(weeklyBudget);
 
-            const deductionsResponse = await axios.post(`${url}/get_deductions`, {username: userInfo.username}, {
+            const deductionsResponse = await axios.post(`${url}/get_deductions`, {username: userData.username}, {
                 headers: {
                     'X-API-Key': apiKey,
                 },
@@ -229,7 +230,7 @@ const DashboardScreen = () => {
                 setPieData(pieData);
             }
         } catch (error) {
-            console.log('Error collecting dashboard information:');
+            console.error('Error collecting dashboard information:', error);
         }
     };
 

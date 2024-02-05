@@ -42,7 +42,6 @@ const RegisterVerifyScreen = ({route}) => {
         try {
             const apiKey = process.env.REACT_NATIVE_API_KEY;
 
-            // Add the API key to the request headers
             const config = {
                 headers: {
                     'X-API-Key': apiKey,
@@ -54,12 +53,10 @@ const RegisterVerifyScreen = ({route}) => {
             const response = await axios.post(`${url}/register/verify`, formData, config);
             setMessage(response.data.message);
 
-            // If verification is successful, update the authentication state
             if (response.data.message === 'Verification successful!' && response.data.access_token) {
-                // Store the received access token securely
+
                 await AsyncStorage.setItem('token', response.data.access_token);
 
-                // Attach the access token to the request headers for subsequent requests
                 axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access_token}`;
 
                 await login(response.data.access_token);
@@ -80,7 +77,6 @@ const RegisterVerifyScreen = ({route}) => {
             try {
                 const apiKey = process.env.REACT_NATIVE_API_KEY;
 
-                // Add the API key to the request headers
                 const config = {
                     headers: {
                         'X-API-Key': apiKey,
@@ -93,10 +89,9 @@ const RegisterVerifyScreen = ({route}) => {
                     phone_number: route.params.phone_number
                 }, config);
 
-                // Check the response status or message to confirm code resent successfully
                 if (response && response.data) {
                     setMessage('Code resent successfully!');
-                    updateResendCount(); // Increment resend count
+                    updateResendCount();
                 } else {
                     setMessage('Failed to resend code. Please try again.');
                 }

@@ -28,40 +28,8 @@ const AccountScreen = () => {
 
     const {logout} = useAuth();
 
-    const translateY = new Animated.Value(0);
-
-    const onGestureEvent = Animated.event(
-        [{nativeEvent: {translationY: translateY}}],
-        {useNativeDriver: true}
-    );
-
-    const onHandlerStateChange = event => {
-        if (event.nativeEvent.oldState === State.ACTIVE) {
-            let {translationY, velocityY} = event.nativeEvent;
-
-            // Define the swipe threshold and target position
-            const SWIPE_THRESHOLD = 100;
-            const TARGET_TRANSLATE_Y = -140;
-
-            if (translationY < -SWIPE_THRESHOLD) {
-                // Swipe up
-                Animated.spring(translateY, {
-                    toValue: TARGET_TRANSLATE_Y,
-                    useNativeDriver: true,
-                }).start();
-            } else if (translationY > SWIPE_THRESHOLD && velocityY > 0) {
-                // Swipe down
-                Animated.spring(translateY, {
-                    toValue: 0,
-                    useNativeDriver: true,
-                }).start();
-            }
-        }
-    };
-
     const handleLogout = async () => {
         try {
-            // Clear the token stored in AsyncStorage
             await AsyncStorage.removeItem('token');
 
             delete axios.defaults.headers.common['Authorization'];
@@ -110,7 +78,6 @@ const AccountScreen = () => {
     };
 
     useEffect(() => {
-        // Make an API request to fetch user account information from the backend
         const fetchUserInfo = async () => {
             try {
                 const userDataJson = await AsyncStorage.getItem('userData');

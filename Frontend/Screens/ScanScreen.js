@@ -5,7 +5,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNavigation} from '@react-navigation/native';
 
 import MainLogo from '../styles/mainLogo';
-import {MenuButton} from '../styles/accountButton';
 import {InputTxt, Main} from '../styles/styles';
 import {
     AccountWrapper,

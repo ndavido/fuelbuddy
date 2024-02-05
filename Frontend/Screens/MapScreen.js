@@ -309,7 +309,7 @@ const MapScreen = () => {
             if (response.ok) {
                 console.log('Favorite status updated successfully');
 
-                // Update the favorite status for the specific station
+                // TODO Fix Update the favorite status for the specific station
                 setFavoriteStatus((prevStatus) => ({
                     ...prevStatus,
                     [stationId]: !prevStatus[stationId],
@@ -438,7 +438,7 @@ const MapScreen = () => {
                 },
                 altitude: 160, // Adjust the altitude to control the zoom level
                 pitch: 45, // Adjust the pitch angle
-                heading: location.coords.heading, // Use the user's heading for orientation
+                heading: location.coords.heading,
             },
             {duration: 1000}
         );

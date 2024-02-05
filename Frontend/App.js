@@ -15,7 +15,6 @@ function App() {
     useEffect(() => {
         async function prepare() {
             try {
-                // Keep the splash screen visible
                 await SplashScreen.preventAutoHideAsync();
             } catch (e) {
                 console.warn(e);

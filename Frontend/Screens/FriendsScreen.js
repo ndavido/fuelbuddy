@@ -14,8 +14,8 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNavigation} from '@react-navigation/native';
 
+// Styling
 import MainLogo from '../styles/mainLogo';
-import {MenuButton} from '../styles/accountButton';
 import {
     ButtonContainer,
     FContainer,
@@ -178,7 +178,6 @@ const FriendsScreen = () => {
 
             setPendingRequests(prevRequests => [...prevRequests, friendId]);
 
-            // Introduce a loading state for the specific friend
             setFriends(prevFriends => {
                 return prevFriends.map(friend => {
                     if (friend.friend_id === friendId) {
@@ -252,7 +251,6 @@ const FriendsScreen = () => {
 
         } catch (error) {
             console.error('Error responding to friend request:', error);
-            // Handle errors as needed
         }
     };
 

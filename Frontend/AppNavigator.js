@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import {FontAwesome5} from '@expo/vector-icons'; // Import icons from Expo's vector-icons
+import {FontAwesome5} from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import "core-js/stable/atob";
 import axios from 'axios';
@@ -175,19 +175,16 @@ const AppNavigator = () => {
         }, 1000);
         const checkAuthState = async () => {
             try {
-                // Check if token exists in AsyncStorage
                 const token = await AsyncStorage.getItem('token');
 
                 if (token) {
-                    // Dispatch action to set user as authenticated
                     dispatch({type: 'LOGIN'});
 
                 } else {
-                    // Dispatch action to set user as not authenticated
                     dispatch({type: 'LOGOUT'});
                 }
             } catch (error) {
-                // Handle AsyncStorage or token retrieval errors
+                // TODO Handle AsyncStorage or token retrieval errors
             }
         };
 
@@ -221,7 +218,7 @@ const AppNavigator = () => {
                                 let iconName;
 
                                 const iconStyle = {
-                                    marginBottom: focused ? 3 : 0, // Adjust the marginBottom as needed
+                                    marginBottom: focused ? 3 : 0,
                                 };
 
                                 let iconSize = 22;

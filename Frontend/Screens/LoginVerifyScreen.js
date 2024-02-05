@@ -26,7 +26,7 @@ const url = process.env.REACT_APP_BACKEND_URL
 
 const LoginVerifyScreen = ({route}) => {
     const navigation = useNavigation();
-    const {login} = useAuth(); // Get the dispatch function from the AuthContext
+    const {login} = useAuth();
 
     const [formData, setFormData] = useState({
         phone_number: route.params.phone,
@@ -34,8 +34,8 @@ const LoginVerifyScreen = ({route}) => {
     });
 
     const [message, setMessage] = useState('');
-    const [resendCount, setResendCount] = useState(0); // Counter for resend attempts
-    const maxResendLimit = 2; // Maximum resend limit
+    const [resendCount, setResendCount] = useState(0);
+    const maxResendLimit = 2;
 
     const handleChange = (name, value) => {
         setFormData({...formData, [name]: value});
@@ -45,7 +45,6 @@ const LoginVerifyScreen = ({route}) => {
         try {
             const apiKey = process.env.REACT_NATIVE_API_KEY;
 
-            // Add the API key to the request headers
             const config = {
                 headers: {
                     'X-API-Key': apiKey,
@@ -54,12 +53,10 @@ const LoginVerifyScreen = ({route}) => {
 
             const response = await axios.post(`${url}/login_verify`, formData, config);
 
-            // If verification is successful, update the authentication state
             if (response.data.message === 'Login successful!' && response.data.access_token) {
-                // Store the received access token securely
+
                 await AsyncStorage.setItem('token', response.data.access_token);
 
-                // Attach the access token to the request headers for subsequent requests
                 axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access_token}`;
 
                 await login(response.data.access_token);
@@ -81,7 +78,6 @@ const LoginVerifyScreen = ({route}) => {
             try {
                 const apiKey = process.env.REACT_NATIVE_API_KEY;
 
-                // Add the API key to the request headers
                 const config = {
                     headers: {
                         'X-API-Key': apiKey,
@@ -90,10 +86,9 @@ const LoginVerifyScreen = ({route}) => {
 
                 const response = await axios.post(`${url}/login`, { phone_number: formData.phone_number, }, config );
 
-                // Check the response status or message to confirm code resent successfully
                 if (response && response.data) {
                     setMessage('Code resent successfully!');
-                    updateResendCount(); // Increment resend count
+                    updateResendCount();
                 } else {
                     setMessage('Failed to resend code. Please try again.');
                 }

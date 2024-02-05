@@ -23,9 +23,9 @@ import {
 } from '../styles/accountPage';
 import MainLogo from '../styles/mainLogo';
 import AccountImg from '../styles/accountImg';
-import {MenuButton} from "../styles/accountButton";
 import {H3, H4, H5, H6} from "../styles/text";
 import {useNavigation} from "@react-navigation/native";
+import {ButtonButton} from "../styles/AnimatedIconButton";
 
 const url = process.env.REACT_APP_BACKEND_URL
 
@@ -42,7 +42,6 @@ const DeleteConfirmScreen = () => {
         };
         const handleLogout = async () => {
             try {
-                // Clear the token stored in AsyncStorage
                 await AsyncStorage.removeItem('token');
 
                 delete axios.defaults.headers.common['Authorization'];
@@ -57,7 +56,6 @@ const DeleteConfirmScreen = () => {
         try {
             const apiKey = process.env.REACT_NATIVE_API_KEY;
 
-            // Add the API key to the request headers
             const config = {
                 headers: {
                     'X-API-Key': apiKey,
@@ -75,7 +73,6 @@ const DeleteConfirmScreen = () => {
 
                 if (response.data.message === 'Account deleted successfully!') {
                     try {
-                        // Clear the token stored in AsyncStorage
                         handleLogout();
 
                     } catch (error) {
@@ -100,16 +97,10 @@ const DeleteConfirmScreen = () => {
                             <H6 weight='400'>This Account Will be deleted immediately. All your data will be removed
                                 from our servers.</H6>
                             <H6 bmargin='50px' weight='400'>This action is irreversible 😭.</H6>
-                            <MenuButton title='Delete My Account'
-                                        bgColor='red'
-                                        txtColor='white'
-                                        onPress={handleConfirmDelete}
-                                        emoji="😢"/>
-                            <MenuButton title='Keep My Account'
-                                        bgColor='#6BFF91'
-                                        txtColor='white'
-                                        onPress={() => navigate.goBack()}
-                                        emoji="🥹"/>
+                            <ButtonButton pos="single" iconColor="white" icon="cross" color="red"
+                                  txtColor="black" txtMargin="15px" text="Delete My Account" onPress={handleConfirmDelete}/>
+                            <ButtonButton pos="single" iconColor="white" icon="cross" color="#6BFF91"
+                                  txtColor="black" txtMargin="15px" text="Keep My Account" onPress={handleConfirmDelete}/>
                         </AccountTxtWrapper>
                     </AccountContent>
                 </AccountRegularInfo>

@@ -1,13 +1,10 @@
 import React, { createContext, useReducer, useContext, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage for storing JWT
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Create the AuthContext
 const AuthContext = createContext();
 
-// Custom hook to use the AuthContext
 export const useAuth = () => useContext(AuthContext);
 
-// Reducer function to manage authentication state
 const authReducer = (state, action) => {
   switch (action.type) {
     case 'LOGIN':
@@ -25,7 +22,6 @@ const authReducer = (state, action) => {
   }
 };
 
-// Initial state for authentication
 const initialState = {
   isUserAuthenticated: false,
 };
@@ -45,7 +41,7 @@ export const AuthProvider = ({ children }) => {
           dispatch({ type: 'LOGIN' });
         }
       } catch (error) {
-        // Handle AsyncStorage or token retrieval errors
+        // TODO Handle AsyncStorage or token retrieval errors
       }
     };
 
@@ -60,7 +56,7 @@ export const AuthProvider = ({ children }) => {
       // Dispatch action to set user as authenticated
       dispatch({ type: 'LOGIN' });
     } catch (error) {
-      // Handle AsyncStorage or token storage errors
+      // TODO Handle AsyncStorage or token storage errors
     }
   };
 
@@ -72,7 +68,7 @@ export const AuthProvider = ({ children }) => {
       // Dispatch action to set user as not authenticated
       dispatch({ type: 'LOGOUT' });
     } catch (error) {
-      // Handle AsyncStorage or token removal errors
+      // TODO Handle AsyncStorage or token removal errors
     }
   };
 

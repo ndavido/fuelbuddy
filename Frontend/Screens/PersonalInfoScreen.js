@@ -17,7 +17,6 @@ import {
     DeveloperTick
 } from '../styles/accountPage';
 import MainLogo from '../styles/mainLogo';
-import {MenuButton} from "../styles/accountButton";
 import {H3, H4, H5, H6} from "../styles/text";
 import {AccountContainer, ButtonContainer, InputTxt, Main, WrapperScroll} from "../styles/styles";
 import {ButtonButton} from "../styles/AnimatedIconButton";
@@ -36,7 +35,7 @@ const AccountScreen = () => {
 
     const handleEditToggle = () => {
         setEditMode(!editMode);
-        // Initialize editable fields with current data
+
         if (!editMode) {
             setEditedFullName(userInfo.full_name);
             setEditedPhoneNumber(userInfo.phone_number);
@@ -60,7 +59,6 @@ const AccountScreen = () => {
                 },
             };
 
-            // Prepare the updated user data
             const updatedUserData = {
                 ...userInfo,
                 full_name: editedFullName,
@@ -68,18 +66,14 @@ const AccountScreen = () => {
                 email: editedEmail
             };
 
-            // API call to update user information
             const response = await axios.patch(`${url}/edit_account`, updatedUserData, config);
 
             if (response.data && response.data.message === 'Account updated successfully') {
-                // Update local user info state and exit edit mode
                 setUserInfo(updatedUserData);
                 setEditMode(false);
 
-                // Update the user data in AsyncStorage
                 await AsyncStorage.setItem('userData', JSON.stringify(updatedUserData));
             } else {
-                // Handle unsuccessful update
                 console.log("Update unsuccessful");
             }
         } catch (error) {
@@ -99,7 +93,6 @@ const AccountScreen = () => {
                     const userData = JSON.parse(userDataJson);
                     setUserInfo(userData);
 
-                    // Set initial values for editable fields
                     setEditedFullName(userData.full_name || '');
                     setEditedPhoneNumber(userData.phone_number || '');
                     setEditedEmail(userData.email || '');
@@ -156,11 +149,8 @@ const AccountScreen = () => {
                     <H6 style={{opacity: 0.6}} bmargin='20px' weight='400'>Not comfortable? Deleting your
                         account will
                         remove all data from our servers</H6>
-                    <MenuButton title='Delete Account'
-                                bgColor='red'
-                                txtColor='white'
-                                onPress={handleDelete}
-                                emoji="🥲"/>
+                    <ButtonButton pos="single" iconColor="white" icon="cross" color="red"
+                                  txtColor="black" txtMargin="15px" text="Delete Account" onPress={handleDelete}/>
                 </AccountContainer>
             </WrapperScroll>
         </Main>

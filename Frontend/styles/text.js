@@ -53,7 +53,7 @@ const getFontFamily = (weight) => {
         case '600':
             return 'Poppins_600SemiBold';
         default:
-            return 'Poppins_500Medium'; // Default case
+            return 'Poppins_500Medium';
     }
 };
 

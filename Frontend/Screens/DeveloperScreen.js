@@ -24,7 +24,6 @@ import {
 } from '../styles/accountPage';
 import MainLogo from '../styles/mainLogo';
 import AccountImg from '../styles/accountImg';
-import {MenuButton} from "../styles/accountButton";
 import {H3, H4, H5, H6} from "../styles/text";
 
 const url = process.env.REACT_APP_BACKEND_URL
@@ -44,7 +43,6 @@ const DeveloperScreen = () => {
             try {
                 const apiKey = process.env.REACT_NATIVE_API_KEY;
 
-                // Add the API key to the request headers
                 const config = {
                     headers: {
                         'X-API-Key': apiKey,
@@ -61,7 +59,7 @@ const DeveloperScreen = () => {
                   const response = await axios.post(`${url}/account`, { phone_number: phone }, config);
 
                   if (response.data && response.data.user) {
-                    setUserInfo(response.data.user); // Set the user info directly
+                    setUserInfo(response.data.user);
 
                     setLoading(false);
                   }

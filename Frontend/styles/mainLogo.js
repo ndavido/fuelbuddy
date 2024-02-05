@@ -11,8 +11,8 @@ const LogoContainer = styled.SafeAreaView`
   box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);
   margin: auto;
   position: absolute;
-  align-items: center; // Center items horizontally
-  justify-content: center; // Center items vertically
+  align-items: center;
+  justify-content: center;
 `;
 
 const LogoInner = styled.SafeAreaView`
