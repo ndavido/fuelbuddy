@@ -1,36 +1,42 @@
 #! /usr/bin/python3
+# From System
 import io
 import os
-import sys
-from bson import json_util, ObjectId
-from flask import Flask, Response, request, jsonify, abort, current_app
+# Flask Related Imports
+from flask import Flask, request, jsonify, abort, current_app
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from flask_cors import CORS
-from database import Database, UserCollection, FuelStationsCollection, PetrolFuelPricesCollection
-import bcrypt
-from twilio.rest import Client
-import random
-from dotenv import load_dotenv
-from datetime import datetime, timedelta
-from functools import wraps
+
+# Database Related Imports
+from database import Database
 from models import FuelStation, Location, Users, FuelPrices, BudgetHistory, FriendRequest, Friends, Notification, \
     ChargingStation, EVPrices, Trip, PetrolPrices, DieselPrices, FavoriteFuelStation, Deduction, WeeklyBudget
-from pymongo import MongoClient
-from pymongo.server_api import ServerApi
-import re
 from mongoengine.queryset.visitor import Q
 from mongoengine.errors import DoesNotExist, ValidationError
+
+# Ecryption Related Imports
 import binascii
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
+import bcrypt
+
+# Twilio Related Imports
+from twilio.rest import Client
+import random
+from datetime import datetime
+from functools import wraps
+import re
+
+
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 import pandas as pd
-from decimal import Decimal
 
-# from updated_user_monthly_predictions import main as nn
-
+# loading environment variables
+from dotenv import load_dotenv
 load_dotenv()
+
+# Flask configuration
 app = Flask(__name__)
 CORS(app, resources={
     r"/*": {"origins": "http://localhost:19006"}}, supports_credentials=True)
@@ -41,16 +47,17 @@ api_key = os.getenv('API_KEY')
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 jwt = JWTManager(app)
 
+# Twilio configuration
 account_sid = os.getenv('TWILIO_SID')
 auth_token = os.getenv('TWILIO_AUTH_TOKEN')
 twilio_number = os.getenv('TWILIO_PHONE_NUMBER')
 twilio_client = Client(account_sid, auth_token)
 
+# MongoDB Configuration
 db = Database()
-users_collection = UserCollection()
 new_user_session = {}
 
-
+# API Key Configuration
 def require_api_key(view_function):
     @wraps(view_function)
     def decorated_function(*args, **kwargs):
@@ -61,6 +68,17 @@ def require_api_key(view_function):
 
     return decorated_function
 
+def handle_api_error(e):
+    """
+    Centralized error handler for API routes.
+    """
+    error_message = "An error occurred while processing your request."
+    if isinstance(e, ValueError):
+        error_message = str(e)
+    elif isinstance(e, KeyError):
+        error_message = "Missing required data in the request."
+    print(f"Error: {str(e)}")
+    return jsonify({"error": error_message}), 500
 
 def radius_logic(coord1, coord2):
     # Haversine formula to calculate distance between two points on the Earth
@@ -79,7 +97,7 @@ def radius_logic(coord1, coord2):
 
     return distance
 
-
+# Phone number standardization and validation
 def standardize_phone_number(phone_number):
     """
     Standardize UK and Irish phone numbers to include the country code.
@@ -115,6 +133,7 @@ def validate_verification_code(code):
     return code.isdigit() and len(code) == 6
 
 
+# AES Encryption and Decryption
 def get_aes_key():
     key_hex = os.environ.get('ENCRYPTION_KEY')
     iv_hex = os.environ.get('AES_FIXED_IV')
@@ -127,7 +146,6 @@ def get_aes_key():
 
 encryption_key, fixed_iv = get_aes_key()
 
-
 def aes_encrypt(plaintext, key):
     cipher = AES.new(key, AES.MODE_CBC, fixed_iv)
     padded_text = pad(plaintext.encode(), AES.block_size)
@@ -139,19 +157,6 @@ def aes_decrypt(ciphertext, key):
     decrypted_data = unpad(cipher.decrypt(
         bytes.fromhex(ciphertext)), AES.block_size)
     return decrypted_data.decode()
-
-
-def handle_api_error(e):
-    """
-    Centralized error handler for API routes.
-    """
-    error_message = "An error occurred while processing your request."
-    if isinstance(e, ValueError):
-        error_message = str(e)
-    elif isinstance(e, KeyError):
-        error_message = "Missing required data in the request."
-    print(f"Error: {str(e)}")
-    return jsonify({"error": error_message}), 500
 
 
 '''
@@ -341,6 +346,7 @@ def protected():
 
 '''
 User Account Routes
+Consists of the following routes: account, delete_account, logout, edit_account, update_budget, get_deductions
 '''
 
 
@@ -527,6 +533,7 @@ def get_deductions():
         return handle_api_error(e)
 '''
 Gas Station Routes
+consists of the following routes: fuel_stations, store_fuel_stations, store_fuel_prices, search_fuel_stations
 '''
 # ! This is the route for sending fuel stations info to Frontend
 
@@ -564,8 +571,6 @@ def get_fuel_stations():
         return handle_api_error(e)
 
 # ! This is the route for storing fuel stations info from Frontend
-
-
 @app.route('/store_fuel_stations', methods=['POST'])
 @require_api_key
 def store_fuel_stations():
@@ -599,8 +604,6 @@ def store_fuel_stations():
 # then got the favorite_stations field which is a list of fuel station objects, then got the id of each fuel station object
 # ref: https://www.mongodb.com/docs/v6.2/reference/method/ObjectId/
 # ref: https://www.mongodb.com/docs/manual/reference/database-references/
-
-
 @app.route('/get_favorite_fuel_stations/', methods=['GET'])
 @require_api_key
 def get_favorite_fuel_stations():
@@ -776,8 +779,6 @@ def store_ev_prices():
 
 
 # ! This is the route for searching fuel stations
-
-
 @app.route('/search_fuel_stations', methods=['GET'])
 @require_api_key
 def search_fuel_stations():
@@ -802,10 +803,6 @@ def search_fuel_stations():
 '''
 Friends Routes
 '''
-
-# Changed By David C
-
-
 @app.route('/send_friend_request', methods=['POST'])
 @require_api_key
 def send_friend_request():
@@ -848,8 +845,6 @@ def send_friend_request():
 
 
 # ! This route is for displaying user's friends
-
-
 @app.route('/list_friends', methods=['GET', 'POST'])
 @require_api_key
 def list_friends():
@@ -969,138 +964,7 @@ def respond_friend_request():
     except Exception as e:
         return handle_api_error(e)
 
-
-# ! This is the route for sending friend requests to Frontend
-
-
-# @app.route('/send_friend_request', methods=['POST'])
-# @require_api_key
-# @jwt_required()
-# def send_friend_request():
-#     try:
-#         data = request.get_json()
-#         current_user = data['phone_number']
-#         recipient_user = data['friend_number']
-#         message = data.get('message', '')
-#
-#         sender = Users.objects.get(phone_number=current_user)
-#         recipient = Users.objects.get(phone_number=recipient_user)
-#
-#         if not recipient:
-#             return jsonify({"error": "Recipient not found"}), 404
-#
-#         existing_request = FriendRequest.objects(
-#             sender=sender, recipient=recipient).first()
-#         if existing_request:
-#             return jsonify({"error": "Friend request already sent"}), 400
-#
-#         friend_request = FriendRequest(
-#             sender=sender,
-#             recipient=recipient,
-#             message=message,
-#             status='pending'
-#         )
-#         friend_request.save()
-#
-#         Notification(
-#             user=recipient,
-#             message=f"You have a new friend request from {sender.full_name}",
-#             type='friend_request_sent',
-#             related_document=friend_request
-#         ).save()
-#
-#         return jsonify({"message": "Friend request sent successfully"}), 200
-#
-#     except Exception as e:
-#         return handle_api_error(e)
-#
-#
-# # ! This route is for displaying user's friends
-#
-#
-# @app.route('/list_friends', methods=['GET'])
-# @require_api_key
-# @jwt_required()
-# def list_friends():
-#     try:
-#         current_user_id = get_jwt_identity()
-#         user = Users.objects.get(id=current_user_id)
-#
-#         friends = Friends.objects(Q(user1=user) | Q(user2=user))
-#
-#         friends_list = []
-#         for friend in friends:
-#             friend_user = friend.user1 if friend.user2.id == current_user_id else friend.user2
-#             friends_list.append({
-#                 'friend_id': str(friend_user.id),
-#                 'friend_name': friend_user.full_name
-#             })
-#
-#         return jsonify({"friends": friends_list}), 200
-#
-#     except Exception as e:
-#         return handle_api_error(e)
-#
-#
-# # ! This route is for accepting or rejecting friend requests
-#
-#
-# @app.route('/respond_friend_request', methods=['POST'])
-# @require_api_key
-# @jwt_required()
-# def respond_friend_request():
-#     try:
-#         current_user_id = get_jwt_identity()
-#         data = request.get_json()
-#         request_id = data['request_id']
-#         action = data['action']
-#
-#         if action not in ['accept', 'reject']:
-#             return jsonify({"error": "Invalid action"}), 400
-#
-#         friend_request = FriendRequest.objects.get(id=request_id)
-#
-#         if friend_request.recipient.id != current_user_id:
-#             return jsonify({"error": "Unauthorized action"}), 403
-#
-#         if action == 'accept':
-#             friend_request.change_status('accepted')
-#             Friends(
-#                 user1=friend_request.sender,
-#                 user2=friend_request.recipient
-#             ).save()
-#
-#             Notification(
-#                 user=friend_request.sender,
-#                 message=f"Your friend request to {friend_request.recipient.full_name} has been accepted.",
-#                 type='friend_request_accepted',
-#                 related_document=friend_request
-#             ).save()
-#
-#             message = "Friend request accepted"
-#         else:
-#             friend_request.change_status('rejected')
-#
-#             Notification(
-#                 user=friend_request.sender,
-#                 message=f"Your friend request to {friend_request.recipient.full_name} has been rejected.",
-#                 type='friend_request_rejected',
-#                 related_document=friend_request
-#             ).save()
-#
-#             message = "Friend request rejected"
-#
-#         return jsonify({"message": message}), 200
-#
-#     except DoesNotExist:
-#         return jsonify({"error": "Friend request not found"}), 404
-#     except Exception as e:
-#         return handle_api_error(e)
-
-
 # ! This route is for canceling friend requests
-
-
 @app.route('/cancel_friend_request', methods=['POST'])
 @require_api_key
 @jwt_required()
@@ -1131,8 +995,6 @@ def cancel_friend_request():
 
 
 # ! This route is for removing friends
-
-
 @app.route('/remove_friend', methods=['POST'])
 @require_api_key
 @jwt_required()
@@ -1193,10 +1055,6 @@ def search_users():
         return handle_api_error(e)
 
 #! This route is for sending friend requests
-
-# TODO I Changed this name to sending_friend_request2
-
-
 @app.route('/send_friend_request2', methods=['POST'])
 @require_api_key
 @jwt_required()
@@ -1235,6 +1093,7 @@ def sending_friend_request2():
 
 '''
 Trip Routes
+consists of the following routes: save_trip, user_suggested_budget
 '''
 
 #! This route is for saving trips
@@ -1346,8 +1205,8 @@ def user_suggested_budget():
 
 '''
 OCR Routes
+consists of the following routes: ocr_uploaded_image
 '''
-
 
 def allowed_file(filename):
     return '.' in filename and \
