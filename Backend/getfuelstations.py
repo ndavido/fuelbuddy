@@ -24,7 +24,7 @@ ireland_bounds = {
 }
 
 # search_types = ['gas_station']
-step_size = 0.1
+step_size = 0.2
 petrol_results = []
 
 
@@ -32,7 +32,7 @@ def get_places_in_region(north, south, east, west):
     location = ((north + south) / 2, (east + west) / 2)
     fuel_stations = []
     try:
-        places_result = gmaps.places_nearby(location, radius=100000, type='gas_station', keyword='petrol diesel')
+        places_result = gmaps.places_nearby(location, radius=100000, type='gas_station', keyword='petrol diesel Petrol station Fuel station Service station Carrickmacross')
         print(f"Found {len(places_result['results'])} gas stations")
         for place in places_result.get('results', []):
             fuel_station = process_place(place)
