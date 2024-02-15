@@ -6,6 +6,9 @@
  *
  * @format
  */
-declare function printRunInstructions(projectDir: string, projectName: string): void;
+interface Options {
+    showPodsInstructions?: boolean;
+}
+declare function printRunInstructions(projectDir: string, projectName: string, options?: Options): void;
 export default printRunInstructions;
 //# sourceMappingURL=printRunInstructions.d.ts.map

@@ -1,0 +1,33 @@
+{
+  "cli": {
+    "version": ">= 7.1.3"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "REACT_NATIVE_API_KEY": "nhu6eJMQx_YXB3anIxzR6w",
+        "REACT_NATIVE_GoogleMaps_API_KEY": "AIzaSyBDpcvXVZDcHO9mtuoOA_p7v29GDwd-vxU",
+        "REACT_APP_BACKEND_URL": "http://ec2-54-227-15-202.compute-1.amazonaws.com"
+      }
+    },
+    "preview": {
+      "distribution": "internal"
+    },
+    "production": {},
+    "androidapk": {
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "REACT_NATIVE_API_KEY": "nhu6eJMQx_YXB3anIxzR6w",
+        "REACT_NATIVE_GoogleMaps_API_KEY": "AIzaSyBDpcvXVZDcHO9mtuoOA_p7v29GDwd-vxU",
+        "REACT_APP_BACKEND_URL": "http://ec2-54-227-15-202.compute-1.amazonaws.com"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

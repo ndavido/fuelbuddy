@@ -17,7 +17,7 @@ import {
     LRContainer, LRButtonDiv
 } from "../styles/styles";
 import PressableButton from '../styles/buttons';
-import Logo from '../styles/logo';
+import {Logo} from '../styles/images';
 import {H1, H2, H3, H4, H5, H6, Img, Txt} from '../styles/text.js';
 
 const url = process.env.REACT_APP_BACKEND_URL

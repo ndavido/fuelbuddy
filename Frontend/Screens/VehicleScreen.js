@@ -1,5 +1,4 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, Button} from 'react-native';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -7,23 +6,14 @@ import { jwtDecode } from "jwt-decode";
 
 // Styling
 import {
-    Main,
+    Content,
+    Main, TextWrapper, Wrapper,
 } from '../styles/styles';
 import {
-    AccountWrapper,
-    AccountInner,
-    AccountContent,
-    AccountTopInfo,
-    AccountBottomInfo,
-    AccountTitle,
     AccountRegularInfo,
     AccountTxt,
-    AccountTxtWrapper,
-    AccountUsername,
-    DeveloperTick
 } from '../styles/accountPage';
 import MainLogo from '../styles/mainLogo';
-import AccountImg from '../styles/accountImg';
 import {H3, H4, H5, H6} from "../styles/text";
 
 const url = process.env.REACT_APP_BACKEND_URL
@@ -75,10 +65,10 @@ const VehicleScreen = () => {
     return (
         <Main>
             <MainLogo bButton={true} PageTxt='Vehicle'/>
-            <AccountWrapper>
+            <Wrapper>
                 <AccountRegularInfo>
-                    <AccountContent>
-                        <AccountTxtWrapper>
+                    <Content>
+                        <TextWrapper>
                             <H5 tmargin='10px' bmargin='10px'>My Car</H5>
                             <H6 bmargin='5px'>Make</H6>
                             <AccountTxt bgColor='grey' >CAR MAKE</AccountTxt>
@@ -86,10 +76,10 @@ const VehicleScreen = () => {
                             <AccountTxt bgColor='#FFFFFF' >CAR MODEL</AccountTxt>
                             <H6 bmargin='5px'>Average Km/l</H6>
                             <AccountTxt bgColor='#FFFFFF' >CAR KM</AccountTxt>
-                        </AccountTxtWrapper>
-                    </AccountContent>
+                        </TextWrapper>
+                    </Content>
                 </AccountRegularInfo>
-            </AccountWrapper>
+            </Wrapper>
         </Main>
     );
 };

@@ -14,8 +14,7 @@
 #include <react/renderer/imagemanager/primitives.h>
 #include <react/utils/SharedFunction.h>
 
-namespace facebook {
-namespace react {
+namespace facebook::react {
 
 /*
  * Represents ongoing request for an image resource.
@@ -37,12 +36,12 @@ class ImageRequest final {
   /*
    * The move constructor.
    */
-  ImageRequest(ImageRequest &&other) noexcept = default;
+  ImageRequest(ImageRequest&& other) noexcept = default;
 
   /*
    * `ImageRequest` does not support copying by design.
    */
-  ImageRequest(const ImageRequest &other) = delete;
+  ImageRequest(const ImageRequest& other) = delete;
 
   /*
    * Calls cancel function if one is defined. Should be when downloading
@@ -53,27 +52,27 @@ class ImageRequest final {
   /*
    * Returns the Image Source associated with the request.
    */
-  const ImageSource &getImageSource() const;
+  const ImageSource& getImageSource() const;
 
   /*
    * Returns stored observer coordinator as a shared pointer.
    * Retain this *or* `ImageRequest` to ensure a correct lifetime of the object.
    */
-  const std::shared_ptr<const ImageResponseObserverCoordinator>
-      &getSharedObserverCoordinator() const;
+  const std::shared_ptr<const ImageResponseObserverCoordinator>&
+  getSharedObserverCoordinator() const;
 
   /*
    * Returns stored observer coordinator as a reference.
    * Use this if a correct lifetime of the object is ensured in some other way
    * (e.g. by retaining an `ImageRequest`).
    */
-  const ImageResponseObserverCoordinator &getObserverCoordinator() const;
+  const ImageResponseObserverCoordinator& getObserverCoordinator() const;
 
   /*
    * Returns stored image telemetry object as a shared pointer.
    * Retain this *or* `ImageRequest` to ensure a correct lifetime of the object.
    */
-  const std::shared_ptr<const ImageTelemetry> &getSharedTelemetry() const;
+  const std::shared_ptr<const ImageTelemetry>& getSharedTelemetry() const;
 
  private:
   /*
@@ -97,5 +96,4 @@ class ImageRequest final {
   SharedFunction<> cancelRequest_;
 };
 
-} // namespace react
-} // namespace facebook
+} // namespace facebook::react
