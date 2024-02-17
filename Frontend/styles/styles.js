@@ -43,7 +43,7 @@ export const Container = styled.View`
 export const ButtonDiv = styled.View`
   height: auto;
   width: 100%;
-  margin-bottom: 100px;
+  margin-bottom: 150px;
   bottom: 0;
   padding: 20px;
   position: absolute;
@@ -73,39 +73,10 @@ export const ButtonContainer = styled.View`
   width: 100%
 `;
 
-const ButtContainer = styled.TouchableOpacity`
-  padding: 12px;
-  width: ${props => props.width};
-  border-radius: 10px;
-  background-color: ${props => props.bgColor};
-  flex-direction: row;
-  display: inline-flex;
+export const TextWrapper = styled.View`
+  margin: 10px;
+  height: auto;
 `;
-
-const EmojiText = styled.Text`
-  font-size: 12px;
-  align-items: center;
-  justify-content: center;
-  line-height: 20px;
-`;
-
-const ButtonText = styled.Text`
-  font-size: 14px;
-  line-height: 20px;
-  align-items: center;
-  justify-content: center;
-  display: flex;
-  font-family: 'Poppins_500Medium';
-  color: ${props => props.txtColor};
-  margin-left: 10px;
-`;
-
-export const MenuButton = ({onPress, width, bgColor, txtColor, title, emoji}) => (
-    <ButtContainer onPress={onPress} width={width} bgColor={bgColor}>
-        <EmojiText>{emoji}</EmojiText>
-        <ButtonText txtColor={txtColor}>{title}</ButtonText>
-    </ButtContainer>
-);
 
 
 /* Welcome Screen */
@@ -117,7 +88,7 @@ export const WelcomeMain = styled.View`
   justify-content: center;
 `;
 
-const LogoContainer = styled.SafeAreaView`
+const LogoContainer = styled.View`
   height: 20%;
   width: 100%;
   margin-top: 225px;
@@ -221,7 +192,7 @@ export const CardTitle = styled.Text`
   margin-bottom: 10px;
 `;
 
-/*Friends Screen*/
+/* Friends Screen */
 export const FContainer = styled.View`
 flex-direction: row;
 justify-content: space-between;
@@ -270,6 +241,10 @@ export const AccountContainer = styled.View`
   padding-left: 10px;
   padding-right: 10px;
   padding-bottom: 70px;
+`;
+
+export const DeveloperTick = styled.Text`
+  font-size: 14px;
 `;
 
 /* Modals */

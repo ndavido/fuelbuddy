@@ -10,14 +10,11 @@ import {useAuth} from '../AuthContext';
 // Styling
 import {
     AccountContainer,
-    Main, TopDesign, TopInfo, WrapperScroll,
+    Main, TopDesign, TopInfo, WrapperScroll, DeveloperTick
 } from '../styles/styles.js';
-import {
-    DeveloperTick
-} from '../styles/accountPage';
 import {H1, H2, H3, H4, H5, H6, H8} from '../styles/text.js';
 import MainLogo from '../styles/mainLogo';
-import AccountImg from '../styles/accountImg';
+import {AccountImg} from '../styles/images';
 import {ButtonButton} from "../styles/AnimatedIconButton";
 
 const AccountScreen = () => {

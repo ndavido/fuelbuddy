@@ -36,9 +36,10 @@ import CustomMarker from "../Components/customMarker";
 import axios from "axios";
 
 
-const apiMapKey = process.env.googleMapsApiKey;
+const apiMapKey = process.env.REACT_NATIVE_GoogleMaps_API_KEY;
 const apiKey = process.env.REACT_NATIVE_API_KEY;
 const url = process.env.REACT_APP_BACKEND_URL
+console.log(apiMapKey)
 
 const MapScreen = () => {
     const [currentTime, setCurrentTime] = useState(new Date());

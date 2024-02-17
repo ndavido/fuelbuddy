@@ -8,13 +8,7 @@ import * as Updates from 'expo-updates';
 
 // Styling
 import {
-    AccountWrapper,
-    AccountContent,
-    AccountRegularInfo,
     AccountTxt,
-    AccountTxtWrapper,
-    AccountUsername,
-    DeveloperTick
 } from '../styles/accountPage';
 import MainLogo from '../styles/mainLogo';
 import {H3, H4, H5, H6} from "../styles/text";

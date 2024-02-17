@@ -7,23 +7,13 @@ import { jwtDecode } from "jwt-decode";
 
 // Styling
 import {
-    Main,
+    Content,
+    Main, TextWrapper, Wrapper,
 } from '../styles/styles';
 import {
-    AccountWrapper,
-    AccountInner,
-    AccountContent,
-    AccountTopInfo,
-    AccountBottomInfo,
-    AccountTitle,
     AccountRegularInfo,
-    AccountTxt,
-    AccountTxtWrapper,
-    AccountUsername,
-    DeveloperTick
 } from '../styles/accountPage';
 import MainLogo from '../styles/mainLogo';
-import AccountImg from '../styles/accountImg';
 import {H3, H4, H5, H6} from "../styles/text";
 
 const url = process.env.REACT_APP_BACKEND_URL
@@ -75,17 +65,17 @@ const DeveloperScreen = () => {
     return (
         <Main>
             <MainLogo bButton={true} PageTxt='Developer'/>
-            <AccountWrapper>
+            <Wrapper>
                     <AccountRegularInfo>
-                        <AccountContent>
+                        <Content>
                             <H3 tmargin='20px' lmargin='20px' bmargin='10px'>Developer Screen</H3>
-                            <AccountTxtWrapper>
+                            <TextWrapper>
 
-                            </AccountTxtWrapper>
+                            </TextWrapper>
 
-                        </AccountContent>
+                        </Content>
                     </AccountRegularInfo>
-            </AccountWrapper>
+            </Wrapper>
         </Main>
     );
 };
