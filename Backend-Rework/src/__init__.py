@@ -11,6 +11,7 @@ from mongoengine import connect
 from src.extenstions.jwt_extension import configure_jwt
 from src.controllers.auth_controller import auth_blueprint
 from src.controllers.account_controller import account_blueprint
+from src.controllers.budget_controller import budget_blueprint
 
 
 app = Flask(__name__)
@@ -24,6 +25,7 @@ app.config['JWT_SECRET_KEY'] = JWT_SECRET_KEY
 
 app.register_blueprint(auth_blueprint)
 app.register_blueprint(account_blueprint)
+app.register_blueprint(budget_blueprint)
 
 configure_jwt(app)
 
