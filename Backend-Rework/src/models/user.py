@@ -21,10 +21,9 @@ class Users(Document):
     weekly_budget = DecimalField(precision=2)
 
     def update_budget(self, new_budget):
-        from .budget import BudgetHistory
+        # Record the old and new budget
         BudgetHistory(
             user=self,
-            old_budget=self.weekly_budget,
             new_budget=new_budget,
             change_date=datetime.now()
         ).save()

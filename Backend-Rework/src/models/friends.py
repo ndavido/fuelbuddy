@@ -4,6 +4,7 @@ from mongoengine import Document, ReferenceField, DateTimeField, StringField, Li
 from .user import Users
 from datetime import datetime
 
+
 class Friends(Document):
     user1 = ReferenceField(Users, reverse_delete_rule='CASCADE')
     user2 = ReferenceField(Users, reverse_delete_rule='CASCADE')

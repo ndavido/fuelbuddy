@@ -6,10 +6,10 @@ from src.middleware.api_key_middleware import require_api_key
 import bcrypt
 import random
 from datetime import datetime
-from src.utils.helper_utils import standardize_irish_number, handle_api_error
+from src.utils.helper_utils import standardize_phone_number, handle_api_error
 from src.utils.validation_utils import validate_phone_number, validate_verification_code
 from src.utils.encryption_utils import aes_encrypt, encryption_key
-from src.models.user import Users, BudgetHistory
+from src.models.user import Users
 from twilio.rest import Client
 from ..config import TWILIO_AUTH_TOKEN, TWILIO_SID, TWILIO_PHONE_NUMBER
 
@@ -29,7 +29,7 @@ def register():
         username = data.get('username')
         phone_number = data.get('phone_number')
 
-        full_phone_number = standardize_irish_number(phone_number)
+        full_phone_number = standardize_phone_number(phone_number)
         if not validate_phone_number(full_phone_number):
             return jsonify({"error": "Invalid phone number format"}), 400
 
@@ -109,7 +109,7 @@ def login():
             return jsonify({"error": "Phone number is required"}), 400
 
         try:
-            standardized_phone_number = standardize_irish_number(phone_number)
+            standardized_phone_number = standardize_phone_number(phone_number)
         except ValueError as err:
             return jsonify({"error": str(err)}), 400
 
@@ -156,7 +156,7 @@ def login_verify():
             return jsonify({"error": "Phone number and code are required"}), 400
 
         try:
-            standardized_phone_number = standardize_irish_number(phone_number)
+            standardized_phone_number = standardize_phone_number(phone_number)
         except ValueError as ve:
             return jsonify({"error": str(ve)}), 400
 

@@ -4,6 +4,7 @@ from mongoengine import Document, ReferenceField, DateTimeField, StringField, Ge
 from .user import Users
 from datetime import datetime
 
+
 class Notification(Document):
     user = ReferenceField(Users, reverse_delete_rule='CASCADE')
     message = StringField()

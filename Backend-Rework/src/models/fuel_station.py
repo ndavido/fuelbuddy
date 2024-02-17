@@ -4,24 +4,37 @@ from datetime import datetime
 from mongoengine import Document, StringField, DateTimeField, FloatField, ListField, EmbeddedDocumentField, BooleanField, ReferenceField, EmbeddedDocument
 from .user import Users
 
+
 class PetrolPrices(EmbeddedDocument):
     price = FloatField(required=True)
     updated_at = DateTimeField(default=datetime.utcnow)
 
+
 class DieselPrices(EmbeddedDocument):
     price = FloatField(required=True)
     updated_at = DateTimeField(default=datetime.utcnow)
+
+
+class OpeningHours(EmbeddedDocument):
+    day = StringField()
+    hours = StringField()
+
 
 class FuelStation(Document):
     name = StringField(required=True)
     address = StringField(required=True)
     latitude = FloatField(required=True)
     longitude = FloatField(required=True)
+    place_id = StringField(required=True, unique=True)
     petrol_prices = ListField(EmbeddedDocumentField(PetrolPrices))
     diesel_prices = ListField(EmbeddedDocumentField(DieselPrices))
+    opening_hours = ListField(EmbeddedDocumentField(OpeningHours))
+    phone_number = StringField()
     meta = {
-        'collection': 'FuelStation'
+        'collection': 'FuelStationTest'
     }
+
+
 class FavoriteFuelStation(Document):
     user = ReferenceField(Users, required=True)
     favorite_stations = ListField(ReferenceField(FuelStation))
@@ -29,6 +42,8 @@ class FavoriteFuelStation(Document):
     meta = {
         'collection': 'FavoriteFuelStation'
     }
+
+
 class FuelPrices(Document):
     station = ReferenceField(FuelStation, required=True)
     petrol_prices = ListField(EmbeddedDocumentField(PetrolPrices))
@@ -37,6 +52,7 @@ class FuelPrices(Document):
     meta = {
         'collection': 'FuelPrices'
     }
+
 
 class ChargingStation(Document):
     name = StringField(required=True)
