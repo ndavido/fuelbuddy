@@ -3,6 +3,7 @@ import {View, Text, Button} from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {jwtDecode} from "jwt-decode";
+import {useCombinedContext} from "../CombinedContext";
 
 // Styling
 import {
@@ -19,25 +20,22 @@ import {useNavigation} from "@react-navigation/native";
 import {ButtonButton} from "../styles/AnimatedIconButton";
 
 const url = process.env.REACT_APP_BACKEND_URL
+const apiKey = process.env.REACT_NATIVE_API_KEY;
 
 const DeleteConfirmScreen = () => {
     const navigate = useNavigation();
+
+    const {logout} = useCombinedContext();
+
     const handleConfirmDelete = async () => {
 
-        const apiKey = process.env.REACT_NATIVE_API_KEY;
-
-        const config = {
-            headers: {
-                'X-API-Key': apiKey,
-            },
-        };
         const handleLogout = async () => {
             try {
                 await AsyncStorage.removeItem('token');
 
                 delete axios.defaults.headers.common['Authorization'];
 
-                navigation.navigate('Welcome');
+                await logout();
 
             } catch (error) {
                 console.error('Error logging out:', error);
@@ -45,8 +43,6 @@ const DeleteConfirmScreen = () => {
         };
 
         try {
-            const apiKey = process.env.REACT_NATIVE_API_KEY;
-
             const config = {
                 headers: {
                     'X-API-Key': apiKey,
@@ -72,7 +68,7 @@ const DeleteConfirmScreen = () => {
                 }
             }
         } catch (error) {
-            console.error('Error fetching user account information:', error);
+            console.error('Error Deleting user account:', error);
         }
     };
 

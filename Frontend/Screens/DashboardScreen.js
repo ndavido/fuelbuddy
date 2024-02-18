@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {View, Image, Text, RefreshControl, Button, TextInput, Modal, StyleSheet} from 'react-native';
 import {BarChart, LineChart, PieChart} from "react-native-gifted-charts"
 import {jwtDecode} from "jwt-decode";
+import {useCombinedContext} from "../CombinedContext";
 
 //Styling
 import {
@@ -51,18 +52,13 @@ const DashboardScreen = () => {
 
     const barLabels = ["Nov", "Dec", "Jan"];
 
+    const {userData, updateUserFromBackend} = useCombinedContext();
+
 
     useEffect(() => {
         const fetchUserInfo = async () => {
             try {
-                const userDataJson = await AsyncStorage.getItem('userData');
-                if (userDataJson) {
-                    const userData = JSON.parse(userDataJson);
-                    setUserInfo(userData);
-
-                    await collectDashboardInfo(userData);
-
-                }
+                await collectDashboardInfo();
             } catch (error) {
                 console.error('Error fetching user account information:', error);
             }
@@ -139,45 +135,27 @@ const DashboardScreen = () => {
     // TODO How to Quickly reload info on the dashboard
     const collectUserInfo = async () => {
         try {
-            const apiKey = process.env.REACT_NATIVE_API_KEY;
             const storedToken = await AsyncStorage.getItem('token');
 
             console.log("Testing")
 
             if (storedToken) {
-                const decodedToken = jwtDecode(storedToken);
 
-                console.log(decodedToken)
+                await updateUserFromBackend();
 
-                const phone = decodedToken.sub;
+                collectDashboardInfo();
 
-                console.log(phone)
-
-                const config = {
-                    headers: {
-                        'X-API-Key': apiKey,
-                    },
-                };
-
-                collectDashboardInfo(userInfo);
-
-                const response = await axios.post(`${url}/account`, {phone_number: phone}, config);
-
-                if (response.data && response.data.user) {
-                    console.log(response.data.user)
-                    await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
-
-                }
             }
         } catch (error) {
             console.error('Error fetching user account information:', error);
         }
     };
 
-    const collectDashboardInfo = async (userData) => {
+    const collectDashboardInfo = async () => {
         try {
             const weeklyBudget = typeof userData.weekly_budget === 'number' ? userData.weekly_budget : 0;
             setWeeklyBudget(weeklyBudget);
+            console.log('Weekly budget:', weeklyBudget);
 
             const deductionsResponse = await axios.post(`${url}/get_deductions`, {username: userData.username}, {
                 headers: {
@@ -204,7 +182,7 @@ const DashboardScreen = () => {
 
             console.log(weeklyBudget);
 
-            if (typeof userInfo.weekly_budget !== 'number') {
+            if (typeof userData.weekly_budget !== 'number') {
                 const pieData = [
                     {value: 0, color: '#6BFF91'},
                     {value: 1, color: '#F7F7F7'}
@@ -217,17 +195,31 @@ const DashboardScreen = () => {
                 setBarData(barData);
                 setPieData(pieData);
             } else {
-                const pieData = [
-                    {value: cumulativeValue, color: '#6BFF91'},
-                    {value: userInfo.weekly_budget - cumulativeValue, color: '#F7F7F7'}
-                ];
-                const barData = [
-                    {value: 10},
-                    {value: 15},
-                    {value: 10},
-                ];
-                setBarData(barData);
-                setPieData(pieData);
+                if (cumulativeValue >= userData.weekly_budget) {
+                    const pieData = [
+                        {value: userData.weekly_budget, color: '#FF6B6B'},
+                        {value: cumulativeValue - userData.weekly_budget, color: '#FF6B6B'}
+                    ];
+                    const barData = [
+                        {value: 0},
+                        {value: 0},
+                        {value: userData.weekly_budget},
+                    ];
+                    setBarData(barData);
+                    setPieData(pieData);
+                } else {
+                    const pieData = [
+                        {value: cumulativeValue, color: '#6BFF91'},
+                        {value: userData.weekly_budget - cumulativeValue, color: '#F7F7F7'}
+                    ];
+                    const barData = [
+                        {value: 0},
+                        {value: 0},
+                        {value: userData.weekly_budget},
+                    ];
+                    setBarData(barData);
+                    setPieData(pieData);
+                }
             }
         } catch (error) {
             console.error('Error collecting dashboard information:', error);
@@ -257,13 +249,11 @@ const DashboardScreen = () => {
 
     const addDeduction = async (newDeduction) => {
         try {
-            const userDataJson = await AsyncStorage.getItem('userData');
-            const userInfo = JSON.parse(userDataJson);
 
             const apiUrl = `${url}/update_budget`;
 
             const requestBody = {
-                username: userInfo.username,
+                username: userData.username,
                 deductions: newDeduction,
             };
 
@@ -287,13 +277,10 @@ const DashboardScreen = () => {
 
     const updateWeeklyBudget = async (newWeeklyBudget) => {
         try {
-            const userDataJson = await AsyncStorage.getItem('userData');
-            const userInfo = JSON.parse(userDataJson);
-
             const apiUrl = `${url}/update_budget`;
 
             const requestBody = {
-                username: userInfo.username,
+                username: userData.username,
                 weekly_budget: newWeeklyBudget,
             };
 
@@ -306,10 +293,7 @@ const DashboardScreen = () => {
 
             if (response.data.message) {
                 console.log(response.data.message);
-                setUserInfo((prevUserInfo) => ({
-                    ...prevUserInfo,
-                    weekly_budget: newWeeklyBudget,
-                }));
+                updateUserFromBackend();
                 await onRefresh();
             } else {
                 console.error('Failed to update weekly budget:', response.data.error);
@@ -350,7 +334,7 @@ const DashboardScreen = () => {
                 />
             }>
                 <TitleContainer>
-                    <H3 weight='500' tmargin='30px' lmargin='20px' bmargin='10px'>Hey, {userInfo.username}</H3>
+                    <H3 weight='500' tmargin='30px' lmargin='20px' bmargin='10px'>Hey, {userData.full_name}</H3>
                 </TitleContainer>
                 <DashboardContainer>
                     <CardOverlap>
@@ -445,7 +429,7 @@ const DashboardScreen = () => {
                             <H5>Breakdown</H5>
                             <ButtonContainer style={{position: 'absolute', marginTop: 10, marginLeft: 10}}>
                                 <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
-                                    {userInfo.weekly_budget ? (
+                                    {userData.weekly_budget ? (
                                         <ButtonButton icon='plus' color='#6BFF91' onPress={handleAddDeductionPress}/>
                                     ) : (
                                         <ButtonButton icon='plus' text='add' onPress={handleUpdateButtonPress}/>
@@ -473,7 +457,7 @@ const DashboardScreen = () => {
                                                 alignItems: 'center',
                                             }}>
                                                 <H8 style={{opacity: 0.5}}>Spent</H8>
-                                                <Text><H5>€</H5><H2>{cumulativeValue}/</H2><H5>€</H5><H2>{userInfo.weekly_budget}</H2></Text>
+                                                <Text><H5>€</H5><H2>{cumulativeValue}/</H2><H5>€</H5><H2>{userData.weekly_budget}</H2></Text>
                                             </View>
                                         );
                                     }}

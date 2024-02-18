@@ -1,6 +1,6 @@
 import React, {useEffect} from 'react';
-import {AuthProvider} from './AuthContext';
 import AppNavigator from './AppNavigator';
+import {CombinedProvider} from './CombinedContext';
 import {useFonts, Poppins_500Medium, Poppins_400Regular, Poppins_600SemiBold} from '@expo-google-fonts/poppins';
 import * as SplashScreen from 'expo-splash-screen';
 import {GestureHandlerRootView} from "react-native-gesture-handler";
@@ -34,9 +34,9 @@ function App() {
 
     return (
         <GestureHandlerRootView style={{flex: 1}}>
-            <AuthProvider>
+            <CombinedProvider>
                 <AppNavigator/>
-            </AuthProvider>
+            </CombinedProvider>
         </GestureHandlerRootView>
     );
 }
