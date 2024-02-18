@@ -13,6 +13,7 @@ from src.controllers.auth_controller import auth_blueprint
 from src.controllers.account_controller import account_blueprint
 from src.controllers.budget_controller import budget_blueprint
 from src.controllers.fuel_station_controller import fuel_station_blueprint
+from src.controllers.friend_controller import friend_blueprint
 
 
 app = Flask(__name__)
@@ -28,6 +29,7 @@ app.register_blueprint(auth_blueprint)
 app.register_blueprint(account_blueprint)
 app.register_blueprint(budget_blueprint)
 app.register_blueprint(fuel_station_blueprint)
+app.register_blueprint(friend_blueprint)
 
 configure_jwt(app)
 
