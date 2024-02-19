@@ -1,7 +1,7 @@
 import os
 import googlemaps
-from database import Database
-from models import FuelStation, OpeningHours
+from src.models import FuelStation, OpeningHours
+from src.extenstions.db_connection import db_connect
 from dotenv import load_dotenv
 import time
 
@@ -12,14 +12,14 @@ load_dotenv()
 
 key = os.getenv('GOOGLE_MAPS_API_KEY')
 
-db = Database()
+db_connect()
 
 gmaps = googlemaps.Client(key=key)
 
 ireland_bounds = {
     'north': 54.4061,
     'south': 54.2189,
-    'west':  -7.1897,
+    'west': -7.1897,
     'east': -6.9865,
 }
 
@@ -32,7 +32,8 @@ def get_places_in_region(north, south, east, west):
     location = ((north + south) / 2, (east + west) / 2)
     fuel_stations = []
     try:
-        places_result = gmaps.places_nearby(location, radius=100000, type='gas_station', keyword='petrol diesel Petrol station Fuel station Service station Carrickmacross')
+        places_result = gmaps.places_nearby(location, radius=100000, type='gas_station',
+                                            keyword='petrol diesel Petrol station Fuel station Service station Carrickmacross')
         print(f"Found {len(places_result['results'])} gas stations")
         for place in places_result.get('results', []):
             fuel_station = process_place(place)
@@ -68,13 +69,15 @@ def process_place(place):
                                          'formatted_phone_number'])
     result_data = details_result.get('result', {})
 
-    opening_hours_data = result_data.get('opening_hours', {}).get('periods', [])
+    opening_hours_data = result_data.get(
+        'opening_hours', {}).get('periods', [])
     opening_hours = [OpeningHours(
         day=str(period['open']['day']),
         hours=f"{period['open']['time']}–{period['close']['time']}" if 'close' in period else ""
     ) for period in opening_hours_data] if opening_hours_data else None
     existing_station.opening_hours = opening_hours
-    phone_number = result_data.get('formatted_phone_number', 'Phone number not available')
+    phone_number = result_data.get(
+        'formatted_phone_number', 'Phone number not available')
     existing_station.phone_number = phone_number
 
     print(f"Place processed: {existing_station.name}")
@@ -88,7 +91,8 @@ while current_north > ireland_bounds['south']:
     current_west = ireland_bounds['west']
     while current_west < ireland_bounds['east']:
         current_east = min(current_west + step_size, ireland_bounds['east'])
-        fuel_stations = get_places_in_region(current_north, current_south, current_east, current_west)
+        fuel_stations = get_places_in_region(
+            current_north, current_south, current_east, current_west)
         for fuel_station in fuel_stations:
             fuel_station.save()
         total_fuel_station_count += len(fuel_stations)
@@ -98,4 +102,5 @@ while current_north > ireland_bounds['south']:
 REQUEST_DELAY = 2
 time.sleep(REQUEST_DELAY)
 
-print(f"Data inserted into MongoDB. Total Fuel Stations added: {total_fuel_station_count}")
+print(
+    f"Data inserted into MongoDB. Total Fuel Stations added: {total_fuel_station_count}")

@@ -6,8 +6,8 @@ from flask_cors import CORS, cross_origin
 # # from .middleware import *
 # from .models import *
 # from .services import *
-from src.config import API_KEY, JWT_SECRET_KEY, MONGO_DB_NAME, MONGO_URI
-from mongoengine import connect
+from src.config import API_KEY, JWT_SECRET_KEY
+from src.extenstions.db_connection import db_connect
 from src.extenstions.jwt_extension import configure_jwt
 from src.controllers.auth_controller import auth_blueprint
 from src.controllers.account_controller import account_blueprint
@@ -33,8 +33,4 @@ app.register_blueprint(friend_blueprint)
 
 configure_jwt(app)
 
-connect(
-    db=MONGO_DB_NAME,
-    host=MONGO_URI,
-    alias='default'
-)
+db_connect()
