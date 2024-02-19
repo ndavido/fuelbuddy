@@ -3,7 +3,9 @@ from keras.models import load_model
 from sklearn.preprocessing import MinMaxScaler
 import pandas as pd
 from models import BudgetHistory, Users
-import database
+from extenstions.db_connection import db_connect
+
+db_connect()
 
 # Define the load_saved_model function
 
@@ -28,10 +30,13 @@ def make_prediction(model, scaler, last_weeks_data, look_back):
     return predicted_price
 
 # Define the rounding function
+
+
 def round_to_nearest_10(predicted_price):
     # Round the predicted price to the nearest 10
     adjusted_predicted_price = round(predicted_price / 10) * 10
     return adjusted_predicted_price
+
 
 # Load the pre-trained model and initialize the scaler
 look_back = 10
@@ -47,28 +52,32 @@ if user:
 
     if user_budget_history and user_budget_history.weekly_budgets:
         # Extract the 'amount' from each weekly budget entry
-        weekly_budgets_amounts = [wb['amount'] for wb in user_budget_history.weekly_budgets]
-        
+        weekly_budgets_amounts = [wb['amount']
+                                  for wb in user_budget_history.weekly_budgets]
+
         # If there are fewer entries than the look_back, pad the list with zeros
         if len(weekly_budgets_amounts) < look_back:
-            weekly_budgets_amounts = [0] * (look_back - len(weekly_budgets_amounts)) + weekly_budgets_amounts
-        
+            weekly_budgets_amounts = [
+                0] * (look_back - len(weekly_budgets_amounts)) + weekly_budgets_amounts
+
         # Select the last 'look_back' number of amounts
         last_weeks_data = weekly_budgets_amounts[-look_back:]
-        
+
         # Scale the data
-        last_weeks_scaled = scaler.fit_transform(np.array(last_weeks_data).reshape(-1, 1))
-        
+        last_weeks_scaled = scaler.fit_transform(
+            np.array(last_weeks_data).reshape(-1, 1))
+
         # Make the prediction
-        predicted_price = make_prediction(model, scaler, last_weeks_scaled, look_back)
-        
+        predicted_price = make_prediction(
+            model, scaler, last_weeks_scaled, look_back)
+
         # Adjust the prediction to the nearest 10
         adjusted_predicted_price = round_to_nearest_10(predicted_price[0][0])
 
         print("Next Week's Predicted Price is: ", predicted_price[0][0])
-        print("Adjusted Predicted Price to the nearest 10 is: ", adjusted_predicted_price)
+        print("Adjusted Predicted Price to the nearest 10 is: ",
+              adjusted_predicted_price)
     else:
         print('No weekly budgets found for user')
 else:
     print('User not found')
-
