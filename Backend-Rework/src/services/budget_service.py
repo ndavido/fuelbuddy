@@ -5,6 +5,7 @@ from src.middleware.api_key_middleware import require_api_key
 from src.models.user import Users
 from src.models.budget import BudgetHistory, WeeklyBudget, Deduction
 from src.utils.helper_utils import handle_api_error
+from src.utils.nn_utils import load_saved_model, make_prediction
 from mongoengine.errors import DoesNotExist, ValidationError
 from datetime import datetime
 from sklearn.preprocessing import MinMaxScaler
@@ -91,34 +92,18 @@ def get_deductions():
 
 @require_api_key
 def user_suggested_budget():
-    from keras.models import load_model
-
-    def load_saved_model(model_path):
-        return load_model(model_path)
-
-# Define the make_prediction function
-    def make_prediction(model, scaler, last_weeks_data, look_back):
-        # Reshape and scale the input data
-        last_weeks_data = np.array(last_weeks_data).reshape(-1, 1)
-        last_weeks_data_scaled = scaler.transform(last_weeks_data)
-        last_weeks_data_scaled = last_weeks_data_scaled.reshape(
-            1, look_back, 1)
-
-        # Make the prediction
-        predicted_price = model.predict(last_weeks_data_scaled)
-        predicted_price = scaler.inverse_transform(predicted_price)
-        return predicted_price[0][0]
 
     # Define the model path and look_back period
     look_back = 10
-    model_path = 'Backend/Updated_user_model.h5'
+    model_path = 'Backend-Rework/src/neural_network/Updated_user_model.h5'
 
     # Load the pre-trained model
     model = load_saved_model(model_path)
 
     # Initialize the scaler
     scaler = MinMaxScaler(feature_range=(0, 1))
-    df = pd.read_csv('Backend/unseen_spending_data.csv')
+    df = pd.read_csv(
+        'Backend-Rework/src/neural_network/unseen_spending_data.csv')
     data = df['Total'].values.reshape(-1, 1)
     scaler.fit(data)
 
