@@ -91,11 +91,15 @@ const FriendsScreen = () => {
                 },
             };
 
+            console.log(user1)
+
             const response = await axios.post(
                 `${url}/requested_friends`,
                 {phone_number: user1},
                 config
             );
+
+            console.log(response.data)
 
             if (response.data && response.data.requested_friends) {
                 setRequestedFriends(response.data.requested_friends);

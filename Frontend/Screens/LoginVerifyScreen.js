@@ -1,7 +1,7 @@
 import React, {useState, useRef} from 'react';
 import {View, Text, TextInput, Button} from 'react-native';
 import axios from 'axios';
-import {useAuth} from '../AuthContext';
+import {useCombinedContext} from "../CombinedContext";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import * as SecureStore from 'expo-secure-store';
@@ -26,7 +26,7 @@ const url = process.env.REACT_APP_BACKEND_URL
 
 const LoginVerifyScreen = ({route}) => {
     const navigation = useNavigation();
-    const {login} = useAuth();
+    const {login} = useCombinedContext();
 
     const [formData, setFormData] = useState({
         phone_number: route.params.phone,
