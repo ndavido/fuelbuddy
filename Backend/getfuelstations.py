@@ -71,8 +71,27 @@ def process_place(place):
             longitude=longitude,
             place_id=place_id
         )
+    facilities = {
+        'car_wash': 'Car Wash',
+        'car_repair': 'Car Repair',
+        'car_service': 'Car Service',
+        'car_parking': 'Car Parking',
+        'deli': 'Deli',
+        'restrooms': 'Restrooms',
+        'atm': 'ATM',
+        'convenience_store': 'Convenience Store',
+        'coffee': 'Coffee',
+        'food': 'Food',
+        'wifi': 'WiFi'
+    }
 
-    # Check if car wash is available
+    for field, facility_name in facilities.items():
+        facility_available = False
+        if 'types' in place:
+            if field in place['types']:
+                facility_available = True
+        setattr(existing_station, field, facility_available)
+
     car_wash = False
     if 'types' in place:
         if 'car_wash' in place['types']:
