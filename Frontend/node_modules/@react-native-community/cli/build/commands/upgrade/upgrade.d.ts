@@ -1,8 +1,8 @@
-import { Config } from '@react-native-community/cli-types';
+import type { Config } from '@react-native-community/cli-types';
 /**
  * Upgrade application to a new version of React Native.
  */
-declare function upgrade(argv: Array<string>, ctx: Config): Promise<void>;
+declare function upgrade(_: string[], { root: projectDir }: Config): Promise<void>;
 declare const upgradeCommand: {
     name: string;
     description: string;

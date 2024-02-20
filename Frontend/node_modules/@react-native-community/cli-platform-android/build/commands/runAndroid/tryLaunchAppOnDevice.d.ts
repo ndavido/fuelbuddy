@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  *
  */
-import { Flags } from '.';
-declare function tryLaunchAppOnDevice(device: string | void, packageName: string, adbPath: string, args: Flags): void;
+import { AndroidProject, Flags } from '.';
+declare function tryLaunchAppOnDevice(device: string | void, androidProject: AndroidProject, adbPath: string, args: Flags): void;
 export default tryLaunchAppOnDevice;
 //# sourceMappingURL=tryLaunchAppOnDevice.d.ts.map

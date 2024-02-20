@@ -5,28 +5,24 @@ import axios from 'axios';
 import {PanGestureHandler, GestureHandlerRootView, State} from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {jwtDecode} from "jwt-decode";
-import {useAuth} from '../AuthContext';
 
 // Styling
 import {
     AccountContainer,
-    Main, TopDesign, TopInfo, WrapperScroll,
+    Main, TopDesign, TopInfo, WrapperScroll, DeveloperTick
 } from '../styles/styles.js';
-import {
-    DeveloperTick
-} from '../styles/accountPage';
 import {H1, H2, H3, H4, H5, H6, H8} from '../styles/text.js';
 import MainLogo from '../styles/mainLogo';
-import AccountImg from '../styles/accountImg';
+import {AccountImg} from '../styles/images';
 import {ButtonButton} from "../styles/AnimatedIconButton";
+import {useCombinedContext} from "../CombinedContext";
 
 const AccountScreen = () => {
     const navigate = useNavigation();
-    const [userInfo, setUserInfo] = useState({});
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
 
-    const {logout} = useAuth();
+    const {userData, setUser, logout, updateUserFromBackend} = useCombinedContext();
 
     const handleLogout = async () => {
         try {
@@ -77,21 +73,6 @@ const AccountScreen = () => {
         }
     };
 
-    useEffect(() => {
-        const fetchUserInfo = async () => {
-            try {
-                const userDataJson = await AsyncStorage.getItem('userData');
-                if (userDataJson) {
-                    setUserInfo(JSON.parse(userDataJson));
-                }
-            } catch (error) {
-                console.error('Error fetching user account information:', error);
-            }
-        };
-
-        fetchUserInfo();
-    }, []);
-
     return (
         <Main>
             <MainLogo PageTxt='Account'/>
@@ -103,9 +84,9 @@ const AccountScreen = () => {
                 <TopInfo>
                     <View style={{zIndex: 1000, top: 30}}>
                         <AccountImg/>
-                        <H4 tmargin="10px" style={{textAlign: 'center'}}>{userInfo.full_name}</H4>
+                        <H4 tmargin="10px" style={{textAlign: 'center'}}>{userData.full_name}</H4>
                         <H6 weight="400"
-                            style={{textAlign: 'center'}}>@{userInfo.username} {userInfo.roles && userInfo.roles.includes("Developer") &&
+                            style={{textAlign: 'center'}}>@{userData.username} {userData.roles && userData.roles.includes("Developer") &&
                             <DeveloperTick>🧑‍💻</DeveloperTick>}</H6>
                     </View>
                     <TopDesign>
@@ -127,7 +108,7 @@ const AccountScreen = () => {
                                   txtColor="black" txtMargin="15px" text="Support (NA)"/>
 
                     {/*Display the Developer button only if the user is a developer*/}
-                    {userInfo.roles && userInfo.roles.includes("Developer") &&
+                    {userData.roles && userData.roles.includes("Developer") &&
                         <ButtonButton pos="single" iconColor="#b8bec2" icon="classic-computer" color="#FFFFFF"
                                       txtColor="black" txtMargin="15px" text="Developer Settings" onPress={handleDev}/>}
 

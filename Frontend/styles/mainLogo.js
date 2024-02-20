@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components/native';
 import BackButton from './backButton';
 
-const LogoContainer = styled.SafeAreaView`
+const LogoContainer = styled.View`
   height: 85px;
   width: 100%;
   background-color: #FFFFFF;
@@ -15,7 +15,7 @@ const LogoContainer = styled.SafeAreaView`
   justify-content: center;
 `;
 
-const LogoInner = styled.SafeAreaView`
+const LogoInner = styled.View`
   height: 25px;
   width:50%;
   bottom: 5px;

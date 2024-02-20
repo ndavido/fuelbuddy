@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import BottomSheet from '@gorhom/bottom-sheet';
 import * as Location from "expo-location";
+import {useCombinedContext} from "../CombinedContext";
 
 const jsonBig = require('json-bigint');
 
@@ -36,16 +37,17 @@ import CustomMarker from "../Components/customMarker";
 import axios from "axios";
 
 
-const apiMapKey = process.env.googleMapsApiKey;
+const apiMapKey = process.env.REACT_NATIVE_GoogleMaps_API_KEY;
 const apiKey = process.env.REACT_NATIVE_API_KEY;
 const url = process.env.REACT_APP_BACKEND_URL
+console.log(apiMapKey)
 
 const MapScreen = () => {
     const [currentTime, setCurrentTime] = useState(new Date());
     const [petrolStations, setPetrolStations] = useState([]);
 
     const [location, setLocation] = useState(null);
-    const [userInfo, setUserInfo] = useState({});
+    const { userData, setUser, updateUserFromBackend } = useCombinedContext();
     const [userHeading, setUserHeading] = useState(null);
 
     const [favoriteStations, setFavoriteStations] = useState([]);
@@ -126,22 +128,8 @@ const MapScreen = () => {
         }, 60000);
 
         setShowStationInfo(false);
-        const fetchUserInfo = async () => {
-            try {
-                const userDataJson = await AsyncStorage.getItem('userData');
 
-                if (userDataJson) {
-                    const parsedUserData = jsonBig.parse(userDataJson);
-                    await setUserInfo(parsedUserData);
-
-                    fetchLocationAndPetrolStations(parsedUserData);
-                }
-            } catch (error) {
-                console.error('Error fetching user account information:', error);
-            }
-        };
-
-        const fetchLocationAndPetrolStations = async (userData) => {
+        const fetchLocationAndPetrolStations = async () => {
             let {status} = await Location.requestForegroundPermissionsAsync();
             if (status !== "granted") {
                 console.error("Permission to access location was denied");
@@ -174,13 +162,14 @@ const MapScreen = () => {
                     updateDirectionIndexBasedOnLocation(newLocation.coords);
                 });
 
-                fetchFavoriteStations(userData);
+                fetchFavoriteStations();
             } catch (error) {
                 console.error("Error fetching user location:", error);
             }
         }
 
-        fetchUserInfo();
+        //fetchUserInfo()
+        fetchLocationAndPetrolStations();
         return () => {
             clearInterval(refreshInterval);
             clearInterval(intervalId);
@@ -189,13 +178,12 @@ const MapScreen = () => {
 
     const manualRefresh = async () => {
         setRefreshing(true);
-        const userDataJson = await AsyncStorage.getItem('userData');
+        const token = await AsyncStorage.getItem('token');
 
-        if (userDataJson) {
-            const parsedUserData = jsonBig.parse(userDataJson);
-            await setUserInfo(parsedUserData);
+        if (token) {
+            await updateUserFromBackend();
 
-            await fetchFavoriteStations(parsedUserData);
+            await fetchFavoriteStations();
         }
         setRefreshing(false);
     };
@@ -220,7 +208,7 @@ const MapScreen = () => {
         }
     };
 
-    const fetchFavoriteStations = async (userData) => {
+    const fetchFavoriteStations = async () => {
         try {
             const updatedUserData = {
                 username: userData.username,
@@ -291,7 +279,7 @@ const MapScreen = () => {
     const handleLikePress = async (stationId) => {
         try {
             const payload = {
-                username: userInfo.username,
+                username: userData.username,
                 station_id: stationId,
             };
 

@@ -2,19 +2,12 @@ import React, {useState, useEffect} from 'react';
 import {View, Text, Button, TextInput, RefreshControl} from 'react-native';
 import axios from 'axios';
 import {useNavigation} from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {jwtDecode} from "jwt-decode";
+import { useCombinedContext } from '../CombinedContext';
 import * as Updates from 'expo-updates';
 
 // Styling
 import {
-    AccountWrapper,
-    AccountContent,
-    AccountRegularInfo,
     AccountTxt,
-    AccountTxtWrapper,
-    AccountUsername,
-    DeveloperTick
 } from '../styles/accountPage';
 import MainLogo from '../styles/mainLogo';
 import {H3, H4, H5, H6} from "../styles/text";
@@ -24,7 +17,6 @@ import {ButtonButton} from "../styles/AnimatedIconButton";
 const url = process.env.REACT_APP_BACKEND_URL
 
 const AccountScreen = () => {
-    const [userInfo, setUserInfo] = useState({});
     const [loading, setLoading] = useState(true);
     const [editMode, setEditMode] = useState(false);
     const [editedFullName, setEditedFullName] = useState('');
@@ -32,14 +24,15 @@ const AccountScreen = () => {
     const [editedEmail, setEditedEmail] = useState('');
     const [message, setMessage] = useState('');
     const navigation = useNavigation();
+    const { userData, setUser, updateUserFromBackend } = useCombinedContext();
 
     const handleEditToggle = () => {
         setEditMode(!editMode);
 
         if (!editMode) {
-            setEditedFullName(userInfo.full_name);
-            setEditedPhoneNumber(userInfo.phone_number);
-            setEditedEmail(userInfo.email);
+            setEditedFullName(userData.full_name);
+            setEditedPhoneNumber(userData.phone_number);
+            setEditedEmail(userData.email);
         }
     };
 
@@ -60,7 +53,7 @@ const AccountScreen = () => {
             };
 
             const updatedUserData = {
-                ...userInfo,
+                ...userData,
                 full_name: editedFullName,
                 phone_number: editedPhoneNumber,
                 email: editedEmail
@@ -69,10 +62,9 @@ const AccountScreen = () => {
             const response = await axios.patch(`${url}/edit_account`, updatedUserData, config);
 
             if (response.data && response.data.message === 'Account updated successfully') {
-                setUserInfo(updatedUserData);
+                setUser({ ...updatedUserData });
                 setEditMode(false);
 
-                await AsyncStorage.setItem('userData', JSON.stringify(updatedUserData));
             } else {
                 console.log("Update unsuccessful");
             }
@@ -86,23 +78,7 @@ const AccountScreen = () => {
     };
 
     useEffect(() => {
-        const fetchUserInfo = async () => {
-            try {
-                const userDataJson = await AsyncStorage.getItem('userData');
-                if (userDataJson) {
-                    const userData = JSON.parse(userDataJson);
-                    setUserInfo(userData);
-
-                    setEditedFullName(userData.full_name || '');
-                    setEditedPhoneNumber(userData.phone_number || '');
-                    setEditedEmail(userData.email || '');
-                }
-            } catch (error) {
-                console.error('Error fetching user account information:', error);
-            }
-        };
-
-        fetchUserInfo();
+        updateUserFromBackend();
     }, []);
 
     return (
@@ -122,9 +98,9 @@ const AccountScreen = () => {
                     {editMode ? (
                         <>
                             <H6 bmargin='5px'>Username</H6>
-                            <AccountTxt bgColor='grey'>@{userInfo.username}</AccountTxt>
+                            <AccountTxt bgColor='grey'>@{userData.username}</AccountTxt>
                             <H6 bmargin='5px'>Phone Number</H6>
-                            <AccountTxt bgColor='grey'>{userInfo.phone_number}</AccountTxt>
+                            <AccountTxt bgColor='grey'>{userData.phone_number}</AccountTxt>
                             <H6 bmargin='5px'>Name</H6>
                             <InputTxt bcolor='white' value={editedFullName} onChangeText={setEditedFullName}
                                       placeholder="Full Name"/>
@@ -135,13 +111,13 @@ const AccountScreen = () => {
                     ) : (
                         <>
                             <H6 bmargin='5px'>Username</H6>
-                            <AccountTxt bgColor='grey'>@{userInfo.username}</AccountTxt>
+                            <AccountTxt bgColor='grey'>@{userData.username}</AccountTxt>
                             <H6 bmargin='5px'>Phone Number</H6>
-                            <AccountTxt bgColor='grey'>{userInfo.phone_number}</AccountTxt>
+                            <AccountTxt bgColor='grey'>{userData.phone_number}</AccountTxt>
                             <H6 bmargin='5px'>Name</H6>
-                            <AccountTxt bgColor='#FFFFFF'>{userInfo.full_name}</AccountTxt>
+                            <AccountTxt bgColor='#FFFFFF'>{userData.full_name}</AccountTxt>
                             <H6 bmargin='5px'>Email</H6>
-                            <AccountTxt bgColor='#FFFFFF'>{userInfo.email}</AccountTxt>
+                            <AccountTxt bgColor='#FFFFFF'>{userData.email}</AccountTxt>
                         </>
                     )}
                     <H6 tmargin='10px' bmargin='10px'>{message}</H6>

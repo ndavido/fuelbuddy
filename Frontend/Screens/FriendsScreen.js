@@ -18,17 +18,10 @@ import {useNavigation} from '@react-navigation/native';
 import MainLogo from '../styles/mainLogo';
 import {
     ButtonContainer,
-    FContainer,
-    InputTxt,
     Main,
-    FSButtonContainer,
-    AddFriendButton,
     WrapperScroll, AccountContainer,
-    ModalContent, SearchBox
+    ModalContent, SearchBox, TextWrapper
 } from '../styles/styles';
-import {
-    AccountTxtWrapper,
-} from '../styles/accountPage';
 import {jwtDecode} from "jwt-decode";
 import {H3, H4, H5, H6} from "../styles/text";
 import {ButtonButton} from "../styles/AnimatedIconButton";
@@ -98,11 +91,15 @@ const FriendsScreen = () => {
                 },
             };
 
+            console.log(user1)
+
             const response = await axios.post(
                 `${url}/requested_friends`,
                 {phone_number: user1},
                 config
             );
+
+            console.log(response.data)
 
             if (response.data && response.data.requested_friends) {
                 setRequestedFriends(response.data.requested_friends);
@@ -274,7 +271,7 @@ const FriendsScreen = () => {
                             <ButtonButton text="Add Friends" onPress={openSearchModal}/>
                         </View>
                     </ButtonContainer>
-                    <AccountTxtWrapper>
+                    <TextWrapper>
                         {hasRequestedFriends && (
                             <>
                                 <H5 tmargin='10px' bmargin='10px'>Added Me</H5>
@@ -367,7 +364,7 @@ const FriendsScreen = () => {
                                 </ModalContent>
                             </View>
                         </Modal>
-                    </AccountTxtWrapper>
+                    </TextWrapper>
                 </AccountContainer>
             </WrapperScroll>
         </Main>
