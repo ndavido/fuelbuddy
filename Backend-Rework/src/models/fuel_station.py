@@ -29,6 +29,7 @@ class FuelStation(Document):
     petrol_prices = ListField(EmbeddedDocumentField(PetrolPrices))
     diesel_prices = ListField(EmbeddedDocumentField(DieselPrices))
     opening_hours = ListField(EmbeddedDocumentField(OpeningHours))
+    car_wash = BooleanField()
     phone_number = StringField()
     meta = {
         'collection': 'FuelStationTest'

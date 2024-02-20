@@ -10,6 +10,7 @@ class Location(Document):
     latitude = FloatField(required=True)
     longitude = FloatField(required=True)
 
+
 class Users(Document):
     username = StringField(required=True, unique=True)
     full_name = StringField()
@@ -35,13 +36,16 @@ class Users(Document):
         self.weekly_budget = new_budget
         self.save()
 
+
 class WeeklyBudget(EmbeddedDocument):
     amount = DecimalField(precision=2)
     updated_at = DateTimeField(default=datetime.now)
 
+
 class Deduction(EmbeddedDocument):
     amount = DecimalField(precision=2)
     updated_at = DateTimeField(default=datetime.now)
+
 
 class BudgetHistory(Document):
     user = ReferenceField('Users', required=True)
@@ -63,17 +67,21 @@ class Vehicle(Document):
     # Include 'Electric' as an option
     fuel_type = StringField(choices=('Petrol', 'Diesel', 'Electric'))
 
+
 class PetrolPrices(EmbeddedDocument):
     price = FloatField(required=True)
     updated_at = DateTimeField(default=datetime.utcnow)
+
 
 class DieselPrices(EmbeddedDocument):
     price = FloatField(required=True)
     updated_at = DateTimeField(default=datetime.utcnow)
 
+
 class OpeningHours(EmbeddedDocument):
     day = StringField()
     hours = StringField()
+
 
 class FuelStation(Document):
     name = StringField(required=True)
@@ -89,6 +97,8 @@ class FuelStation(Document):
     meta = {
         'collection': 'FuelStationTest'
     }
+
+
 class FavoriteFuelStation(Document):
     user = ReferenceField(Users, required=True)
     favorite_stations = ListField(ReferenceField(FuelStation))
@@ -96,6 +106,8 @@ class FavoriteFuelStation(Document):
     meta = {
         'collection': 'FavoriteFuelStation'
     }
+
+
 class FuelPrices(Document):
     station = ReferenceField(FuelStation, required=True)
     petrol_prices = ListField(EmbeddedDocumentField(PetrolPrices))
@@ -104,6 +116,7 @@ class FuelPrices(Document):
     meta = {
         'collection': 'FuelPrices'
     }
+
 
 class ChargingStation(Document):
     name = StringField(required=True)
