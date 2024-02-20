@@ -16,11 +16,18 @@ db = Database()
 
 gmaps = googlemaps.Client(key=key)
 
+# ireland_bounds = {
+#     'north': 54.4061,
+#     'south': 54.2189,
+#     'west':  -7.1897,
+#     'east': -6.9865,
+# }
+
 ireland_bounds = {
-    'north': 54.4061,
-    'south': 54.2189,
-    'west':  -7.1897,
-    'east': -6.9865,
+    'north': 55.4,
+    'south': 51.4,
+    'west': -10.5,
+    'east': -5.5,
 }
 
 # search_types = ['gas_station']
@@ -79,10 +86,13 @@ def process_place(place):
         hours=f"{period['open']['time']}–{period['close']['time']}" if 'close' in period else ""
     ) for period in opening_hours_data] if opening_hours_data else None
     existing_station.opening_hours = opening_hours
-    phone_number = place.get('formatted_phone_number', 'Phone number not available')
-    existing_station.phone_number = phone_number
 
-    print(f"Place processed: {existing_station.name} - {existing_station.address} - {existing_station.latitude} - {existing_station.longitude} - {existing_station.place_id} - {existing_station.car_wash} - {existing_station.phone_number} - {existing_station.opening_hours}")
+    phone_results = gmaps.place(place_id=place_id, fields=['formatted_phone_number'])
+    phone_number = phone_results.get('result', {}).get('formatted_phone_number', 'Phone number not available')
+    existing_station.phone_number = phone_number
+    print(phone_number, 'phone number')
+
+    # print(f"Place processed: {existing_station.name} - {existing_station.address} - {existing_station.latitude} - {existing_station.longitude} - {existing_station.place_id} - {existing_station.car_wash} - {existing_station.phone_number} - {existing_station.opening_hours}")
     return existing_station
 
 
