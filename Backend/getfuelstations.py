@@ -1,7 +1,7 @@
 import os
 import googlemaps
-from ..extenstions.db_connection import db_connect
-from ..models.fuel_station import FuelStation, OpeningHours
+from .src.extenstions.db_connection import db_connect
+from .src.models.fuel_station import FuelStation, OpeningHours
 from dotenv import load_dotenv
 import time
 
