@@ -7,7 +7,7 @@ import bcrypt
 import random
 from datetime import datetime
 from src.utils.helper_utils import standardize_phone_number, handle_api_error
-from src.utils.validation_utils import validate_phone_number, validate_verification_code
+from src.utils.validation_utils import validate_phone_number, validate_verification_code, validate_username
 from src.utils.encryption_utils import aes_encrypt, encryption_key
 from src.models.user import Users
 from twilio.rest import Client
@@ -35,10 +35,14 @@ def register():
 
         encrypted_phone_number = aes_encrypt(full_phone_number, encryption_key)
 
+
+        if not validate_username(username):
+            return jsonify({"error": "Username is too short(Must be at least 6 characters long)"}), 400
         if Users.objects(username=username).first():
             return jsonify({"error": "Username already exists"}), 409
         if Users.objects(phone_number=encrypted_phone_number).first():
             return jsonify({"error": "Phone number is already associated with another account"}), 409
+        
 
         verification_code = str(random.randint(100000, 999999))
         hashed_code = bcrypt.hashpw(
