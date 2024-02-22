@@ -98,7 +98,7 @@ const LoginScreen = () => {
                 if (!phoneNumberPattern.test(shortNum)) {
                     showErrorToast('Please enter a valid phone number (e.g. 8XXXXXXXX or 08XXXXXXXX)');
                 } else {
-                    showErrorToast('An error occurred. Please try again.');
+                    showErrorToast('Account with this number not found.');
                 }
                 setErrorBorder(true);
             }
@@ -109,7 +109,7 @@ const LoginScreen = () => {
             if (!phoneNumberPattern.test(shortNum)) {
                 showErrorToast('Please enter a valid phone number (e.g. 8XXXXXXXX or 08XXXXXXXX)');
             } else {
-                showErrorToast(error.response?.data?.error || 'An error occurred.'); // Set message to error.response.data.error
+                showErrorToast(error.response?.data?.error || 'Account with this number not found.'); // Set message to error.response.data.error
             }
             setErrorBorder(true);
         }

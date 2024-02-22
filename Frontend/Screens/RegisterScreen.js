@@ -162,11 +162,11 @@ const RegisterScreen = () => {
                     showErrorToast(response.data.message);
                 }
             } else {
-                showErrorToast('An error occurred. Please try again.');
+                showErrorToast(response.data.message);
                 setErrorBorder(true);
             }
         } catch (error) {
-            showErrorToast(error.response?.data?.error || 'An error occurred.');
+            showErrorToast(error.response?.data?.error);
             setErrorBorder(true);
         }
     };

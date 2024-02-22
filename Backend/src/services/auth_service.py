@@ -36,8 +36,6 @@ def register():
         encrypted_phone_number = aes_encrypt(full_phone_number, encryption_key)
 
 
-        if not validate_username(username):
-            return jsonify({"error": "Username is too short(Must be at least 6 characters long)"}), 400
         if Users.objects(username=username).first():
             return jsonify({"error": "Username already exists"}), 409
         if Users.objects(phone_number=encrypted_phone_number).first():

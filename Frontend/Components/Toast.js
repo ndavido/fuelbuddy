@@ -57,8 +57,8 @@ const Toast = forwardRef((props, ref) => {
             textColorValue = 'white';
         }
         if (type == 'success') {
-            color = 'green';
-            textColorValue = 'black';
+            color = '#6bff91';
+            textColorValue = 'white';
         }
         setMessage(message);
         setToastColor(color);
