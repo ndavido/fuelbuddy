@@ -5,6 +5,8 @@ import {useCombinedContext} from "../CombinedContext";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import * as SecureStore from 'expo-secure-store';
+import Toast from '../Components/Toast.js';
+import {forwardRef, useImperativeHandle} from 'react';
 
 //Styling
 import {
@@ -25,6 +27,26 @@ import {H1, H2, H3, H4, H5, H6, Img, Txt} from '../styles/text.js';
 const url = process.env.REACT_APP_BACKEND_URL
 
 const LoginVerifyScreen = ({route}) => {
+    const toastRef = useRef(null);
+    const [errorBorder, setErrorBorder] = useState(false);
+
+    
+    
+    const showToast = (message) => {
+        if (toastRef.current) {
+          toastRef.current.success(message);
+        }
+      };
+    
+      const showErrorToast = (message) => {
+        if (toastRef.current) {
+          toastRef.current.error(message);
+          console.log("error toast call")
+        }
+      };
+
+
+
     const navigation = useNavigation();
     const {login} = useCombinedContext();
 
@@ -65,7 +87,7 @@ const LoginVerifyScreen = ({route}) => {
                 console.log("Uh Oh")
             }
         } catch (error) {
-            setMessage(error.response.data.error);
+            showErrorToast(error.response.data.error);
         }
     };
 
@@ -86,8 +108,8 @@ const LoginVerifyScreen = ({route}) => {
 
                 const response = await axios.post(`${url}/login`, { phone_number: formData.phone_number, }, config );
 
-                if (response && response.data) {
-                    setMessage('Code resent successfully!');
+                if (response && response.data) {                   
+                    showToast('Code resent successfully!');
                     updateResendCount();
                 } else {
                     setMessage('Failed to resend code. Please try again.');
@@ -103,6 +125,7 @@ const LoginVerifyScreen = ({route}) => {
     return (
         <WelcomeMain>
             <Logo/>
+            <Toast ref={toastRef} />
             <Wrapper>
                 <Content>
                     <Container>
@@ -112,7 +135,6 @@ const LoginVerifyScreen = ({route}) => {
                             placeholder=""
                             onChangeText={(text) => handleChange('code', text)}
                         />
-                        <H6 tmargin='10px'>{message}</H6>
                     </Container>
                     <LRButtonDiv>
                         <PressableButton

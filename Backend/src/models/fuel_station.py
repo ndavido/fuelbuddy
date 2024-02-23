@@ -29,7 +29,17 @@ class FuelStation(Document):
     petrol_prices = ListField(EmbeddedDocumentField(PetrolPrices))
     diesel_prices = ListField(EmbeddedDocumentField(DieselPrices))
     opening_hours = ListField(EmbeddedDocumentField(OpeningHours))
-    car_wash = BooleanField()
+    car_wash = BooleanField(default=False)
+    car_repair = BooleanField(default=False)
+    car_service = BooleanField(default=False)
+    car_parking = BooleanField(default=False)
+    deli = BooleanField(default=False)
+    restrooms = BooleanField(default=False)
+    atm = BooleanField(default=False)
+    convenience_store = BooleanField(default=False)
+    coffee = BooleanField(default=False)
+    food = BooleanField(default=False)
+    wifi = BooleanField(default=False)
     phone_number = StringField()
     meta = {
         'collection': 'FuelStationTest'

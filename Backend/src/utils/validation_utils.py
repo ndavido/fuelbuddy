@@ -3,9 +3,6 @@
 import re
 
 def validate_phone_number(phone_number):
-    """
-    Validate the phone number format.
-    """
     pattern = re.compile(r"^\+?[1-9]\d{1,14}$")
     return bool(pattern.match(phone_number))
 

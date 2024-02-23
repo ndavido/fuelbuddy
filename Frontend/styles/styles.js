@@ -1,5 +1,5 @@
 import React from 'react';
-import styled from "styled-components/native";
+import styled, {css} from "styled-components/native";
 import {FontAwesome5} from "@expo/vector-icons";
 
 /* Main Styling */
@@ -62,6 +62,8 @@ export const InputTxt = styled.TextInput`
   line-height: 18px;
   background-color: ${props => props.bcolor || '#F7F7F7'};
   border-radius: 10px;
+  ${(props) => props.inputErrorBorder && redBorderColor}
+  ${(props) => props.inputErrorBorder1 && redBorderColor}
 `;
 
 export const ButtonContainer = styled.View`
@@ -125,6 +127,11 @@ export const LRContainer = styled.View`
   position: relative;
 `;
 
+const redBorderColor = css`
+  border-color: red;
+  border-width: 1px;
+`;
+
 export const PhoneTxt = styled.TextInput`
   width: 82%;
   margin-left: 2%;
@@ -134,6 +141,7 @@ export const PhoneTxt = styled.TextInput`
   line-height: 18px;
   background-color: #F7F7F7;
   border-radius: 10px;
+  ${(props) => props.errorBorder && redBorderColor}
 `;
 
 export const CCTxt = styled.TextInput`
