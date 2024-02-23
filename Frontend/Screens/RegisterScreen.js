@@ -27,9 +27,10 @@ const url = process.env.REACT_APP_BACKEND_URL
 
 const validateName = (name) => {
     // Check if name has at least two words (first name and last name)
-    const nameParts = name.split(' ');
-    return nameParts.length >= 2;
+    const nameParts = name.split(/[\s-]+/); // Splitting by space or hyphen
+    return nameParts.length >= 2 && /^[A-Za-z]+$/.test(nameParts.join('')) && !nameParts.some(part => part === '-' || part === '');
 };
+
 
 const validateUsername = (username) => {
     // Check if username is at least 6 characters long
