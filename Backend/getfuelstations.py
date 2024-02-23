@@ -1,7 +1,7 @@
 import os
 import googlemaps
-from .src.extenstions.db_connection import db_connect
-from .src.models.fuel_station import FuelStation, OpeningHours
+from src.extenstions.db_connection import db_connect
+from src.models.fuel_station import FuelStation, OpeningHours
 from dotenv import load_dotenv
 import time
 
@@ -33,6 +33,7 @@ ireland_bounds = {
 # search_types = ['gas_station']
 step_size = 0.2
 petrol_results = []
+#            location, radius=100000, type='gas_station', keyword='Louth Maxol petrol diesel')
 
 
 def get_places_in_region(north, south, east, west):
@@ -40,7 +41,7 @@ def get_places_in_region(north, south, east, west):
     fuel_stations = []
     try:
         places_result = gmaps.places_nearby(
-            location, radius=100000, type='gas_station', keyword='petrol diesel Petrol station Fuel station Service station')
+            location, radius=100000, type='gas_station', keyword='petrol diesel Petrol station Fuel station Service station Dundalk Ireland Maxol')
         print(f"Found {len(places_result['results'])} gas stations")
         for place in places_result.get('results', []):
             fuel_station = process_place(place)
@@ -79,7 +80,7 @@ def process_place(place):
         'car_service': 'Car Service',
         'car_parking': 'Car Parking',
         'deli': 'Deli',
-        'restrooms': 'Restrooms',
+        'restroom': 'Restrooms',
         'atm': 'ATM',
         'convenience_store': 'Convenience Store',
         'coffee': 'Coffee',
@@ -94,13 +95,6 @@ def process_place(place):
                 facility_available = True
         setattr(existing_station, field, facility_available)
 
-    car_wash = False
-    if 'types' in place:
-        if 'car_wash' in place['types']:
-            car_wash = True
-
-    existing_station.car_wash = car_wash
-
     opening_hours_data = place.get('opening_hours', {}).get('periods', [])
     opening_hours = [OpeningHours(
         day=str(period['open']['day']),
@@ -113,7 +107,7 @@ def process_place(place):
     phone_number = phone_results.get('result', {}).get(
         'formatted_phone_number', 'Phone number not available')
     existing_station.phone_number = phone_number
-    print(phone_number, 'phone number')
+    print(existing_station.name, 'name')
 
     # print(f"Place processed: {existing_station.name} - {existing_station.address} - {existing_station.latitude} - {existing_station.longitude} - {existing_station.place_id} - {existing_station.car_wash} - {existing_station.phone_number} - {existing_station.opening_hours}")
     return existing_station
