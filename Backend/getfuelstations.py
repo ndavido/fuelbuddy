@@ -22,13 +22,19 @@ gmaps = googlemaps.Client(key=key)
 #     'west':  -7.1897,
 #     'east': -6.9865,
 # }
-
 ireland_bounds = {
     'north': 55.4,
     'south': 51.4,
     'west': -10.5,
     'east': -5.5,
 }
+# ireland_bounds = {
+#     'north': 51.9,  # Approximate latitude for Cork
+#     'south': 51.9,  # Approximate latitude for Cork
+#     'west': -8.5,   # Approximate longitude for Cork
+#     'east': -8.5    # Approximate longitude for Cork
+# }
+
 
 # search_types = ['gas_station']
 step_size = 0.2
@@ -41,7 +47,8 @@ def get_places_in_region(north, south, east, west):
     fuel_stations = []
     try:
         places_result = gmaps.places_nearby(
-            location, radius=100000, type='gas_station', keyword='petrol diesel Petrol station Fuel station Service station Dundalk Ireland Maxol')
+            location, radius=100000, type='gas_station',
+            keyword='Applegreen OR "Circle K" OR Texaco OR Esso OR Maxol OR Shell OR BP OR Gulf OR Emo OR Go OR Inver OR "Petrol station" OR "Diesel station" OR "Fuel station" OR "Gas station" OR "Service station"')
         print(f"Found {len(places_result['results'])} gas stations")
         for place in places_result.get('results', []):
             fuel_station = process_place(place)
@@ -95,18 +102,24 @@ def process_place(place):
                 facility_available = True
         setattr(existing_station, field, facility_available)
 
-    opening_hours_data = place.get('opening_hours', {}).get('periods', [])
-    opening_hours = [OpeningHours(
-        day=str(period['open']['day']),
-        hours=f"{period['open']['time']}–{period['close']['time']}" if 'close' in period else ""
-    ) for period in opening_hours_data] if opening_hours_data else None
-    existing_station.opening_hours = opening_hours
+    try:
+        place_details = gmaps.place(place_id=place_id, fields=['opening_hours'])
+        opening_hours_data = place_details.get('result', {}).get('opening_hours', {}).get('periods', [])
+        opening_hours = [OpeningHours(
+            day=str(period['open']['day']),
+            hours=f"{period['open']['time']}–{period['close']['time']}" if 'close' in period else ""
+        ) for period in opening_hours_data] if opening_hours_data else None
+        existing_station.opening_hours = opening_hours
+    except Exception as e:
+        print(f"An error occurred while retrieving opening hours: {e}")
 
-    phone_results = gmaps.place(place_id=place_id, fields=[
-                                'formatted_phone_number'])
-    phone_number = phone_results.get('result', {}).get(
-        'formatted_phone_number', 'Phone number not available')
-    existing_station.phone_number = phone_number
+    try:
+        phone_results = gmaps.place(place_id=place_id, fields=['formatted_phone_number'])
+        phone_number = phone_results.get('result', {}).get('formatted_phone_number', 'Phone number not available')
+        existing_station.phone_number = phone_number
+    except Exception as e:
+        print(f"An error occurred while retrieving phone number: {e}")
+
     print(existing_station.name, 'name')
 
     # print(f"Place processed: {existing_station.name} - {existing_station.address} - {existing_station.latitude} - {existing_station.longitude} - {existing_station.place_id} - {existing_station.car_wash} - {existing_station.phone_number} - {existing_station.opening_hours}")
