@@ -28,13 +28,22 @@ def get_fuel_stations():
                 },
                 # handle null values and have -1 to ensure to get the latest price (may change this after frontend is done)
                 'prices': {
-                    'petrol_price': fuel_station.petrol_prices[-1].price if fuel_station.petrol_prices else None,
+                    'petrol_price': fuel_station.petrol_prices[-1].regular if fuel_station.petrol_prices else None,  # Adjust if needed for price type
                     'petrol_updated_at': fuel_station.petrol_prices[-1].updated_at.strftime('%Y-%m-%d %H:%M:%S') if fuel_station.petrol_prices else None,
-                    'diesel_price': fuel_station.diesel_prices[-1].price if fuel_station.diesel_prices else None,
+                    'diesel_price': fuel_station.diesel_prices[-1].regular if fuel_station.diesel_prices else None,  # Adjust if needed for price type
                     'diesel_updated_at': fuel_station.diesel_prices[-1].updated_at.strftime('%Y-%m-%d %H:%M:%S') if fuel_station.diesel_prices else None
                 },
+                'facilities': {
+                    'car_wash': fuel_station.facilities.car_wash,
+                    'car_repair': fuel_station.facilities.car_repair,
+                    'car_service': fuel_station.facilities.car_service,
+                    'car_parking': fuel_station.facilities.car_parking,
+                    'atm': fuel_station.facilities.atm,
+                    'convenience_store': fuel_station.facilities.convenience_store,
+                    'food': fuel_station.facilities.food,
+                    'phone_number': fuel_station.phone_number
+                }
             }
-
             result.append(station_data)
 
         return jsonify(result)

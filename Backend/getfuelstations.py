@@ -1,7 +1,7 @@
 import os
 import googlemaps
 from src.extenstions.db_connection import db_connect
-from src.models.fuel_station import FuelStation, OpeningHours
+from src.models.fuel_station import FuelStation, OpeningHours, Facilities
 from dotenv import load_dotenv
 import time
 
@@ -9,19 +9,10 @@ import time
 # ref: https://developers.google.com/maps/documentation/places/web-service/overview
 
 load_dotenv()
-
 key = os.getenv('GOOGLE_MAPS_API_KEY')
-
 db_connect()
-
 gmaps = googlemaps.Client(key=key)
 
-# ireland_bounds = {
-#     'north': 54.4061,
-#     'south': 54.2189,
-#     'west':  -7.1897,
-#     'east': -6.9865,
-# }
 ireland_bounds = {
     'north': 55.4,
     'south': 51.4,
@@ -79,20 +70,18 @@ def process_place(place):
             address=address,
             latitude=latitude,
             longitude=longitude,
-            place_id=place_id
+            place_id=place_id,
+            facilities=Facilities()
         )
+
     facilities = {
-        'car_wash': 'Car Wash',
-        'car_repair': 'Car Repair',
-        'car_service': 'Car Service',
-        'car_parking': 'Car Parking',
-        'deli': 'Deli',
-        'restroom': 'Restrooms',
+        'car_wash': 'car wash',
+        'car_repair': 'car repair',
+        'car_service': 'car service',
+        'car_parking': 'car park',
         'atm': 'ATM',
-        'convenience_store': 'Convenience Store',
-        'coffee': 'Coffee',
-        'food': 'Food',
-        'wifi': 'WiFi'
+        'convenience_store': 'convenience store',
+        'food': 'food',
     }
 
     for field, facility_name in facilities.items():
@@ -121,6 +110,7 @@ def process_place(place):
         print(f"An error occurred while retrieving phone number: {e}")
 
     print(existing_station.name, 'name')
+    print(existing_station.car_wash, 'car wash')
 
     # print(f"Place processed: {existing_station.name} - {existing_station.address} - {existing_station.latitude} - {existing_station.longitude} - {existing_station.place_id} - {existing_station.car_wash} - {existing_station.phone_number} - {existing_station.opening_hours}")
     return existing_station
@@ -144,5 +134,4 @@ while current_north > ireland_bounds['south']:
 REQUEST_DELAY = 2
 time.sleep(REQUEST_DELAY)
 
-print(
-    f"Data inserted into MongoDB. Total Fuel Stations added: {total_fuel_station_count}")
+print(f"Data inserted into MongoDB. Total Fuel Stations added: {total_fuel_station_count}")
