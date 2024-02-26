@@ -7,7 +7,7 @@ import bcrypt
 import random
 from datetime import datetime
 from src.utils.helper_utils import standardize_phone_number, handle_api_error
-from src.utils.validation_utils import validate_phone_number, validate_verification_code, validate_username
+from src.utils.validation_utils import validate_phone_number, validate_verification_code
 from src.utils.encryption_utils import aes_encrypt, encryption_key
 from src.models.user import Users
 from twilio.rest import Client
