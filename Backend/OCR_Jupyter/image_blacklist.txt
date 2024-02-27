@@ -1,0 +1,11 @@
+<!-- Not Wokring at all -->
+images/reciepts/rec1.jpg
+images/reciepts/rec2_cut.png
+images/reciepts/rec3.jpg
+images/reciepts/test.jpg
+
+
+<!-- Needs optional Preprocessing -->
+images/reciepts/test3.png
+images/reciepts/test4.png
+images/reciepts/test6.png
