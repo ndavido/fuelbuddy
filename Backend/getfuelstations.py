@@ -1,7 +1,7 @@
 import os
 import googlemaps
 from src.extenstions.db_connection import db_connect
-from src.models.fuel_station import FuelStation, OpeningHours
+from src.models.fuel_station import FuelStation, OpeningHours, Facilities
 from dotenv import load_dotenv
 import time
 
@@ -9,19 +9,9 @@ import time
 # ref: https://developers.google.com/maps/documentation/places/web-service/overview
 
 load_dotenv()
-
 key = os.getenv('GOOGLE_MAPS_API_KEY')
-
 db_connect()
-
 gmaps = googlemaps.Client(key=key)
-
-# ireland_bounds = {
-#     'north': 54.4061,
-#     'south': 54.2189,
-#     'west':  -7.1897,
-#     'east': -6.9865,
-# }
 
 ireland_bounds = {
     'north': 55.4,
@@ -29,6 +19,13 @@ ireland_bounds = {
     'west': -10.5,
     'east': -5.5,
 }
+# ireland_bounds = {
+#     'north': 51.9,  # Approximate latitude for Cork
+#     'south': 51.9,  # Approximate latitude for Cork
+#     'west': -8.5,   # Approximate longitude for Cork
+#     'east': -8.5    # Approximate longitude for Cork
+# }
+
 
 # search_types = ['gas_station']
 step_size = 0.2
@@ -41,7 +38,8 @@ def get_places_in_region(north, south, east, west):
     fuel_stations = []
     try:
         places_result = gmaps.places_nearby(
-            location, radius=100000, type='gas_station', keyword='petrol diesel Petrol station Fuel station Service station Dundalk Ireland Maxol')
+            location, radius=100000, type='gas_station',
+            keyword='Applegreen OR "Circle K" OR Texaco OR Esso OR Maxol OR Shell OR BP OR Gulf OR Emo OR Go OR Inver OR "Petrol station" OR "Diesel station" OR "Fuel station" OR "Gas station" OR "Service station"')
         print(f"Found {len(places_result['results'])} gas stations")
         for place in places_result.get('results', []):
             fuel_station = process_place(place)
@@ -72,20 +70,18 @@ def process_place(place):
             address=address,
             latitude=latitude,
             longitude=longitude,
-            place_id=place_id
+            place_id=place_id,
+            facilities=Facilities()
         )
+
     facilities = {
-        'car_wash': 'Car Wash',
-        'car_repair': 'Car Repair',
-        'car_service': 'Car Service',
-        'car_parking': 'Car Parking',
-        'deli': 'Deli',
-        'restroom': 'Restrooms',
+        'car_wash': 'car wash',
+        'car_repair': 'car repair',
+        'car_service': 'car service',
+        'car_parking': 'car park',
         'atm': 'ATM',
-        'convenience_store': 'Convenience Store',
-        'coffee': 'Coffee',
-        'food': 'Food',
-        'wifi': 'WiFi'
+        'convenience_store': 'convenience store',
+        'food': 'food',
     }
 
     for field, facility_name in facilities.items():
@@ -95,19 +91,26 @@ def process_place(place):
                 facility_available = True
         setattr(existing_station, field, facility_available)
 
-    opening_hours_data = place.get('opening_hours', {}).get('periods', [])
-    opening_hours = [OpeningHours(
-        day=str(period['open']['day']),
-        hours=f"{period['open']['time']}–{period['close']['time']}" if 'close' in period else ""
-    ) for period in opening_hours_data] if opening_hours_data else None
-    existing_station.opening_hours = opening_hours
+    try:
+        place_details = gmaps.place(place_id=place_id, fields=['opening_hours'])
+        opening_hours_data = place_details.get('result', {}).get('opening_hours', {}).get('periods', [])
+        opening_hours = [OpeningHours(
+            day=str(period['open']['day']),
+            hours=f"{period['open']['time']}–{period['close']['time']}" if 'close' in period else ""
+        ) for period in opening_hours_data] if opening_hours_data else None
+        existing_station.opening_hours = opening_hours
+    except Exception as e:
+        print(f"An error occurred while retrieving opening hours: {e}")
 
-    phone_results = gmaps.place(place_id=place_id, fields=[
-                                'formatted_phone_number'])
-    phone_number = phone_results.get('result', {}).get(
-        'formatted_phone_number', 'Phone number not available')
-    existing_station.phone_number = phone_number
+    try:
+        phone_results = gmaps.place(place_id=place_id, fields=['formatted_phone_number'])
+        phone_number = phone_results.get('result', {}).get('formatted_phone_number', 'Phone number not available')
+        existing_station.phone_number = phone_number
+    except Exception as e:
+        print(f"An error occurred while retrieving phone number: {e}")
+
     print(existing_station.name, 'name')
+    print(existing_station.car_wash, 'car wash')
 
     # print(f"Place processed: {existing_station.name} - {existing_station.address} - {existing_station.latitude} - {existing_station.longitude} - {existing_station.place_id} - {existing_station.car_wash} - {existing_station.phone_number} - {existing_station.opening_hours}")
     return existing_station
@@ -131,5 +134,4 @@ while current_north > ireland_bounds['south']:
 REQUEST_DELAY = 2
 time.sleep(REQUEST_DELAY)
 
-print(
-    f"Data inserted into MongoDB. Total Fuel Stations added: {total_fuel_station_count}")
+print(f"Data inserted into MongoDB. Total Fuel Stations added: {total_fuel_station_count}")
