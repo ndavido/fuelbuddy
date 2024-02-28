@@ -4,13 +4,13 @@ from mongoengine import Document, DateTimeField, DecimalField, StringField, Refe
 from datetime import datetime
 
 
-class RecieptOcr(Document):
+class ReceiptOcr(Document):
     user = ReferenceField('Users', required=True)
     reciept = StringField(required=True)  # image in bit
-    fuel_type = StringField()
-    volume = DecimalField(precision=2)
-    price_per_litre = DecimalField(precision=3)
-    total = DecimalField(precision=2)
+    fuel_type = StringField(required=True)
+    volume = DecimalField(required=True, precision=2)
+    price_per_litre = DecimalField(required=True, precision=3)
+    total = DecimalField(required=True, precision=2)
     date = DateTimeField(default=datetime.now)
     meta = {
         'collection': 'RecieptOcr',
