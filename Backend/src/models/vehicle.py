@@ -25,3 +25,7 @@ class Vehicle(Document):
     fuel_tank_capacity_l = IntField()
     CO2_emissions_g_km = IntField()
     car_class = StringField()
+
+    meta = {
+        'collection': 'vehicle_data'
+    }
