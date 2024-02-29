@@ -2,13 +2,12 @@
 
 from flask import Blueprint, request, jsonify
 import io
-from src.utils.ocr_utils import extract_receipt_info_single, allowed_file
+from src.utils.ocr_utils import extract_receipt_info_single, allowed_file, ocr_cleanup
+import cv2
+import numpy as np
 
 
 def upload_file():
-    import cv2
-    import numpy as np
-    import pytesseract
 
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'}), 400
@@ -23,15 +22,8 @@ def upload_file():
             data = np.frombuffer(in_memory_file.getvalue(), dtype=np.uint8)
             image = cv2.imdecode(data, cv2.IMREAD_COLOR)
 
-            # Process the image
-            image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            image = cv2.threshold(
-                image, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
-            text = pytesseract.image_to_string(image)
-            filtered_text = '\n'.join(
-                line for line in text.split('\n') if line.strip() != '')
-
-            extracted_info_single = extract_receipt_info_single(filtered_text)
+            extracted_info_single = extract_receipt_info_single(
+                ocr_cleanup(image), image)
 
             return jsonify(extracted_info_single)
         except Exception as e:
