@@ -3,6 +3,7 @@
 from flask import Blueprint, request, jsonify
 import io
 from src.utils.ocr_utils import extract_receipt_info_single, allowed_file, ocr_cleanup
+from src.utils.image_utils import convert_image_to_base64, retrieve_image
 import cv2
 import numpy as np
 
@@ -17,10 +18,7 @@ def upload_file():
     if file and allowed_file(file.filename):
         try:
             # Read the file's content into a numpy array
-            in_memory_file = io.BytesIO()
-            file.save(in_memory_file)
-            data = np.frombuffer(in_memory_file.getvalue(), dtype=np.uint8)
-            image = cv2.imdecode(data, cv2.IMREAD_COLOR)
+            image = retrieve_image(file)
 
             extracted_info_single = extract_receipt_info_single(
                 ocr_cleanup(image), image)
