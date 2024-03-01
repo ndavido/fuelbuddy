@@ -12,12 +12,6 @@ from src.utils.validation_utils import validate_phone_number, validate_verificat
 from src.utils.encryption_utils import aes_encrypt, encryption_key
 from src.models.user import Users
 from twilio.rest import Client
-from ..config import TWILIO_AUTH_TOKEN, TWILIO_SID, TWILIO_PHONE_NUMBER
-
-account_sid = TWILIO_SID
-auth_token = TWILIO_AUTH_TOKEN
-twilio_number = TWILIO_PHONE_NUMBER
-twilio_client = Client(account_sid, auth_token)
 
 new_user_session = {}
 
