@@ -1,17 +1,8 @@
-#! /usr/bin/env python3
+from mongoengine import Document, StringField, EmbeddedDocumentListField, EmbeddedDocument
+from mongoengine.fields import IntField, FloatField, EmbeddedDocumentField
 
-from mongoengine import Document, IntField, StringField, FloatField, ListField
 
-
-class Vehicle(Document):
-    id_trim = IntField()
-    make = StringField()
-    model = StringField()
-    generation = StringField()
-    year_from = IntField()
-    year_to = IntField()
-    series = StringField()
-    trim = StringField()
+class ModelInfo(EmbeddedDocument):
     body_type = StringField()
     engine_type = StringField()
     turnover_of_maximum_torque_rpm = IntField()
@@ -26,6 +17,17 @@ class Vehicle(Document):
     CO2_emissions_g_km = IntField()
     car_class = StringField()
 
+
+class TrimInfo(EmbeddedDocument):
+    trim = StringField()
+    years = StringField()
+    info = EmbeddedDocumentField(ModelInfo)
+
+
+class Vehicle(Document):
+    make = StringField()
+    trims = EmbeddedDocumentListField(TrimInfo)
+
     meta = {
-        'collection': 'vehicle_data'
+        'collection': 'vehicle_datatest'
     }
