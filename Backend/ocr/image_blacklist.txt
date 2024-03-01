@@ -1,0 +1,15 @@
+<!-- Not Wokring at all -->
+images/reciepts/rec1.jpg
+images/reciepts/rec2_cut.png
+images/reciepts/rec3.jpg
+images/reciepts/test.jpg
+images/reciepts/rec4.jpg
+images/reciepts/rec5.jpg
+images/reciepts/rec5_v3.jpg
+
+<!-- Needs optional Preprocessing -->
+images/reciepts/test3.png
+images/reciepts/test4.png
+images/reciepts/test6.png
+images/reciepts/rec5_v4.jpg
+images/reciepts/rec5_v5.jpg

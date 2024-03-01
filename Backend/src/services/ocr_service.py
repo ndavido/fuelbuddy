@@ -1,14 +1,15 @@
 #! /usr/bin/env python3
 
 from flask import Blueprint, request, jsonify
-import io
-from src.utils.ocr_utils import extract_receipt_info_single, allowed_file
+from src.middleware.api_key_middleware import require_api_key
+from src.utils.ocr_utils import extract_receipt_info_single, allowed_file, ocr_cleanup
+from src.utils.image_utils import convert_image_to_base64, retrieve_image
+from src.models.receipt_ocr import ReceiptOcr
+from src.models.user import Users
 
 
-def upload_file():
-    import cv2
-    import numpy as np
-    import pytesseract
+@require_api_key
+def upload_receipt():
 
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'}), 400
@@ -17,25 +18,40 @@ def upload_file():
         return jsonify({'error': 'No selected file'}), 400
     if file and allowed_file(file.filename):
         try:
-            # Read the file's content into a numpy array
-            in_memory_file = io.BytesIO()
-            file.save(in_memory_file)
-            data = np.frombuffer(in_memory_file.getvalue(), dtype=np.uint8)
-            image = cv2.imdecode(data, cv2.IMREAD_COLOR)
+            image = retrieve_image(file)
 
-            # Process the image
-            image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            image = cv2.threshold(
-                image, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
-            text = pytesseract.image_to_string(image)
-            filtered_text = '\n'.join(
-                line for line in text.split('\n') if line.strip() != '')
-
-            extracted_info_single = extract_receipt_info_single(filtered_text)
-
-            return jsonify(extracted_info_single)
+            extracted_info_single = extract_receipt_info_single(
+                ocr_cleanup(image), image)
+            receipt_image_base64 = convert_image_to_base64(image)
+            return jsonify(extracted_info_single, receipt_image_base64)
         except Exception as e:
-            # Handle general exceptions
             return jsonify({'error': 'Failed to process image', 'details': str(e)}), 500
     else:
         return jsonify({'error': 'Invalid file format'}), 400
+
+
+@require_api_key
+def save_receipt():
+    try:
+        receipt_data = request.get_json()
+
+        username = receipt_data.get('username')
+        receipt_image_base64 = receipt_data.get('receipt_image_base64')
+        fuel_type = receipt_data.get('fuel_type')
+        volume = receipt_data.get('volume')
+        price_per_litre = receipt_data.get('price_per_litre')
+        total = receipt_data.get('total')
+
+        user = Users.objects.get(username=username)
+        receipt = ReceiptOcr(
+            user=user,
+            receipt=receipt_image_base64,
+            fuel_type=fuel_type,
+            volume=volume,
+            price_per_litre=price_per_litre,
+            total=total
+        )
+        receipt.save()
+
+    except Exception as e:
+        return jsonify({'error': 'Failed to save receipt', 'details': str(e)}), 500
