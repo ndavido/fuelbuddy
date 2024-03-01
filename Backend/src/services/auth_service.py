@@ -121,19 +121,19 @@ def login():
         user = Users.objects(phone_number=encrypted_phone_number).first()
 
         if user:
-            login_code = str(random.randint(100000, 999999))
-            hashed_login_code = bcrypt.hashpw(
-                login_code.encode('utf-8'), bcrypt.gensalt())
+            verification_code = str(random.randint(100000, 999999))
+            hashed_verification_code = bcrypt.hashpw(
+                verification_code.encode('utf-8'), bcrypt.gensalt())
             now = datetime.now()
 
             # Update the user with the new login code and the time it was sent
-            user.update(set__login_code=hashed_login_code.decode(
-                'utf-8'), set__login_code_sent_at=now)
+            user.update(set__verification_code=hashed_verification_code.decode(
+                'utf-8'), set__verification_code_sent_at=now)
 
             twilio_client.messages.create(
                 to=standardized_phone_number,
                 from_=twilio_number,
-                body=f"Your login code is: {login_code}"
+                body=f"Your login code is: {verification_code}"
             )
 
             return jsonify({"message": "Login code sent successfully!"})
@@ -164,10 +164,11 @@ def login_verify():
             return jsonify({"error": "User not found"}), 404
 
         # Check if the login code matches and hasn't expired (assuming a 10-minute expiry)
-        if "login_code" in user and "login_code_sent_at" in user and datetime.now() - user.login_code_sent_at < timedelta(minutes=10):
-            if bcrypt.checkpw(code.encode('utf-8'), user.login_code.encode('utf-8')):
+        if "verification_code" in user and "verification_code_sent_at" in user and datetime.now() - user.verification_code_sent_at < timedelta(minutes=10):
+            if bcrypt.checkpw(code.encode('utf-8'), user.verification_code.encode('utf-8')):
                 # Clear the login code to prevent reuse
-                user.update(unset__login_code=1, unset__login_code_sent_at=1)
+                user.update(unset__verification_code=1,
+                            unset__verification_code_sent_at=1)
 
                 # Issue JWT token
                 access_token = create_access_token(identity=str(user.id))
