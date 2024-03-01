@@ -3,6 +3,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token
 from src.middleware.api_key_middleware import require_api_key
+from src.middleware.twilio_text_middleware import send_text_code
 import bcrypt
 import random
 from datetime import datetime, timedelta
@@ -57,11 +58,7 @@ def register():
             "updated_at": now
         }
 
-        twilio_client.messages.create(
-            to=full_phone_number,
-            from_=twilio_number,
-            body=f"Your verification code is: {verification_code}"
-        )
+        send_text_code(verification_code, full_phone_number)
 
         return jsonify({"message": "Verification code sent successfully!"})
 
@@ -130,12 +127,7 @@ def login():
             user.update(set__verification_code=hashed_verification_code.decode(
                 'utf-8'), set__verification_code_sent_at=now)
 
-            twilio_client.messages.create(
-                to=standardized_phone_number,
-                from_=twilio_number,
-                body=f"Your login code is: {verification_code}"
-            )
-
+            send_text_code(verification_code, standardized_phone_number)
             return jsonify({"message": "Login code sent successfully!"})
 
         else:
