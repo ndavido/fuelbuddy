@@ -1,13 +1,14 @@
 #! /usr/bin/env python3
 
 from flask import Blueprint, request, jsonify
-import io
+from src.middleware.api_key_middleware import require_api_key
 from src.utils.ocr_utils import extract_receipt_info_single, allowed_file, ocr_cleanup
 from src.utils.image_utils import convert_image_to_base64, retrieve_image
 from src.models.receipt_ocr import ReceiptOcr
 from src.models.user import Users
 
 
+@require_api_key
 def upload_receipt():
 
     if 'file' not in request.files:
@@ -31,6 +32,7 @@ def upload_receipt():
         return jsonify({'error': 'Invalid file format'}), 400
 
 
+@require_api_key
 def save_receipt():
     try:
         receipt_data = request.get_json()
