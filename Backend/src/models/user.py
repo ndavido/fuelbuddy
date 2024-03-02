@@ -25,7 +25,7 @@ class Users(Document):
         'indexes': [
             'username',
             'phone_number',
-            'email'
+            'email',
             'verification_code'
         ]
     }

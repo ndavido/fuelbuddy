@@ -11,7 +11,7 @@ from src.utils.helper_utils import handle_api_error
 def account():
     try:
         data = request.get_json()
-        encrypted_phone = data.get('phone_number')
+        encrypted_phone = data.get('id')
 
         print("Encrypted Phone Number:", encrypted_phone)
 
@@ -51,7 +51,7 @@ def account():
 def delete_account():
     try:
         data = request.get_json()
-        encrypted_phone = data.get('phone_number')
+        encrypted_phone = data.get('id')
 
         if not encrypted_phone:
             return jsonify({"error": "Phone number not provided"}), 400
