@@ -1,26 +1,23 @@
 import os
 import pandas as pd
 from dotenv import load_dotenv
-from mongoengine import connect
-from src.models.vehicle import Vehicle, TrimInfo, ModelInfo
+from mongoengine import connect, disconnect
+from src.models.vehicle import Vehicle, ModelInfo, TrimInfo
+from mongoengine.errors import ValidationError
 
-# refs
-# https://stackoverflow.com/questions/773/how-do-i-use-itertools-groupby
+# if there is already a connection, disconnect it
+disconnect(alias='default')
 
 load_dotenv()
 
+# DB connections
 mongodb_uri = os.getenv('MONGO_URI')
 database_name = os.getenv('MONGO_DB_NAME')
-
 connect(db=database_name, host=mongodb_uri, alias='default')
 
-# Load data from CSV
-file_path = "C:\\fuelbuddy_21_02_2024\\Backend\\cleaned.csv"
+# CSV
+file_path = "C:\\fuelbuddy_21_02_2024\\Backend\\modified_file3.csv"
 df = pd.read_csv(file_path, low_memory=False)
 
-# Group data by 'make' column
 grouped_data = df.groupby('make')
-for make, group in grouped_data:
-    print(f"Make: {make}")
-    print(group)
-
+print(grouped_data, 'grouped_data')
