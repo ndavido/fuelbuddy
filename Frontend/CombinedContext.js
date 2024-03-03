@@ -106,13 +106,13 @@ export const CombinedProvider = ({ children }) => {
 
           console.log("Collecting user data from backend")
         const decodedToken = jwtDecode(storedToken);
-        const phone = decodedToken.sub;
+        const user_id = decodedToken.sub;
         const config = {
           headers: {
             'X-API-Key': apiKey,
           },
         };
-        const response = await axios.post(`${url}/account`, { phone_number: phone }, config);
+        const response = await axios.post(`${url}/account`, { id: user_id }, config);
         return response.data.user;
       }
     } catch (error) {
