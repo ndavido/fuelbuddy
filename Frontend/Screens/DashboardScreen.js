@@ -157,13 +157,23 @@ const DashboardScreen = () => {
             setWeeklyBudget(weeklyBudget);
             console.log('Weekly budget:', weeklyBudget);
 
-            const deductionsResponse = await axios.post(`${url}/get_deductions`, {username: userData.username}, {
-                headers: {
-                    'X-API-Key': apiKey,
-                },
-            });
+            let deductions = [];
 
-            const deductions = deductionsResponse.data.deductions || [];
+            try {
+                const deductionsResponse = await axios.post(`${url}/get_deductions`, {username: userData.username}, {
+                    headers: {
+                        'X-API-Key': apiKey,
+                    },
+                });
+                deductions = deductionsResponse.data.deductions || [];
+            } catch (error) {
+                if (error.response && error.response.status === 404) {
+                    console.log("No deductions found for this user");
+                } else {
+                    console.error('Error fetching deductions:', error);
+                }
+            }
+
             console.log('Deductions:', deductions);
 
             let cumulativeValue = 0;
