@@ -5,10 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNavigation} from '@react-navigation/native';
 
 import MainLogo from '../styles/mainLogo';
-import {Content, InputTxt, Main, TextWrapper, Wrapper} from '../styles/styles';
-import {
-    AccountRegularInfo,
-} from '../styles/accountPage';
+import {AccountContainer, Content, InputTxt, Main, TextWrapper, Wrapper} from '../styles/styles';
 import {jwtDecode} from "jwt-decode";
 import {H3, H5, H6} from "../styles/text";
 
@@ -22,13 +19,13 @@ const ScanScreen = () => {
         <Main>
             <MainLogo/>
             <Wrapper>
-                <AccountRegularInfo>
+                <AccountContainer>
                     <Content>
                         <TextWrapper>
                             <H5 tmargin='10px' bmargin='10px'>Placeholder, Feature TBC</H5>
                         </TextWrapper>
                     </Content>
-                </AccountRegularInfo>
+                </AccountContainer>
             </Wrapper>
         </Main>
     );

@@ -16,7 +16,7 @@ import {
 } from '../styles/styles.js';
 import MainLogo from '../styles/mainLogo';
 import {H2, H3, H4, H5, H6, H7, H8} from "../styles/text";
-import {ButtonButton} from "../styles/AnimatedIconButton";
+import {ButtonButton} from "../styles/buttons";
 
 const apiKey = process.env.REACT_NATIVE_API_KEY;
 const url = process.env.REACT_APP_BACKEND_URL
@@ -463,9 +463,15 @@ const DashboardScreen = () => {
                                     }}
                                 />
                             </View>
-                            <View style={{top: -10}}>
-
+                            <View>
+                                <H6>This Week</H6>
                             </View>
+                        </Card>
+                        <Card>
+                            <H8 style={{opacity: 0.5}}>Activity</H8>
+                            <H5>My Friends</H5>
+
+
                         </Card>
                         <Card>
                             <H8 style={{opacity: 0.5}}>Vehicle</H8>

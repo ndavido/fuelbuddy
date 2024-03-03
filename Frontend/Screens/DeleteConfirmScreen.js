@@ -7,17 +7,15 @@ import {useCombinedContext} from "../CombinedContext";
 
 // Styling
 import {
+    AccountContainer, Container,
     Content,
     Main,
     TextWrapper, Wrapper,
 } from '../styles/styles.js';
-import {
-    AccountRegularInfo,
-} from '../styles/accountPage';
 import MainLogo from '../styles/mainLogo';
 import {H3, H4, H5, H6} from "../styles/text";
 import {useNavigation} from "@react-navigation/native";
-import {ButtonButton} from "../styles/AnimatedIconButton";
+import {ButtonButton} from "../styles/buttons";
 
 const url = process.env.REACT_APP_BACKEND_URL
 const apiKey = process.env.REACT_NATIVE_API_KEY;
@@ -76,7 +74,7 @@ const DeleteConfirmScreen = () => {
         <Main>
             <MainLogo bButton={true} PageTxt='Account'/>
             <Wrapper>
-                <AccountRegularInfo>
+                <AccountContainer>
                     <Content>
                         <H3 tmargin='20px' lmargin='20px' bmargin='10px'>Delete Account</H3>
                         <TextWrapper>
@@ -90,7 +88,7 @@ const DeleteConfirmScreen = () => {
                                   txtColor="black" txtMargin="15px" text="Keep My Account" onPress={() => navigate.goBack()}/>
                         </TextWrapper>
                     </Content>
-                </AccountRegularInfo>
+                </AccountContainer>
             </Wrapper>
         </Main>
     );

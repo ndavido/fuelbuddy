@@ -17,11 +17,11 @@ import {
     Container,
     LRContainer, LRButtonDiv
 } from "../styles/styles";
-import PressableButton from '../styles/buttons';
 import {Logo} from '../styles/images';
 import {H1, H2, H3, H4, H5, H6, Img, Txt} from '../styles/text.js';
 import Toast from '../Components/Toast.js';
 import {forwardRef, useRef, useImperativeHandle} from 'react';
+import {ButtonButton} from "../styles/buttons";
 
 const url = process.env.REACT_APP_BACKEND_URL
 
@@ -180,23 +180,15 @@ const RegisterScreen = () => {
             <Wrapper>
                 <Content>
                     <LRContainer>
-                        <PressableButton
-                            title='Register'
-                            bgColor='#F7F7F7'
-                            txtColor='black'
-                            width='50%'
-                        />
-                        <PressableButton
-                            onPress={() => navigation.navigate('Login')}
-                            title='Login'
-                            bgColor='#6bff91'
-                            txtColor='white'
-                            width='50%'
-                        />
+                        <ButtonButton color="#F7F7F7" txtWidth="100%" width="50%"
+                                  txtColor="black" text="Register"/>
+                        <ButtonButton accessibilityLabel="Login Button" color="#6bff91" txtWidth="100%" width="50%"
+                                  txtColor="white" text="Login" onPress={() => navigation.navigate('Login')}/>
                     </LRContainer>
                     <Container>
-                        <H6 bmargin='5px'>Name</H6>
+                        <H6 bmargin='5px'>First Name</H6>
                         <InputTxt
+                            accessibilityLabel="First Name Input"
                             inputErrorBorder1 = {inputErrorBorder1}
                             placeholder=""
                             onChangeText={(text) => handleChange('full_name', text)}
@@ -205,6 +197,7 @@ const RegisterScreen = () => {
 
                         <H6 bmargin='5px'>Username</H6>
                         <InputTxt
+                            accessibilityLabel="Username Input"
                             inputErrorBorder = {inputErrorBorder}
                             placeholder=""
                             onChangeText={(text) => handleChange('username', text)}
@@ -221,6 +214,7 @@ const RegisterScreen = () => {
                             />
 
                             <PhoneTxt
+                                accessibilityLabel="Phone Input"
                                 errorBorder = {errorBorder}
                                 placeholder=""
                                 maxLength={10}
@@ -232,11 +226,8 @@ const RegisterScreen = () => {
                         <H6 tmargin='10px'>{message}</H6>
                     </Container>
                     <LRButtonDiv>
-                        <PressableButton
-                            onPress={handleRegister}
-                            title='Send Register Code'
-                            bgColor='#6bff91'
-                        />
+                        <ButtonButton accessibilityLabel="Send Register Code" color="#6bff91" txtWidth="100%"
+                                  txtColor="white" text="Send Register Code" onPress={handleRegister}/>
                     </LRButtonDiv>
                 </Content>
             </Wrapper>
