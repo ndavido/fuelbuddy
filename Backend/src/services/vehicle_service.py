@@ -3,28 +3,18 @@
 from flask import request, jsonify, current_app
 from mongoengine.errors import DoesNotExist
 from src.models import Vehicle
-from src.models import ChargingStation, EVPrices
 from src.middleware.api_key_middleware import require_api_key
 from datetime import datetime
 from mongoengine.queryset.visitor import Q
 from src.utils.helper_utils import handle_api_error
 
-
-# ! This is the route for sending fuel stations info to Frontend
+# Get all vehicle makes from the database
 @require_api_key
-def get_car_data():
+def get_vehicle_makes():
     try:
-        vehicle_all = Vehicle.objects.all()
+        makes = Vehicle.objects.distinct('make')
 
-        result = []
-        for car_data in vehicle_all:
-            vehicle_data = {
-                'id': str(car_data.id),
-                'make': car_data.make,
-            }
-            result.append(vehicle_data)
-
-        return jsonify(result)
+        return jsonify({'makes': makes})
     except Exception as e:
-        current_app.logger.error('An error occurred: %s', str(e))
         return handle_api_error(e)
+
