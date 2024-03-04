@@ -7,12 +7,10 @@ import { jwtDecode } from "jwt-decode";
 
 // Styling
 import {
+    AccountContainer,
     Content,
     Main, TextWrapper, Wrapper,
 } from '../styles/styles';
-import {
-    AccountRegularInfo,
-} from '../styles/accountPage';
 import MainLogo from '../styles/mainLogo';
 import {H3, H4, H5, H6} from "../styles/text";
 
@@ -66,7 +64,7 @@ const DeveloperScreen = () => {
         <Main>
             <MainLogo bButton={true} PageTxt='Developer'/>
             <Wrapper>
-                    <AccountRegularInfo>
+                    <AccountContainer>
                         <Content>
                             <H3 tmargin='20px' lmargin='20px' bmargin='10px'>Developer Screen</H3>
                             <TextWrapper>
@@ -74,7 +72,7 @@ const DeveloperScreen = () => {
                             </TextWrapper>
 
                         </Content>
-                    </AccountRegularInfo>
+                    </AccountContainer>
             </Wrapper>
         </Main>
     );

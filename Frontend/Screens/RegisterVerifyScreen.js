@@ -18,9 +18,9 @@ import {
     Container,
     LRContainer, LRButtonDiv
 } from "../styles/styles";
-import PressableButton from '../styles/buttons';
 import {Logo} from '../styles/images';
 import {H1, H2, H3, H4, H5, H6, Img, Txt} from '../styles/text.js';
+import {ButtonButton} from "../styles/buttons";
 
 const url = process.env.REACT_APP_BACKEND_URL
 
@@ -143,23 +143,17 @@ const RegisterVerifyScreen = ({route}) => {
                         />
                         <H6 bmargin='5px'>Verification Code</H6>
                         <InputTxt
+                            accessibilityLabel="Code Input"
                             placeholder=""
                             onChangeText={(text) => handleChange('code', text)}
                         />
                         <H6 tmargin='10px'>{message}</H6>
                     </Container>
                     <LRButtonDiv>
-                        <PressableButton
-                            onPress={handleVerify}
-                            title="Register"
-                            bgColor="#6bff91"
-                        />
-                        <PressableButton
-                            onPress={handleResendCode}
-                            title="Resend Code"
-                            bgColor="white"
-                            txtColor="black"
-                        />
+                        <ButtonButton accessibilityLabel="Verify Code Button" color="#6bff91" txtWidth="100%"
+                                  txtColor="white" text="Register" onPress={handleVerify}/>
+                        <ButtonButton accessibilityLabel="Resend Code Button" color="transparent" txtWidth="100%"
+                                  txtColor="black" text="Resend Code" onPress={handleResendCode}/>
                     </LRButtonDiv>
                 </Content>
             </Wrapper>
