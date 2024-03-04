@@ -19,7 +19,8 @@ new_user_session = {}
 def register():
     try:
         data = request.get_json()
-        full_name = data.get('full_name')
+        first_name = data.get('first_name')
+        surname = data.get('surname')
         username = data.get('username')
         phone_number = data.get('phone_number')
 
@@ -40,7 +41,7 @@ def register():
 
         now = datetime.now()
         new_user_session[username] = {
-            "full_name": full_name,
+            "first_name": first_name,
             "username": username,
             "phone_number": encrypted_phone_number,
             "verification_code": '000000',

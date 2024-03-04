@@ -8,7 +8,8 @@ from .budget import BudgetHistory
 
 class Users(Document):
     username = StringField(required=True, unique=True)
-    full_name = StringField()
+    fist_name = StringField()
+    surname = StringField()
     phone_number = StringField()
     email = StringField()
     verification_code = StringField()
