@@ -38,11 +38,10 @@ class FuelStation(Document):
     petrol_prices = ListField(EmbeddedDocumentField(PetrolPrices))
     diesel_prices = ListField(EmbeddedDocumentField(DieselPrices))
     opening_hours = ListField(EmbeddedDocumentField(OpeningHours))
-    facilities = EmbeddedDocumentField(Facilities)  # Embed the Facilities document
+    facilities = EmbeddedDocumentField(Facilities)
     meta = {
-        'collection': 'FuelStationTest'
+        'collection': 'FuelStationData'
     }
-
 
 class FavoriteFuelStation(Document):
     user = ReferenceField(Users, required=True)

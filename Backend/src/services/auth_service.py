@@ -46,6 +46,7 @@ def register():
             "verification_code": '000000',
             "verification_code_sent_at": now,
             "verified": False,
+            "full_reg": False,
             "roles": ["user"],
             "created_at": now,
             "updated_at": now

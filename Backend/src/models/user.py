@@ -18,6 +18,7 @@ class Users(Document):
     roles = ListField(StringField())
     created_at = DateTimeField()
     updated_at = DateTimeField()
+    full_reg = BooleanField(default=False)
     weekly_budget = DecimalField(precision=2)
 
     meta = {
