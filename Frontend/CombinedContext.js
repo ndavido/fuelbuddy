@@ -134,6 +134,52 @@ export const CombinedProvider = ({children}) => {
             AsyncStorage.clear()
         }
     };
+  
+  const logout = async () => {
+    try {
+      await AsyncStorage.removeItem('token');
+      dispatch({ type: 'LOGOUT' });
+    } catch (error) {
+      console.error('Error clearing token:', error);
+    }
+  };
+
+  const fetchUserData = async () => {
+    try {
+      const apiKey = process.env.REACT_NATIVE_API_KEY;
+      const storedToken = await AsyncStorage.getItem('token');
+
+      // TODO Remove!!! Dev Only
+      console.log("STORED TOKEN", storedToken)
+      if (storedToken) {
+
+          console.log("Collecting user data from backend")
+        const decodedToken = jwtDecode(storedToken);
+        const user_id = decodedToken.sub;
+        const config = {
+          headers: {
+            'X-API-Key': apiKey,
+          },
+        };
+        const response = await axios.post(`${url}/account`, { id: user_id }, config);
+        return response.data.user;
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    }
+  };
+
+  const updateUserFromBackend = async () => {
+    try {
+      const updatedUserData = await fetchUserData();
+      // TODO Remove!!! Dev Only
+      console.log("Setting user data from backend")
+      console.log(updatedUserData)
+      dispatch({ type: 'SET_USER', payload: updatedUserData });
+    } catch (error) {
+      console.error('Error updating user data from backend:', error);
+    }
+  };
 
     useEffect(() => {
         updateUserFromBackend();
