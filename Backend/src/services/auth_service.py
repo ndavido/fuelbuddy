@@ -43,7 +43,7 @@ def register():
             "full_name": full_name,
             "username": username,
             "phone_number": encrypted_phone_number,
-            "verification_code": 000000,
+            "verification_code": '000000',
             "verification_code_sent_at": now,
             "verified": False,
             "roles": ["user"],
@@ -121,7 +121,7 @@ def login():
             # ? Commented out for now
             # user.update(set__verification_code=hashed_verification_code.decode(
             #     'utf-8'), set__verification_code_sent_at=now)
-            user.update(set__verification_code=000000,
+            user.update(set__verification_code='000000',
                         set__verification_code_sent_at=now)
 
             # send_text_code(verification_code, standardized_phone_number)
