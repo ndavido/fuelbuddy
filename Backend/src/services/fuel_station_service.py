@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 from flask import request, jsonify, current_app
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from mongoengine.errors import DoesNotExist
 from src.models import FuelStation, Location, PetrolPrices, DieselPrices, FuelPrices, Users, FavoriteFuelStation
 from src.models import ChargingStation, EVPrices
@@ -12,6 +13,7 @@ from src.utils.helper_utils import handle_api_error
 
 # ! This is the route for sending fuel stations info to Frontend
 @require_api_key
+@jwt_required()
 def get_fuel_stations():
     try:
         fuel_stations = FuelStation.objects.all()
@@ -28,9 +30,11 @@ def get_fuel_stations():
                 },
                 # handle null values and have -1 to ensure to get the latest price (may change this after frontend is done)
                 'prices': {
-                    'petrol_price': fuel_station.petrol_prices[-1].regular if fuel_station.petrol_prices else None,  # Adjust if needed for price type
+                    # Adjust if needed for price type
+                    'petrol_price': fuel_station.petrol_prices[-1].regular if fuel_station.petrol_prices else None,
                     'petrol_updated_at': fuel_station.petrol_prices[-1].updated_at.strftime('%Y-%m-%d %H:%M:%S') if fuel_station.petrol_prices else None,
-                    'diesel_price': fuel_station.diesel_prices[-1].regular if fuel_station.diesel_prices else None,  # Adjust if needed for price type
+                    # Adjust if needed for price type
+                    'diesel_price': fuel_station.diesel_prices[-1].regular if fuel_station.diesel_prices else None,
                     'diesel_updated_at': fuel_station.diesel_prices[-1].updated_at.strftime('%Y-%m-%d %H:%M:%S') if fuel_station.diesel_prices else None
                 },
                 'facilities': {
@@ -54,6 +58,8 @@ def get_fuel_stations():
 #! This is the route for storing fuel stations info from Frontend
 
 
+@require_api_key
+@jwt_required()
 def store_fuel_stations():
     try:
         data = request.get_json()
@@ -88,12 +94,13 @@ def store_fuel_stations():
 
 
 @require_api_key
+@jwt_required()
 def get_favorite_fuel_stations():
     try:
-        username = request.args.get('username')
+        user_id = get_jwt_identity()
 
-        if username:
-            user = Users.objects(username=username).first()
+        if user_id:
+            user = Users.objects(id=user_id).first()
             if user:
                 favorite_doc = FavoriteFuelStation.objects(
                     user=user.id).first()
@@ -118,9 +125,9 @@ def get_favorite_fuel_stations():
                 else:
                     return jsonify({"message": "No favorite fuel stations found for the user."}), 200
             else:
-                return jsonify({"error": "User not found with the provided username."}), 404
+                return jsonify({"error": "User not found with the provided token."}), 404
         else:
-            return jsonify({"error": "Username not provided."}), 400
+            return jsonify({"error": "Token not provided."}), 400
 
     except Exception as e:
         return handle_api_error(e)
@@ -128,12 +135,13 @@ def get_favorite_fuel_stations():
 
 #! this route is for managing favorite fuel station (add/remove)
 @require_api_key
+@jwt_required()
 def favorite_fuel_station():
     try:
         data = request.get_json()
-        username = data.get('username')
+        user_id = get_jwt_identity()
 
-        user = Users.objects(username=username).first()
+        user = Users.objects(username=user_id).first()
 
         if user:
             user_id = user.id
@@ -176,6 +184,7 @@ def favorite_fuel_station():
 
 
 @require_api_key
+@jwt_required()
 def store_fuel_prices():
     try:
         data = request.get_json()
@@ -223,6 +232,7 @@ def store_fuel_prices():
 
 # ! This is the route for storing EV charging prices info from Frontend
 @require_api_key
+@jwt_required()
 def store_ev_prices():
     try:
         data = request.get_json()
@@ -260,6 +270,7 @@ def store_ev_prices():
 
 # ! This is the route for searching fuel stations
 @require_api_key
+@jwt_required()
 def search_fuel_stations():
     try:
         query_params = request.args
