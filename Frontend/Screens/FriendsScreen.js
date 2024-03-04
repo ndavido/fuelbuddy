@@ -24,7 +24,7 @@ import {
 } from '../styles/styles';
 import {jwtDecode} from "jwt-decode";
 import {H3, H4, H5, H6} from "../styles/text";
-import {ButtonButton} from "../styles/AnimatedIconButton";
+import {ButtonButton} from "../styles/buttons";
 
 
 const apiKey = process.env.REACT_NATIVE_API_KEY;

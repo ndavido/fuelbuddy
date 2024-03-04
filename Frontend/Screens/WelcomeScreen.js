@@ -4,9 +4,9 @@ import {useNavigation} from '@react-navigation/native';
 
 //Styling
 import {WelcomeMain, ButtonDiv, Content, Wrapper, WelcomeImg} from "../styles/styles";
-import PressableButton from '../styles/buttons';
 import {Logo} from '../styles/images';
 import {H1, H2, H3, H4, H5, H6, Img, Txt} from '../styles/text.js';
+import {ButtonButton} from "../styles/buttons";
 
 const WelcomeScreen = () => {
     const navigation = useNavigation();
@@ -25,11 +25,8 @@ const WelcomeScreen = () => {
                         <H5 weight="400" width="100%" style={{opacity: 0.5, textAlign: 'center'}}>The Friend Your Tank Deserves.</H5>
                     </Txt>
                     <ButtonDiv>
-                        <PressableButton
-                            onPress={() => navigation.navigate('Register')}
-                            title='Get Started'
-                            bgColor='#6bff91'
-                        />
+                        <ButtonButton accessibilityLabel="Welcome Button" color="#6bff91" txtWidth="100%"
+                                  txtColor="white" text="Get Started" onPress={() => navigation.navigate('Register')}/>
                     </ButtonDiv>
                 </Content>
             </Wrapper>

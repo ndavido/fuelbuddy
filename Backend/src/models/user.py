@@ -12,13 +12,23 @@ class Users(Document):
     phone_number = StringField()
     email = StringField()
     verification_code = StringField()
-    login_code = StringField()
+    verification_code_sent_at = DateTimeField()
     verified = BooleanField(default=False)
     location = ReferenceField(Location)  # Make sure Location is defined
     roles = ListField(StringField())
     created_at = DateTimeField()
     updated_at = DateTimeField()
     weekly_budget = DecimalField(precision=2)
+
+    meta = {
+        'collection': 'Users_test_collection',
+        'indexes': [
+            'username',
+            'phone_number',
+            'email',
+            'verification_code'
+        ]
+    }
 
     def update_budget(self, new_budget):
         # Record the old and new budget

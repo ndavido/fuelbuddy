@@ -6,13 +6,10 @@ import { useCombinedContext } from '../CombinedContext';
 import * as Updates from 'expo-updates';
 
 // Styling
-import {
-    AccountTxt,
-} from '../styles/accountPage';
 import MainLogo from '../styles/mainLogo';
 import {H3, H4, H5, H6} from "../styles/text";
-import {AccountContainer, ButtonContainer, InputTxt, Main, WrapperScroll} from "../styles/styles";
-import {ButtonButton} from "../styles/AnimatedIconButton";
+import {AccountContainer, ButtonContainer, InputTxt, Main, TextContainer, WrapperScroll} from "../styles/styles";
+import {ButtonButton} from "../styles/buttons";
 
 const url = process.env.REACT_APP_BACKEND_URL
 
@@ -98,9 +95,9 @@ const AccountScreen = () => {
                     {editMode ? (
                         <>
                             <H6 bmargin='5px'>Username</H6>
-                            <AccountTxt bgColor='grey'>@{userData.username}</AccountTxt>
+                            <TextContainer bgColor='grey'>@{userData.username}</TextContainer>
                             <H6 bmargin='5px'>Phone Number</H6>
-                            <AccountTxt bgColor='grey'>{userData.phone_number}</AccountTxt>
+                            <TextContainer bgColor='grey'>{userData.phone_number}</TextContainer>
                             <H6 bmargin='5px'>Name</H6>
                             <InputTxt bcolor='white' value={editedFullName} onChangeText={setEditedFullName}
                                       placeholder="Full Name"/>
@@ -111,13 +108,13 @@ const AccountScreen = () => {
                     ) : (
                         <>
                             <H6 bmargin='5px'>Username</H6>
-                            <AccountTxt bgColor='grey'>@{userData.username}</AccountTxt>
+                            <TextContainer>@{userData.username}</TextContainer>
                             <H6 bmargin='5px'>Phone Number</H6>
-                            <AccountTxt bgColor='grey'>{userData.phone_number}</AccountTxt>
+                            <TextContainer bgColor='grey'>{userData.phone_number}</TextContainer>
                             <H6 bmargin='5px'>Name</H6>
-                            <AccountTxt bgColor='#FFFFFF'>{userData.full_name}</AccountTxt>
+                            <TextContainer bgColor='#FFFFFF'>{userData.full_name}</TextContainer>
                             <H6 bmargin='5px'>Email</H6>
-                            <AccountTxt bgColor='#FFFFFF'>{userData.email}</AccountTxt>
+                            <TextContainer bgColor='#FFFFFF'>{userData.email}</TextContainer>
                         </>
                     )}
                     <H6 tmargin='10px' bmargin='10px'>{message}</H6>

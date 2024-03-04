@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components/native';
-import BackButton from './backButton';
+import {BackButton} from './buttons';
 
 const LogoContainer = styled.View`
   height: 85px;

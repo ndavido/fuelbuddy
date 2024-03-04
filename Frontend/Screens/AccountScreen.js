@@ -14,7 +14,7 @@ import {
 import {H1, H2, H3, H4, H5, H6, H8} from '../styles/text.js';
 import MainLogo from '../styles/mainLogo';
 import {AccountImg} from '../styles/images';
-import {ButtonButton} from "../styles/AnimatedIconButton";
+import {ButtonButton} from "../styles/buttons";
 import {useCombinedContext} from "../CombinedContext";
 
 const AccountScreen = () => {
@@ -106,6 +106,8 @@ const AccountScreen = () => {
                                   txtColor="black" txtMargin="15px" text="my Friends" onPress={handleFriends}/>
                     <ButtonButton pos="single" series="fa" iconColor="#b8bec2" icon="support" color="#FFFFFF"
                                   txtColor="black" txtMargin="15px" text="Support (NA)"/>
+                    <ButtonButton pos="single" series="mci" iconColor="#b8bec2" icon="police-badge" color="#FFFFFF"
+                                  txtColor="black" txtMargin="15px" text="Privacy Policy (NA)"/>
 
                     {/*Display the Developer button only if the user is a developer*/}
                     {userData.roles && userData.roles.includes("Developer") &&

@@ -18,9 +18,9 @@ import {
     Container,
     LRContainer, LRButtonDiv
 } from "../styles/styles";
-import PressableButton from '../styles/buttons';
 import {Logo} from '../styles/images';
 import {H1, H2, H3, H4, H5, H6, Img, Txt} from '../styles/text.js';
+import {ButtonButton} from "../styles/buttons";
 
 const url = process.env.REACT_APP_BACKEND_URL
 
@@ -32,27 +32,24 @@ const LoginScreen = () => {
     const toastRef = useRef(null);
     const [errorBorder, setErrorBorder] = useState(false);
 
-    
-    
     const showToast = () => {
         if (toastRef.current) {
-          toastRef.current.success('This is a success message');
+            toastRef.current.success('This is a success message');
         }
-      };
-    
-      const showErrorToast = (message) => {
-        if (toastRef.current) {
-          toastRef.current.error(message);
-          console.log("error toast call")
-        }
-      };
+    };
 
+    const showErrorToast = (message) => {
+        if (toastRef.current) {
+            toastRef.current.error(message);
+            console.log("error toast call")
+        }
+    };
 
     const navigation = useNavigation();
     const [formData, setFormData] = useState({
         phone_number: '',
     });
-    
+
     console.log(url)
 
     const countryCode = '353';
@@ -72,22 +69,22 @@ const LoginScreen = () => {
                     'X-API-Key': apiKey,
                 },
             };
-        
+
             /* TODO Remove!!! Dev Only */
             console.log(config);
-        
+
             const response = await axios.post(`${url}/login`, {
                 ...formData,
                 phone_number: fullNum
             }, config);
-        
+
             console.log(response.data);
-        
+
             if (response && response.data) {
                 setMessage(response.data.message);
-        
+
                 if (response.data.message === 'Login code sent successfully!') {
-                    navigation.navigate('LoginVerify', { phone: fullNum });
+                    navigation.navigate('LoginVerify', {phone: fullNum});
                 } else {
                     showErrorToast(response.data.message);
                 }
@@ -113,28 +110,19 @@ const LoginScreen = () => {
             }
             setErrorBorder(true);
         }
-    }; 
+    };
 
     return (
         <WelcomeMain>
             <Logo/>
-            <Toast ref={toastRef} />
+            <Toast ref={toastRef}/>
             <Wrapper>
                 <Content>
                     <LRContainer>
-                        <PressableButton
-                            onPress={() => navigation.navigate('Register')}
-                            title='Register'
-                            bgColor='#6bff91'
-                            txtColor='white'
-                            width='50%'
-                        />
-                        <PressableButton
-                            title='Login'
-                            bgColor='#F7F7F7'
-                            txtColor='black'
-                            width='50%'
-                        />
+                        <ButtonButton accessibilityLabel="Register Button" color="#6bff91" txtWidth="100%" width="50%"
+                                  txtColor="white" text="Register" onPress={() => navigation.navigate('Register')}/>
+                        <ButtonButton color="#F7F7F7" txtWidth="100%" width="50%"
+                                  txtColor="black" text="Login"/>
                     </LRContainer>
                     <Container>
                         <H6 bmargin='5px'>Phone Number</H6>
@@ -146,6 +134,7 @@ const LoginScreen = () => {
                                 onChangeText={(text) => handleChange('country_code', text)}
                             />
                             <PhoneTxt
+                                accessibilityLabel="Phone Input"
                                 errorBorder={errorBorder}
                                 placeholder=""
                                 maxLength={10}
@@ -155,11 +144,8 @@ const LoginScreen = () => {
 
                     </Container>
                     <LRButtonDiv>
-                        <PressableButton
-                            onPress={handleLogin}
-                            title='Send Login Code'
-                            bgColor='#6bff91'
-                        />
+                        <ButtonButton accessibilityLabel="Send Login Code" color="#6bff91" txtWidth="100%"
+                                  txtColor="white" text="Send Login Code" onPress={handleLogin}/>
                     </LRButtonDiv>
                 </Content>
             </Wrapper>

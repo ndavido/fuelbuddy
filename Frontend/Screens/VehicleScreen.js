@@ -6,13 +6,10 @@ import { jwtDecode } from "jwt-decode";
 
 // Styling
 import {
+    AccountContainer,
     Content,
-    Main, TextWrapper, Wrapper,
+    Main, TextContainer, TextWrapper, Wrapper,
 } from '../styles/styles';
-import {
-    AccountRegularInfo,
-    AccountTxt,
-} from '../styles/accountPage';
 import MainLogo from '../styles/mainLogo';
 import {H3, H4, H5, H6} from "../styles/text";
 
@@ -66,19 +63,19 @@ const VehicleScreen = () => {
         <Main>
             <MainLogo bButton={true} PageTxt='Vehicle'/>
             <Wrapper>
-                <AccountRegularInfo>
+                <AccountContainer>
                     <Content>
                         <TextWrapper>
                             <H5 tmargin='10px' bmargin='10px'>My Car</H5>
                             <H6 bmargin='5px'>Make</H6>
-                            <AccountTxt bgColor='grey' >CAR MAKE</AccountTxt>
+                            <TextContainer bgColor='grey' >CAR MAKE</TextContainer>
                             <H6 bmargin='5px'>Model</H6>
-                            <AccountTxt bgColor='#FFFFFF' >CAR MODEL</AccountTxt>
+                            <TextContainer bgColor='#FFFFFF' >CAR MODEL</TextContainer>
                             <H6 bmargin='5px'>Average Km/l</H6>
-                            <AccountTxt bgColor='#FFFFFF' >CAR KM</AccountTxt>
+                            <TextContainer bgColor='#FFFFFF' >CAR KM</TextContainer>
                         </TextWrapper>
                     </Content>
-                </AccountRegularInfo>
+                </AccountContainer>
             </Wrapper>
         </Main>
     );
