@@ -73,8 +73,8 @@ def edit_account():
             user.full_name = data['full_name']
         if 'email' in data:
             user.email = data['email']
-        if 'full_reg' in data:
-            user.full_reg = data['full_reg']
+        if 'reg_full' in data:
+            user.reg_full = data['reg_full']
 
         user.save()
         return jsonify({"message": "Account updated successfully"}), 200
