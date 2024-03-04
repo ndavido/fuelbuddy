@@ -1,6 +1,5 @@
 /Backend/venv/
 /Backend/.env
-/Frontend/node_modules/@babel/
 /Frontend/node_modules/.cache/
 /Frontend/.env
 /Frontend/eas.json

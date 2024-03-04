@@ -66,6 +66,15 @@ export const InputTxt = styled.TextInput`
   ${(props) => props.inputErrorBorder1 && redBorderColor}
 `;
 
+export const TextContainer = styled.Text`
+  margin-bottom: 10px;
+  padding: 10px;
+  height: auto;
+  line-height: 18px;
+  background-color: ${props => props.bcolor || '#F7F7F7'};
+  border-radius: 10px;
+`;
+
 export const ButtonContainer = styled.View`
   margin-bottom: 30px;
   margin-top: 15px;
@@ -200,6 +209,7 @@ export const CardTitle = styled.Text`
   margin-bottom: 10px;
 `;
 
+
 /* Friends Screen */
 export const FContainer = styled.View`
 flex-direction: row;
@@ -222,6 +232,7 @@ export const FSButtonContainer = styled.TouchableOpacity`
 export const AddFriendButton = styled.Text`
   color: green;
 `;
+
 
 /* Account Screen */
 export const TopInfo = styled.View`

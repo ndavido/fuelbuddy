@@ -1,108 +1,127 @@
-import React, { useState, useEffect } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { FontAwesome5 } from '@expo/vector-icons';
-import { useCombinedContext } from './CombinedContext';
-import { View, Text, StyleSheet, StatusBar } from 'react-native';
+import React, {useState, useEffect} from 'react';
+import {NavigationContainer} from '@react-navigation/native';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {FontAwesome5} from '@expo/vector-icons';
+import {useCombinedContext} from './CombinedContext';
+import {View, Text, StyleSheet, StatusBar} from 'react-native';
 import * as Progress from 'react-native-progress';
-import { jwtDecode } from 'jwt-decode';
+import {jwtDecode} from 'jwt-decode';
 
-import Welcome from './Screens/WelcomeScreen';
-import Dashboard from './Screens/DashboardScreen';
-import Map from './Screens/MapScreen';
-import Scan from './Screens/ScanScreen';
-import Friends from './Screens/FriendsScreen';
-import Account from './Screens/AccountScreen';
+/* Login & Reg */
+import WelcomeScreen from './Screens/WelcomeScreen';
+import LoginScreen from './Screens/LoginScreen';
+import LoginVerifyScreen from './Screens/LoginVerifyScreen';
+import RegisterScreen from './Screens/RegisterScreen';
+import RegisterVerifyScreen from './Screens/RegisterVerifyScreen';
 
-import PersonalInfo from './Screens/PersonalInfoScreen';
-import DeleteConfirm from './Screens/DeleteConfirmScreen';
-import Vehicle from './Screens/VehicleScreen';
-import Developer from './Screens/DeveloperScreen';
+/* Complete Reg */
+import CompleteProfileScreen from "./Screens/CompleteProfileScreen";
+import CompleteVehicleScreen from "./Screens/CompleteVehicleScreen";
+import SetPreferencesScreen from "./Screens/SetPreferencesScreen";
 
-import Login from './Screens/LoginScreen';
-import LoginVerify from './Screens/LoginVerifyScreen';
-import Register from './Screens/RegisterScreen';
-import RegisterVerify from './Screens/RegisterVerifyScreen';
+/* Main Screens */
+import DashboardScreen from './Screens/DashboardScreen';
+import MapScreen from './Screens/MapScreen';
+import ScanScreen from './Screens/ScanScreen';
+import FriendsScreen from './Screens/FriendsScreen';
+import AccountScreen from './Screens/AccountScreen';
+
+/* Secondary Screens */
+import PersonalInfoScreen from './Screens/PersonalInfoScreen';
+import DeleteConfirmScreen from './Screens/DeleteConfirmScreen';
+import VehicleScreen from './Screens/VehicleScreen';
+import DeveloperScreen from './Screens/DeveloperScreen';
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
 const styles = StyleSheet.create({
-  loadingContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#6BFF91',
-    zIndex: 100,
-  },
+    loadingContainer: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#6BFF91',
+        zIndex: 100,
+    },
 });
 
+const RegistrationFlow = () => {
+    return (
+        <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName="CompleteProfile">
+            <Stack.Screen name="CompleteProfile" component={CompleteProfileScreen}/>
+            <Stack.Screen name="CompleteVehicle" component={CompleteVehicleScreen}/>
+            <Stack.Screen name="SetPreferences" component={SetPreferencesScreen}/>
+        </Stack.Navigator>
+    );
+};
+
 const RegisterNavigator = () => {
-  return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Register" component={Register} />
-      <Stack.Screen name="RegisterVerify" component={RegisterVerify} />
-    </Stack.Navigator>
-  );
+    return (
+        <Stack.Navigator screenOptions={{headerShown: false}}>
+            <Stack.Screen name="RegisterScreen" component={RegisterScreen}/>
+            <Stack.Screen name="RegisterVerify" component={RegisterVerifyScreen}/>
+        </Stack.Navigator>
+    );
 };
 
 const LoginNavigator = () => {
-  return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Login" component={Login} />
-      <Stack.Screen name="LoginVerify" component={LoginVerify} />
-    </Stack.Navigator>
-  );
+    return (
+        <Stack.Navigator screenOptions={{headerShown: false}}>
+            <Stack.Screen name="LoginScreen" component={LoginScreen}/>
+            <Stack.Screen name="LoginVerify" component={LoginVerifyScreen}/>
+        </Stack.Navigator>
+    );
 };
 
 const AccountNavigator = () => {
-  return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Account" component={Account} />
-      <Stack.Screen name="PersonalInfo" component={PersonalInfo} />
-      <Stack.Screen name="DeleteConfirm" component={DeleteConfirm} />
-      <Stack.Screen name="Vehicle" component={Vehicle} />
-      {/*<Stack.Screen name="Friends" component={Friends}/>*/}
-      <Stack.Screen name="Developer" component={Developer} />
-    </Stack.Navigator>
-  );
+    return (
+        <Stack.Navigator screenOptions={{headerShown: false}}>
+            <Stack.Screen name="AccountScreen" component={AccountScreen}/>
+            <Stack.Screen name="PersonalInfo" component={PersonalInfoScreen}/>
+            <Stack.Screen name="DeleteConfirm" component={DeleteConfirmScreen}/>
+            <Stack.Screen name="Vehicle" component={VehicleScreen}/>
+            {/*<Stack.Screen name="Friends" component={FriendsScreen}/>*/}
+            <Stack.Screen name="Developer" component={DeveloperScreen}/>
+        </Stack.Navigator>
+    );
 };
 
-function LoadingScreen({ isVisible }) {
-  const [progress, setProgress] = useState(0);
+function LoadingScreen({isVisible}) {
+    const [progress, setProgress] = useState(0);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setProgress(prevProgress => {
-        if (prevProgress < 1) {
-          return prevProgress + 0.1;
-        }
-        clearInterval(interval);
-        return 1;
-      });
-    }, 50);
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setProgress(prevProgress => {
+                if (prevProgress < 1) {
+                    return prevProgress + 0.1;
+                }
+                clearInterval(interval);
+                return 1;
+            });
+        }, 50);
 
-    return () => clearInterval(interval);
-  }, []);
+        return () => clearInterval(interval);
+    }, []);
 
-  return isVisible ? (
-    <View style={styles.loadingContainer}>
-      <Progress.Bar color={'white'} borderColor={'transparent'} progress={progress} width={200} />
-      <Text>fuelbuddy Alpha Loading</Text>
-    </View>
-  ) : null;
+    return isVisible ? (
+        <View style={styles.loadingContainer}>
+            <Progress.Bar color={'white'} borderColor={'transparent'} progress={progress} width={200}/>
+            <Text>Loading...</Text>
+        </View>
+    ) : null;
 }
 
 const AppNavigator = () => {
-  const { state: authState, dispatch: authDispatch} = useCombinedContext();
+    const {state: authState, dispatch: authDispatch, userData} = useCombinedContext();
 
-  useEffect(() => {
+    useEffect(() => {
         const checkAuthState = async () => {
             try {
                 const token = await AsyncStorage.getItem('token');
@@ -122,67 +141,72 @@ const AppNavigator = () => {
 
     }, [authDispatch]);
 
-  return (
-    <View style={{ flex: 1, overflow: 'hidden' }}>
-      <StatusBar translucent backgroundColor="#FFFFFF" barStyle="dark-content" />
-      <NavigationContainer>
-        {authState.isUserAuthenticated ? (
-          <Tab.Navigator
-            screenOptions={({ route }) => ({
-              headerShown: false,
-              tabBarActiveTintColor: '#6BFF91',
-              tabBarInactiveTintColor: '#515151',
-              tabBarStyle: {
-                backgroundColor: '#FFFFFF',
-              },
-              tabBarLabelStyle: {
-                fontSize: 16,
-              },
-              tabBarLabel: '',
-              tabBarIcon: ({ color, size, focused }) => {
-                let iconName;
+    return (
+        <View style={{flex: 1, overflow: 'hidden'}}>
+            <StatusBar translucent backgroundColor="#FFFFFF" barStyle="dark-content"/>
+            <NavigationContainer>
+                {authState.isUserAuthenticated ? (
+                    userData.reg_full ? (
+                        <Tab.Navigator
+                            screenOptions={({route}) => ({
+                                headerShown: false,
+                                tabBarActiveTintColor: '#6BFF91',
+                                tabBarInactiveTintColor: '#515151',
+                                tabBarStyle: {
+                                    backgroundColor: '#FFFFFF',
+                                },
+                                tabBarLabelStyle: {
+                                    fontSize: 16,
+                                },
+                                tabBarLabel: '',
+                                tabBarIcon: ({color, size, focused}) => {
+                                    let iconName;
 
-                const iconStyle = {
-                  marginBottom: focused ? 3 : 0,
-                };
+                                    const iconStyle = {
+                                        marginBottom: focused ? 3 : 0,
+                                    };
 
-                let iconSize = 22;
+                                    let iconSize = 22;
 
-                if (route.name === 'Dashboard') {
-                  iconName = 'chart-bar';
-                } else if (route.name === 'Map') {
-                  iconName = 'map-marked-alt';
-                } else if (route.name === 'OCR') {
-                  iconName = 'camera';
-                } else if (route.name === 'Friends') {
-                  iconName = 'user-friends';
-                } else if (route.name === 'Account') {
-                  iconName = 'user-astronaut';
-                }
+                                    if (route.name === 'Dashboard') {
+                                        iconName = 'chart-bar';
+                                    } else if (route.name === 'Map') {
+                                        iconName = 'map-marked-alt';
+                                    } else if (route.name === 'OCR') {
+                                        iconName = 'camera';
+                                    } else if (route.name === 'Friends') {
+                                        iconName = 'user-friends';
+                                    } else if (route.name === 'Account') {
+                                        iconName = 'user-astronaut';
+                                    }
 
-                let iconColor = focused ? '#6BFF91' : '#515151';
+                                    let iconColor = focused ? '#6BFF91' : '#515151';
 
-                return <FontAwesome5 name={iconName} size={iconSize} color={iconColor} style={iconStyle} />;
-              },
-            })}
-          >
-            <Tab.Screen name="Dashboard" component={Dashboard} />
-            <Tab.Screen name="Map" component={Map} />
-            <Tab.Screen name="OCR" component={Scan} />
-            <Tab.Screen name="Friends" component={Friends} />
-            <Tab.Screen name="Account" component={AccountNavigator} />
-          </Tab.Navigator>
-        ) : (
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="Welcome" component={Welcome} />
-            <Stack.Screen name="Login" component={LoginNavigator} />
-            <Stack.Screen name="Register" component={RegisterNavigator} />
-          </Stack.Navigator>
-        )}
-      </NavigationContainer>
-      <LoadingScreen isVisible={authState.isLoading} />
-    </View>
-  );
+                                    return <FontAwesome5 name={iconName} size={iconSize} color={iconColor}
+                                                         style={iconStyle}/>;
+                                },
+                            })}
+                        >
+                            <Tab.Screen name="Dashboard" component={DashboardScreen}/>
+                            <Tab.Screen name="Map" component={MapScreen}/>
+                            <Tab.Screen name="OCR" component={ScanScreen}/>
+                            <Tab.Screen name="Friends" component={FriendsScreen}/>
+                            <Tab.Screen name="Account" component={AccountNavigator}/>
+                        </Tab.Navigator>
+                    ) : (
+                        <RegistrationFlow/>
+                    )
+                ) : (
+                    <Stack.Navigator screenOptions={{headerShown: false}}>
+                        <Stack.Screen name="Welcome" component={WelcomeScreen}/>
+                        <Stack.Screen name="Login" component={LoginNavigator}/>
+                        <Stack.Screen name="Register" component={RegisterNavigator}/>
+                    </Stack.Navigator>
+                )}
+            </NavigationContainer>
+            <LoadingScreen isVisible={authState.isLoading}/>
+        </View>
+    );
 };
 
 export default AppNavigator;

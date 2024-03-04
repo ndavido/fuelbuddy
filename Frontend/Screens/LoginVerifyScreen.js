@@ -20,17 +20,15 @@ import {
     Container,
     LRContainer, LRButtonDiv
 } from "../styles/styles";
-import PressableButton from '../styles/buttons';
 import {Logo} from '../styles/images';
 import {H1, H2, H3, H4, H5, H6, Img, Txt} from '../styles/text.js';
+import {ButtonButton} from "../styles/buttons";
 
 const url = process.env.REACT_APP_BACKEND_URL
 
 const LoginVerifyScreen = ({route}) => {
     const toastRef = useRef(null);
     const [errorBorder, setErrorBorder] = useState(false);
-
-    
     
     const showToast = (message) => {
         if (toastRef.current) {
@@ -44,8 +42,6 @@ const LoginVerifyScreen = ({route}) => {
           console.log("error toast call")
         }
       };
-
-
 
     const navigation = useNavigation();
     const {login} = useCombinedContext();
@@ -73,7 +69,7 @@ const LoginVerifyScreen = ({route}) => {
                 },
             };
 
-            const response = await axios.post(`${url}/login_verify`, formData, config);
+            const response = await axios.post(`${url}/login/verify`, formData, config);
 
             if (response.data.message === 'Login successful!' && response.data.access_token) {
 
@@ -132,22 +128,16 @@ const LoginVerifyScreen = ({route}) => {
                         <H6 tmargin='229px' bmargin='40px'>6-digits code sent to +{route.params.phone}</H6>
                         <H6 bmargin='5px'>Verification Code</H6>
                         <InputTxt
+                            accessibilityLabel="Code Input"
                             placeholder=""
                             onChangeText={(text) => handleChange('code', text)}
                         />
                     </Container>
                     <LRButtonDiv>
-                        <PressableButton
-                            onPress={handleVerify}
-                            title="Verify"
-                            bgColor="#6bff91"
-                        />
-                        <PressableButton
-                            onPress={handleResendCode}
-                            title="Resend Code"
-                            bgColor="transparent"
-                            txtColor="black"
-                        />
+                        <ButtonButton accessibilityLabel="Verify Code Button" color="#6bff91" txtWidth="100%"
+                                  txtColor="white" text="Verify" onPress={handleVerify}/>
+                        <ButtonButton accessibilityLabel="Resend Code Button" color="transparent" txtWidth="100%"
+                                  txtColor="black" text="Resend Code" onPress={handleResendCode}/>
                     </LRButtonDiv>
                 </Content>
             </Wrapper>

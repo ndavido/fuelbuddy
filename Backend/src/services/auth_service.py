@@ -43,9 +43,10 @@ def register():
             "full_name": full_name,
             "username": username,
             "phone_number": encrypted_phone_number,
-            "verification_code": 000000,
+            "verification_code": '000000',
             "verification_code_sent_at": now,
             "verified": False,
+            "reg_full": False,
             "roles": ["user"],
             "created_at": now,
             "updated_at": now
@@ -78,7 +79,7 @@ def verify():
 
         # ? Commented out for now
         # if bcrypt.checkpw(code.encode('utf-8'), user_data['verification_code']):
-        if code == user_data['verification_code']:
+        if code == '000000':
             new_user = Users(**user_data)
             new_user.save()  # Save the verified user to the database
 
@@ -121,7 +122,7 @@ def login():
             # ? Commented out for now
             # user.update(set__verification_code=hashed_verification_code.decode(
             #     'utf-8'), set__verification_code_sent_at=now)
-            user.update(set__verification_code=000000,
+            user.update(set__verification_code='000000',
                         set__verification_code_sent_at=now)
 
             # send_text_code(verification_code, standardized_phone_number)
@@ -156,7 +157,7 @@ def login_verify():
         if "verification_code" in user and "verification_code_sent_at" in user and datetime.now() - user.verification_code_sent_at < timedelta(minutes=10):
             # ? Commented out for now
             # if bcrypt.checkpw(code.encode('utf-8'), user.verification_code.encode('utf-8')):
-            if code == user.verification_code:
+            if code == '000000':
                 # Clear the login code to prevent reuse
                 user.update(unset__verification_code=1,
                             unset__verification_code_sent_at=1)

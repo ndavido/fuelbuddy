@@ -1,33 +1,38 @@
-from mongoengine import Document, StringField, EmbeddedDocumentListField, EmbeddedDocument
-from mongoengine.fields import IntField, FloatField, EmbeddedDocumentField
-
-
-class ModelInfo(EmbeddedDocument):
-    body_type = StringField()
-    engine_type = StringField()
-    turnover_of_maximum_torque_rpm = IntField()
-    capacity_cm3 = IntField()
-    engine_hp = IntField()
-    engine_hp_rpm = IntField()
-    transmission = StringField()
-    mixed_fuel_consumption_per_100_km_l = FloatField()
-    range_km = IntField()
-    emission_standards = StringField()
-    fuel_tank_capacity_l = IntField()
-    CO2_emissions_g_km = IntField()
-    car_class = StringField()
-
+from mongoengine import Document, StringField, ListField, EmbeddedDocument, EmbeddedDocumentField
 
 class TrimInfo(EmbeddedDocument):
+    series = StringField()
     trim = StringField()
-    years = StringField()
-    info = EmbeddedDocumentField(ModelInfo)
+    body_type = StringField()
+    engine_type = StringField()
+    turnover_of_maximum_torque_rpm = StringField()
+    capacity_cm3 = StringField()
+    engine_hp = StringField()
+    engine_hp_rpm = StringField()
+    transmission = StringField()
+    mixed_fuel_consumption_per_100_km_l = StringField()
+    range_km = StringField()
+    emission_standards = StringField()
+    fuel_tank_capacity_l = StringField()
+    city_fuel_per_100km_l = StringField()
+    co2_emissions_g_km = StringField()
+    car_class = StringField()
 
+class YearInfo(EmbeddedDocument):
+    year = StringField()
+    trims = ListField(EmbeddedDocumentField(TrimInfo))
+
+class ModelInfo(EmbeddedDocument):
+    model = StringField()
+    years = ListField(EmbeddedDocumentField(YearInfo))
 
 class Vehicle(Document):
     make = StringField()
-    trims = EmbeddedDocumentListField(TrimInfo)
+    models = ListField(EmbeddedDocumentField(ModelInfo))
 
     meta = {
-        'collection': 'vehicle_datatest'
+        'collection': 'vehicles_data',
+        'indexes': [
+            'make',
+        ]
     }

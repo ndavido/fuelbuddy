@@ -32,7 +32,7 @@ if (!isWeb) {
 import {H2, H3, H4, H5, H6, H7, H8} from "../styles/text";
 import {Container, ButtonContainer, CardContainer, Card, ModalContent, InputTxt} from "../styles/styles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {AnimatedGenericButton, AnimatedHeartButton, ButtonButton} from "../styles/AnimatedIconButton";
+import {AnimatedGenericButton, AnimatedHeartButton, ButtonButton} from "../styles/buttons";
 import CustomMarker from "../Components/customMarker";
 import axios from "axios";
 
