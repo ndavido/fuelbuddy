@@ -126,12 +126,12 @@ const FriendsScreen = () => {
         const searchUsers = async () => {
             try {
                 const token = await AsyncStorage.getItem('token');
-                const phone = jwtDecode(token).sub;
+                const user_id = jwtDecode(token).sub;
 
                 const response = await axios.post(
                     `${url}/search_users`,
                     {
-                        phone_number: phone,
+                        id: user_id,
                         search_term: searchTerm,
                     },
                     {

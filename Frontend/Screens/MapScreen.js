@@ -213,8 +213,7 @@ const MapScreen = () => {
     const fetchFavoriteStations = async () => {
         try {
 
-            const decodedToken = jwtDecode(token);
-            const user_id = decodedToken.sub;
+            const user_id = jwtDecode(token).sub;
 
             console.log("User ID: ", user_id)
 
@@ -289,8 +288,7 @@ const MapScreen = () => {
     const handleLikePress = async (stationId) => {
         try {
 
-            const decodedToken = jwtDecode(token);
-            const user_id = decodedToken.sub;
+            const user_id = jwtDecode(token).sub;
 
             const payload = {
                 id: user_id,
