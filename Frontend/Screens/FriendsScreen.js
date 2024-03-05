@@ -53,6 +53,7 @@ const FriendsScreen = () => {
             const config = {
                 headers: {
                     'X-API-Key': apiKey,
+                    'Authorization': `Bearer ${token}`,
                 },
             };
 
@@ -88,6 +89,7 @@ const FriendsScreen = () => {
             const config = {
                 headers: {
                     'X-API-Key': apiKey,
+                    'Authorization': `Bearer ${token}`,
                 },
             };
 
@@ -135,6 +137,7 @@ const FriendsScreen = () => {
                     {
                         headers: {
                             'X-API-Key': apiKey,
+                            'Authorization': `Bearer ${token}`,
                         },
                     }
                 );
@@ -193,6 +196,7 @@ const FriendsScreen = () => {
                 {
                     headers: {
                         'X-API-Key': apiKey,
+                        'Authorization': `Bearer ${token}`,
                     },
                 }
             );
@@ -239,6 +243,7 @@ const FriendsScreen = () => {
                 {
                     headers: {
                         'X-API-Key': apiKey,
+                        'Authorization': `Bearer ${token}`,
                     },
                 }
             );

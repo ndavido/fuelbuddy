@@ -47,7 +47,7 @@ def list_friends():
 
         friends_list = [{
             'friend_id': str(friend_user.id),
-            'friend_name': friend_user.full_name
+            'friend_name': friend_user.first_name
         } for friend in friends for friend_user in [friend.user1, friend.user2] if friend_user.id != user.id]
 
         return jsonify({"friends": friends_list}), 200
@@ -68,7 +68,7 @@ def requested_friends():
 
         requested_friends_list = [{
             'friend_id': str(requested_friend_user.id),
-            'friend_name': requested_friend_user.full_name,
+            'friend_name': requested_friend_user.first_name,
             'request_id': str(friend_request.id),
         } for friend_request in friend_requests for requested_friend_user in [friend_request.sender]]
 
@@ -100,7 +100,7 @@ def respond_friend_request():
 
             Notification(
                 user=friend_request.sender,
-                message=f"Your friend request to {friend_request.recipient.full_name} has been accepted.",
+                message=f"Your friend request to {friend_request.recipient.first_name} has been accepted.",
                 type='friend_request_accepted',
                 related_document=friend_request
             ).save()
@@ -110,7 +110,7 @@ def respond_friend_request():
 
             Notification(
                 user=friend_request.sender,
-                message=f"Your friend request to {friend_request.recipient.full_name} has been rejected.",
+                message=f"Your friend request to {friend_request.recipient.first_name} has been rejected.",
                 type='friend_request_rejected',
                 related_document=friend_request
             ).save()
@@ -138,7 +138,7 @@ def cancel_friend_request():
 
         Notification(
             user=friend_request.recipient,
-            message=f"Friend request from {friend_request.sender.full_name} has been canceled",
+            message=f"Friend request from {friend_request.sender.first_name} has been canceled",
             type='friend_request_canceled',
             related_document=friend_request
         ).save()

@@ -31,10 +31,10 @@ def get_fuel_stations():
                 # handle null values and have -1 to ensure to get the latest price (may change this after frontend is done)
                 'prices': {
                     # Adjust if needed for price type
-                    'petrol_price': fuel_station.petrol_prices[-1].regular if fuel_station.petrol_prices else None,
+                    'petrol_price': fuel_station.petrol_prices[-1].price if fuel_station.petrol_prices else None,
                     'petrol_updated_at': fuel_station.petrol_prices[-1].updated_at.strftime('%Y-%m-%d %H:%M:%S') if fuel_station.petrol_prices else None,
                     # Adjust if needed for price type
-                    'diesel_price': fuel_station.diesel_prices[-1].regular if fuel_station.diesel_prices else None,
+                    'diesel_price': fuel_station.diesel_prices[-1].price if fuel_station.diesel_prices else None,
                     'diesel_updated_at': fuel_station.diesel_prices[-1].updated_at.strftime('%Y-%m-%d %H:%M:%S') if fuel_station.diesel_prices else None
                 },
                 'facilities': {
@@ -141,7 +141,7 @@ def favorite_fuel_station():
         data = request.get_json()
         user_id = get_jwt_identity()
 
-        user = Users.objects(username=user_id).first()
+        user = Users.objects(id=user_id).first()
 
         if user:
             user_id = user.id

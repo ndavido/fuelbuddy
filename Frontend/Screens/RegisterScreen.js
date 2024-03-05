@@ -70,7 +70,7 @@ const RegisterScreen = () => {
 
     const navigation = useNavigation();
     const [formData, setFormData] = useState({
-        full_name: '',
+        first_name: '',
         username: '',
         phone_number: '',
     });
@@ -85,7 +85,7 @@ const RegisterScreen = () => {
     const handleChange = (name, value) => {
         setFormData({...formData, [name]: value});
         switch (name) {
-            case 'full_name':
+            case 'first_name':
                 const nameParts = name.split(' ');
                 if (value.length > 20) {
                     setNameError('');
@@ -114,7 +114,7 @@ const RegisterScreen = () => {
 
     const handleRegister = async () => {
         try {
-            if (!validateName(formData.full_name)) {
+            if (!validateName(formData.first_name)) {
                 showErrorToast('Please enter a valid name (first and last name)');
                 setInputErrorBorder1(true);
                 setInputErrorBorder(false); // Reset inputErrorBorder
@@ -157,7 +157,7 @@ const RegisterScreen = () => {
                     navigation.navigate('RegisterVerify', {
                         username: username,
                         phone_number: fullNum,
-                        full_name: formData.full_name
+                        first_name: formData.first_name
                     });
                 } else {
                     showErrorToast(response.data.message);
@@ -191,7 +191,7 @@ const RegisterScreen = () => {
                             accessibilityLabel="First Name Input"
                             inputErrorBorder1 = {inputErrorBorder1}
                             placeholder=""
-                            onChangeText={(text) => handleChange('full_name', text)}
+                            onChangeText={(text) => handleChange('first_name', text)}
                         />
                         {nameError ? <Text style={{color: 'red'}}>{nameError}</Text> : null}
 

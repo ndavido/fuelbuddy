@@ -52,7 +52,7 @@ const DashboardScreen = () => {
 
     const barLabels = ["Nov", "Dec", "Jan"];
 
-    const {userData, updateUserFromBackend} = useCombinedContext();
+    const {token, userData, updateUserFromBackend} = useCombinedContext();
 
 
     useEffect(() => {
@@ -159,10 +159,13 @@ const DashboardScreen = () => {
 
             let deductions = [];
 
+            console.log("TOKEN ON DASHBOARD", token)
+
             try {
-                const deductionsResponse = await axios.post(`${url}/get_deductions`, {username: userData.username}, {
+                const deductionsResponse = await axios.post(`${url}/get_deductions`, {id: userData.username}, {
                     headers: {
                         'X-API-Key': apiKey,
+                        'Authorization': `Bearer ${token}`
                     },
                 });
                 deductions = deductionsResponse.data.deductions || [];
@@ -263,7 +266,7 @@ const DashboardScreen = () => {
             const apiUrl = `${url}/update_budget`;
 
             const requestBody = {
-                username: userData.username,
+                id: userData.username,
                 deductions: newDeduction,
             };
 
@@ -271,6 +274,7 @@ const DashboardScreen = () => {
                 headers: {
                     'Content-Type': 'application/json',
                     'X-API-Key': apiKey,
+                    'Authorization': `Bearer ${token}`
                 },
             });
 
@@ -298,6 +302,7 @@ const DashboardScreen = () => {
                 headers: {
                     'Content-Type': 'application/json',
                     'X-API-Key': apiKey,
+                    'Authorization': `Bearer ${token}`
                 },
             });
 
@@ -344,7 +349,7 @@ const DashboardScreen = () => {
                 />
             }>
                 <TitleContainer>
-                    <H3 weight='500' tmargin='30px' lmargin='20px' bmargin='10px'>Hey, {userData.full_name}</H3>
+                    <H3 weight='500' tmargin='30px' lmargin='20px' bmargin='10px'>Hey, {userData.first_name}</H3>
                 </TitleContainer>
                 <DashboardContainer>
                     <CardOverlap>

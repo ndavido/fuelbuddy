@@ -35,6 +35,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import {AnimatedGenericButton, AnimatedHeartButton, ButtonButton} from "../styles/buttons";
 import CustomMarker from "../Components/customMarker";
 import axios from "axios";
+import {jwtDecode} from "jwt-decode";
 
 
 const apiMapKey = process.env.REACT_NATIVE_GoogleMaps_API_KEY;
@@ -47,7 +48,7 @@ const MapScreen = () => {
     const [petrolStations, setPetrolStations] = useState([]);
 
     const [location, setLocation] = useState(null);
-    const { userData, setUser, updateUserFromBackend } = useCombinedContext();
+    const { token, userData, setUser, updateUserFromBackend } = useCombinedContext();
     const [userHeading, setUserHeading] = useState(null);
 
     const [favoriteStations, setFavoriteStations] = useState([]);
@@ -193,6 +194,7 @@ const MapScreen = () => {
             const config = {
                 headers: {
                     "X-API-Key": apiKey,
+                    'Authorization': `Bearer ${token}`
                 },
             };
             const response = await fetch(`${url}/fuel_stations`, config);
@@ -210,14 +212,21 @@ const MapScreen = () => {
 
     const fetchFavoriteStations = async () => {
         try {
+
+            const decodedToken = jwtDecode(token);
+            const user_id = decodedToken.sub;
+
+            console.log("User ID: ", user_id)
+
             const updatedUserData = {
-                username: userData.username,
+                id: user_id,
             };
 
             const fav_response = await axios.get(`${url}/get_favorite_fuel_stations`, {
                 params: updatedUserData,
                 headers: {
                     "X-API-Key": apiKey,
+                    'Authorization': `Bearer ${token}`
                 },
             });
 
@@ -259,6 +268,7 @@ const MapScreen = () => {
             const response = await fetch(`${url}/store_fuel_prices`, {
                 method: 'POST', headers: {
                     "X-API-Key": apiKey,
+                    'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 }, body: JSON.stringify(payload),
             });
@@ -278,8 +288,12 @@ const MapScreen = () => {
 
     const handleLikePress = async (stationId) => {
         try {
+
+            const decodedToken = jwtDecode(token);
+            const user_id = decodedToken.sub;
+
             const payload = {
-                username: userData.username,
+                id: user_id,
                 station_id: stationId,
             };
 
@@ -288,6 +302,7 @@ const MapScreen = () => {
                 headers: {
                     'Content-Type': 'application/json',
                     'X-API-Key': apiKey,
+                    'Authorization': `Bearer ${token}`,
                 },
                 body: JSON.stringify(payload),
             };

@@ -16,18 +16,20 @@ const url = process.env.REACT_APP_BACKEND_URL
 const AccountScreen = () => {
     const [loading, setLoading] = useState(true);
     const [editMode, setEditMode] = useState(false);
-    const [editedFullName, setEditedFullName] = useState('');
+    const [editedFirstName, setEditedFirstName] = useState('');
+    const [editedSurname, setEditedSurname] = useState('');
     const [editedPhoneNumber, setEditedPhoneNumber] = useState('');
     const [editedEmail, setEditedEmail] = useState('');
     const [message, setMessage] = useState('');
     const navigation = useNavigation();
-    const { userData, setUser, updateUserFromBackend } = useCombinedContext();
+    const { token, userData, setUser, updateUserFromBackend } = useCombinedContext();
 
     const handleEditToggle = () => {
         setEditMode(!editMode);
 
         if (!editMode) {
-            setEditedFullName(userData.full_name);
+            setEditedFirstName(userData.first_name);
+            setEditedSurname(userData.surname);
             setEditedPhoneNumber(userData.phone_number);
             setEditedEmail(userData.email);
         }
@@ -46,12 +48,14 @@ const AccountScreen = () => {
             const config = {
                 headers: {
                     'X-API-Key': apiKey,
+                    'Authorization': `Bearer ${token}`
                 },
             };
 
             const updatedUserData = {
                 ...userData,
-                full_name: editedFullName,
+                first_name: editedFirstName,
+                surname: editedSurname,
                 phone_number: editedPhoneNumber,
                 email: editedEmail
             };
@@ -98,9 +102,12 @@ const AccountScreen = () => {
                             <TextContainer bgColor='grey'>@{userData.username}</TextContainer>
                             <H6 bmargin='5px'>Phone Number</H6>
                             <TextContainer bgColor='grey'>{userData.phone_number}</TextContainer>
-                            <H6 bmargin='5px'>Name</H6>
-                            <InputTxt bcolor='white' value={editedFullName} onChangeText={setEditedFullName}
-                                      placeholder="Full Name"/>
+                            <H6 bmargin='5px'>First Name</H6>
+                            <InputTxt bcolor='white' value={editedFirstName} onChangeText={setEditedFirstName}
+                                      placeholder="First Name"/>
+                            <H6 bmargin='5px'>Surname</H6>
+                            <InputTxt bcolor='white' value={editedSurname} onChangeText={setEditedSurname}
+                                      placeholder="Surname"/>
                             <H6 bmargin='5px'>Email</H6>
                             <InputTxt bcolor='white' value={editedEmail} onChangeText={setEditedEmail}
                                       placeholder="Email"/>
@@ -111,8 +118,10 @@ const AccountScreen = () => {
                             <TextContainer>@{userData.username}</TextContainer>
                             <H6 bmargin='5px'>Phone Number</H6>
                             <TextContainer bgColor='grey'>{userData.phone_number}</TextContainer>
-                            <H6 bmargin='5px'>Name</H6>
-                            <TextContainer bgColor='#FFFFFF'>{userData.full_name}</TextContainer>
+                            <H6 bmargin='5px'>First Name</H6>
+                            <TextContainer bgColor='#FFFFFF'>{userData.first_name}</TextContainer>
+                            <H6 bmargin='5px'>Surname</H6>
+                            <TextContainer bgColor='#FFFFFF'>{userData.surname}</TextContainer>
                             <H6 bmargin='5px'>Email</H6>
                             <TextContainer bgColor='#FFFFFF'>{userData.email}</TextContainer>
                         </>

@@ -14,7 +14,7 @@ from src.controllers.account_controller import account_blueprint
 from src.controllers.budget_controller import budget_blueprint
 from src.controllers.fuel_station_controller import fuel_station_blueprint
 from src.controllers.friend_controller import friend_blueprint
-\from src.controllers.vehicle_controller import vehicle_blueprint
+from src.controllers.vehicle_controller import vehicle_blueprint
 
 
 app = Flask(__name__)

@@ -29,6 +29,11 @@ const combinedReducer = (state, action) => {
                 ...state,
                 userData: action.payload,
             };
+        case 'SET_TOKEN':
+            return {
+                ...state,
+                token: action.payload,
+            };
         default:
             return state;
     }
@@ -53,6 +58,7 @@ export const CombinedProvider = ({children}) => {
                     // TODO Remove!!! Dev Only
                     console.log("USER DATA", userData)
                     if (userData) {
+                        dispatch({ type: 'SET_TOKEN', payload: token });
                         dispatch({type: 'LOGIN', payload: {userData: JSON.parse(userData)}});
                     } else {
                         dispatch({type: 'LOGOUT'});
@@ -80,6 +86,8 @@ export const CombinedProvider = ({children}) => {
             const userData = await fetchUserData();
 
             await AsyncStorage.setItem('userData', JSON.stringify(userData));
+
+            dispatch({ type: 'SET_TOKEN', payload: token });
 
             dispatch({type: 'LOGIN', payload: {userData}});
         } catch (error) {
@@ -111,6 +119,7 @@ export const CombinedProvider = ({children}) => {
                 const config = {
                     headers: {
                         'X-API-Key': apiKey,
+                        'Authorization': `Bearer ${storedToken}`,
                     },
                 };
                 const response = await axios.post(`${url}/account`, {id: user_id}, config);
@@ -141,7 +150,7 @@ export const CombinedProvider = ({children}) => {
 
     return (
         <CombinedContext.Provider
-            value={{userData: state.userData, state, setUser, login, logout, updateUserFromBackend}}>
+            value={{userData: state.userData, token: state.token, state, setUser, login, logout, updateUserFromBackend}}>
             {children}
         </CombinedContext.Provider>
     );
