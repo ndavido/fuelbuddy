@@ -8,7 +8,8 @@ from .budget import BudgetHistory
 
 class Users(Document):
     username = StringField(required=True, unique=True)
-    full_name = StringField()
+    first_name = StringField()
+    surname = StringField()
     phone_number = StringField()
     email = StringField()
     verification_code = StringField()
@@ -22,7 +23,7 @@ class Users(Document):
     weekly_budget = DecimalField(precision=2)
 
     meta = {
-        'collection': 'Users_test_collection',
+        'collection': 'users',
         'indexes': [
             'username',
             'phone_number',

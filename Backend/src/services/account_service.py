@@ -69,8 +69,10 @@ def edit_account():
         if 'phone_number' in data:
             encrypted_phone = aes_encrypt(data['phone_number'], encryption_key)
             user.phone_number = encrypted_phone
-        if 'full_name' in data:
-            user.full_name = data['full_name']
+        if 'first_name' in data:
+            user.first_name = data['first_name']
+        if 'surname' in data:
+            user.surname = data['surname']
         if 'email' in data:
             user.email = data['email']
         if 'reg_full' in data:

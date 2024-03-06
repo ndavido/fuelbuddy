@@ -84,7 +84,7 @@ const AccountScreen = () => {
                 <TopInfo>
                     <View style={{zIndex: 1000, top: 30}}>
                         <AccountImg/>
-                        <H4 tmargin="10px" style={{textAlign: 'center'}}>{userData.full_name}</H4>
+                        <H4 tmargin="10px" style={{textAlign: 'center'}}>{userData.first_name}</H4>
                         <H6 weight="400"
                             style={{textAlign: 'center'}}>@{userData.username} {userData.roles && userData.roles.includes("Developer") &&
                             <DeveloperTick>🧑‍💻</DeveloperTick>}</H6>

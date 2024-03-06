@@ -13,7 +13,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 @jwt_required()
 def save_trip():
     try:
-        current_user_id = get_jwt_identity()
+        user_id = get_jwt_identity()
         data = request.get_json()
 
         start_lat = data.get('start_latitude')
@@ -33,7 +33,7 @@ def save_trip():
 
         # Create and save the trip
         new_trip = Trip(
-            user=Users.objects.get(id=current_user_id),
+            user=Users.objects.get(id=user_id),
             start_location=start_location,
             end_location=end_location,
             distance=distance

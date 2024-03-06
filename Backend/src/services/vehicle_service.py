@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 from flask import request, jsonify, current_app
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from mongoengine.errors import DoesNotExist
 from src.models import Vehicle
 from src.middleware.api_key_middleware import require_api_key
@@ -12,7 +13,10 @@ from src.utils.helper_utils import handle_api_error
 # ref: https://www.geeksforgeeks.org/python-set-method/
 
 # Get all vehicle makes from the database
+
+
 @require_api_key
+@jwt_required()
 def get_vehicle_makes():
     try:
         makes = Vehicle.objects.distinct('make')
@@ -21,7 +25,9 @@ def get_vehicle_makes():
     except Exception as e:
         return handle_api_error(e)
 
+
 @require_api_key
+@jwt_required()
 def get_models_for_make(make):
     try:
         models = set()
@@ -36,6 +42,7 @@ def get_models_for_make(make):
 
 # Route to get all years for the selected model
 @require_api_key
+@jwt_required()
 def get_years_for_model(model):
     try:
         trim_info_by_year = {}
