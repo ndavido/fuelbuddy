@@ -6,6 +6,8 @@ import "core-js/stable/atob";
 
 const url = process.env.REACT_APP_BACKEND_URL
 
+const connectivityCheckUrl = 'https://www.google.com/';
+
 const CombinedContext = createContext();
 
 export const useCombinedContext = () => useContext(CombinedContext);
@@ -112,7 +114,6 @@ export const CombinedProvider = ({children}) => {
             // TODO Remove!!! Dev Only
             console.log("STORED TOKEN", storedToken)
             if (storedToken) {
-
                 console.log("Collecting user data from backend")
                 const decodedToken = jwtDecode(storedToken);
                 const user_id = decodedToken.sub;
@@ -133,14 +134,28 @@ export const CombinedProvider = ({children}) => {
     const updateUserFromBackend = async () => {
         try {
             const updatedUserData = await fetchUserData();
-            // TODO Remove!!! Dev Only
-            console.log("Setting user data from backend")
-            console.log(updatedUserData)
-            dispatch({type: 'SET_USER', payload: updatedUserData});
+
+            if (updatedUserData) {
+                // TODO Remove!!! Dev Only
+                console.log("Setting user data from backend")
+                console.log(updatedUserData)
+                dispatch({type: 'SET_USER', payload: updatedUserData});
+            } else {
+                const response = await axios.get(connectivityCheckUrl);
+
+                if (response.status === 200) {
+                    console.log('User data fetch error (404), Logging out');
+                    AsyncStorage.clear;
+                    await logout();
+                } else {
+                    console.error("Internet connectivity issue. Skipping user data update.");
+                }
+            }
+
         } catch (error) {
             console.error('Error updating user data from backend:', error);
             console.error("Logging Out Due to User Data Error")
-            AsyncStorage.clear()
+            AsyncStorage.clear;
         }
     };
 

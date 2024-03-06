@@ -52,7 +52,7 @@ const DashboardScreen = () => {
 
     const barLabels = ["Nov", "Dec", "Jan"];
 
-    const {token, userData, updateUserFromBackend} = useCombinedContext();
+    const {token, userData, updateUserFromBackend, logout} = useCombinedContext();
 
 
     useEffect(() => {
@@ -174,6 +174,11 @@ const DashboardScreen = () => {
                     console.log("No deductions found for this user");
                 } else {
                     console.error('Error fetching deductions:', error);
+                    await AsyncStorage.removeItem('token');
+
+                    delete axios.defaults.headers.common['Authorization'];
+
+                    await logout();
                 }
             }
 

@@ -114,14 +114,6 @@ const FriendsScreen = () => {
         }
     };
 
-
-    const openSearchModal = () => {
-        setSearchModalVisible(true);
-    };
-
-    const closeSearchModal = () => {
-        setSearchModalVisible(false);
-
     const openSearchModal = () => {
         setSearchModalVisible(true);
     };
@@ -146,46 +138,6 @@ const FriendsScreen = () => {
                         headers: {
                             'X-API-Key': apiKey,
                             'Authorization': `Bearer ${token}`,
-                        },
-                    }
-                );
-
-                const filteredResults = response.data.users.filter(user => (
-                    !friends.some(friend => friend.friend_id === user.user_id)
-                ));
-
-                setSearchResults(filteredResults);
-            } catch (error) {
-                console.error('Error searching users:', error);
-            }
-        };
-
-    const openFriendRequestsModal = () => {
-    setFriendRequestsModalVisible(true); // Set the friend requests modal visibility to true
-    setFriendRequestsCount(0); // Reset the friend requests count
-};
-
-
-
-    const closeFriendRequestsModal = () => {
-        setFriendRequestsModalVisible(false);
-    };
-
-    useEffect(() => {
-        const searchUsers = async () => {
-            try {
-                const token = await AsyncStorage.getItem('token');
-                const phone = jwtDecode(token).sub;
-
-                const response = await axios.post(
-                    `${url}/search_users`,
-                    {
-                        phone_number: phone,
-                        search_term: searchTerm,
-                    },
-                    {
-                        headers: {
-                            'X-API-Key': apiKey,
                         },
                     }
                 );

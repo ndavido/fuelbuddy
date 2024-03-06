@@ -26,9 +26,8 @@ import {ButtonButton} from "../styles/buttons";
 const url = process.env.REACT_APP_BACKEND_URL
 
 const validateName = (name) => {
-    // Check if name has at least two words (first name and last name)
-    const nameParts = name.split(/[\s-]+/); // Splitting by space or hyphen
-    return nameParts.length >= 2 && /^[A-Za-z]+$/.test(nameParts.join('')) && !nameParts.some(part => part === '-' || part === '');
+
+    return name.length > 1 && name.length <= 20;
 };
 
 
@@ -86,10 +85,9 @@ const RegisterScreen = () => {
         setFormData({...formData, [name]: value});
         switch (name) {
             case 'first_name':
-                const nameParts = name.split(' ');
-                if (value.length > 20) {
+                if (name.length > 20) {
                     setNameError('');
-                } else if(value.length < 1) {
+                } else if(name.length < 1) {
                     setNameError('');
                 }
                 else{
@@ -115,7 +113,7 @@ const RegisterScreen = () => {
     const handleRegister = async () => {
         try {
             if (!validateName(formData.first_name)) {
-                showErrorToast('Please enter a valid name (first and last name)');
+                showErrorToast('Please enter a valid First Name');
                 setInputErrorBorder1(true);
                 setInputErrorBorder(false); // Reset inputErrorBorder
                 setErrorBorder(false); // Reset errorBorder
