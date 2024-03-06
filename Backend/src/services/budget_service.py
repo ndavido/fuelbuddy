@@ -1,5 +1,5 @@
 #! /usr/bin/env python3
-
+import schedule
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from src.middleware.api_key_middleware import require_api_key
@@ -128,3 +128,17 @@ def user_suggested_budget():
     print("Next Week's Predicted Price is: ", predicted_price)
     print("Adjusted Predicted Price to the nearest 10 is: ",
           adjusted_predicted_price)
+
+# Budget Reset
+def reset_weekly_budgets():
+    users = Users.objects()
+
+    for user in users:
+        budget_history = BudgetHistory.objects(user=user).first()
+
+        if budget_history:
+            user.weekly_budget = budget_history.initial_weekly_budget
+            user.save()
+
+    print("Weekly budgets reset successfully.")
+schedule.every().monday.at("00:00").do(reset_weekly_budgets)
