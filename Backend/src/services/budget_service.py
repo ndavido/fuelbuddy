@@ -40,8 +40,12 @@ def update_budget():
 
             if 'deductions' in data:
                 deductions = data['deductions']
-                budget_history.deductions.extend(
-                    [Deduction(amount=d) for d in deductions])
+                if isinstance(deductions, list):
+                    budget_history.deductions.extend(
+                        [Deduction(amount=d) for d in deductions])
+                else:
+                    budget_history.deductions.append(
+                        Deduction(amount=deductions))
 
             budget_history.change_date = datetime.now()
 
