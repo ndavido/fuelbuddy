@@ -9,7 +9,7 @@ from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.regularizers import l2, l1
 
 # Load and preprocess the dataset
-df = pd.read_csv('Backend/user_spending_on_fuel.csv')
+df = pd.read_csv('user_spending_on_fuel.csv')
 
 # Normalize the features and target
 scaler = MinMaxScaler(feature_range=(0, 1))
