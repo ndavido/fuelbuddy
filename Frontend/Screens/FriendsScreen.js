@@ -46,11 +46,11 @@ const FriendsScreen = () => {
 
     const { token, userData, setUser, updateUserFromBackend } = useCombinedContext();
 
-    console.log("Token", token);
     console.log(url)
 
     const fetchFriends = async () => {
         try {
+            const token = await AsyncStorage.getItem('token');
             const user_id = jwtDecode(token).sub;
 
             const config = {
@@ -86,6 +86,7 @@ const FriendsScreen = () => {
 
     const fetchRequestedFriends = async () => {
         try {
+            const token = await AsyncStorage.getItem('token');
             const user_id = jwtDecode(token).sub;
 
             const config = {
@@ -176,7 +177,7 @@ const FriendsScreen = () => {
         try {
             console.log(`Making friend with ID: ${friendId}`);
             const token = await AsyncStorage.getItem('token');
-            const phone = jwtDecode(token).sub;
+            const user_id = jwtDecode(token).sub;
 
             setPendingRequests(prevRequests => [...prevRequests, friendId]);
 
@@ -192,7 +193,7 @@ const FriendsScreen = () => {
             const response = await axios.post(
                 `${url}/send_friend_request`,
                 {
-                    phone_number: phone,
+                    id: user_id,
                     friend_number: friendId,
                 },
                 {
@@ -233,12 +234,12 @@ const FriendsScreen = () => {
     const decideFriend = async (requestId, action) => {
         try {
             const token = await AsyncStorage.getItem('token');
-            const phone = jwtDecode(token).sub;
+            const user_id = jwtDecode(token).sub;
 
             const response = await axios.post(
                 `${url}/respond_friend_request`,
                 {
-                    phone_number: phone,
+                    id: user_id,
                     request_id: requestId,
                     action: action,
                 },
