@@ -117,9 +117,9 @@ const AccountScreen = () => {
                     <ButtonButton pos="single" iconColor="#b8bec2" icon="cross" color="#FFFFFF" txtColor="black"
                                   txtMargin="15px" text="Log Out" onPress={handleLogout}/>
 
-                    <H8 tmargin='60px' bmargin='5px' width='100%' style={{textAlign: 'center'}}>Version
+                    <H8 tmargin='60px' bmargin='5px' width='100%' style={{textAlign: 'center', opacity: 0.5}}>Version
                         Alpha</H8>
-                    <H8 bmargin='25px' width='100%' style={{textAlign: 'center'}}>Made with 💖 by Team
+                    <H8 bmargin='25px' width='100%' style={{textAlign: 'center', opacity: 0.5}}>Made with 💖 by Team
                         fuelbuddy</H8>
 
                 </AccountContainer>

@@ -25,6 +25,7 @@ import {
 import {jwtDecode} from "jwt-decode";
 import {H3, H4, H5, H6} from "../styles/text";
 import {ButtonButton} from "../styles/buttons";
+import {useCombinedContext} from "../CombinedContext";
 
 
 const apiKey = process.env.REACT_NATIVE_API_KEY;
@@ -43,12 +44,14 @@ const FriendsScreen = () => {
 
     const [refreshing, setRefreshing] = useState(false);
 
+    const { token, userData, setUser, updateUserFromBackend } = useCombinedContext();
+
+    console.log("Token", token);
     console.log(url)
 
     const fetchFriends = async () => {
         try {
-            const token = await AsyncStorage.getItem('token');
-            const user1 = jwtDecode(token).sub;
+            const user_id = jwtDecode(token).sub;
 
             const config = {
                 headers: {
@@ -59,7 +62,7 @@ const FriendsScreen = () => {
 
             const response = await axios.post(
                 `${url}/list_friends`,
-                {phone_number: user1},
+                {id: user_id},
                 config
             );
 
@@ -83,8 +86,7 @@ const FriendsScreen = () => {
 
     const fetchRequestedFriends = async () => {
         try {
-            const token = await AsyncStorage.getItem('token');
-            const user1 = jwtDecode(token).sub;
+            const user_id = jwtDecode(token).sub;
 
             const config = {
                 headers: {
@@ -93,11 +95,11 @@ const FriendsScreen = () => {
                 },
             };
 
-            console.log(user1)
+            console.log(user_id)
 
             const response = await axios.post(
                 `${url}/requested_friends`,
-                {phone_number: user1},
+                {id: user_id},
                 config
             );
 
@@ -267,6 +269,7 @@ const FriendsScreen = () => {
             <WrapperScroll refreshControl={
                 <RefreshControl
                     refreshing={refreshing}
+                    onRefresh={onRefresh}
                 />
             }>
                 <AccountContainer style={{minHeight: 800}}>
