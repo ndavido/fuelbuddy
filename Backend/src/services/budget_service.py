@@ -58,7 +58,40 @@ def update_budget():
 
     except Exception as e:
         return handle_api_error(e)
+@require_api_key
+@jwt_required()
+def update_user_deduction():
+    try:
+        user_id = get_jwt_identity()
+        data = request.get_json()
 
+        if 'new_amount' not in data:
+            return jsonify({"error": "New amount not provided"}), 400
+
+        new_amount = data['new_amount']
+
+        user = Users.objects.get(id=user_id)
+        budget_history = BudgetHistory.objects(user=user).first()
+
+        if budget_history is None:
+            return jsonify({"error": "Budget history not found"}), 404
+
+        # checks if their was a deduction, gets the last deduction and updates the amount with the new subbed in amount
+        # if it cannot find a previous deduction it will return a 404
+        if budget_history.deductions:
+            last_deduction = budget_history.deductions[-1]
+            last_deduction.amount = new_amount
+            last_deduction.updated_at = datetime.now()
+            budget_history.save()
+
+            return jsonify({"message": "Deduction updated successfully"})
+        else:
+            return jsonify({"error": "No deductions found for the user"}), 404
+
+    except (DoesNotExist, ValidationError) as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return handle_api_error(e)
 
 @require_api_key
 @jwt_required()
