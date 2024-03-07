@@ -20,12 +20,13 @@ import {ButtonButton} from "../styles/buttons";
 const url = process.env.REACT_APP_BACKEND_URL
 
 const CompleteProfileScreen = () => {
-    const [editedFullName, setEditedFullName] = useState('');
+    const [editedFirstName, setEditedFirstName] = useState('');
+    const [editedSurname, setEditedSurname] = useState('')
     const [editedPhoneNumber, setEditedPhoneNumber] = useState('');
     const [editedEmail, setEditedEmail] = useState('');
     const [message, setMessage] = useState('');
     const navigation = useNavigation();
-    const {userData, setUser, updateUserFromBackend} = useCombinedContext();
+    const {token, userData, setUser, updateUserFromBackend} = useCombinedContext();
 
     async function reloadApp() {
         await Updates.reloadAsync();
@@ -40,12 +41,14 @@ const CompleteProfileScreen = () => {
             const config = {
                 headers: {
                     'X-API-Key': apiKey,
+                    'Authorization': `Bearer ${token}`
                 },
             };
 
             const updatedUserData = {
                 ...userData,
-                full_name: editedFullName,
+                first_name: editedFirstName,
+                surname: editedSurname,
                 phone_number: editedPhoneNumber,
                 email: editedEmail,
             };
@@ -71,7 +74,8 @@ const CompleteProfileScreen = () => {
     useEffect(() => {
         updateUserFromBackend();
 
-        setEditedFullName(userData.full_name || '');
+        setEditedFirstName(userData.first_name || '');
+        setEditedSurname(userData.surname || '')
         setEditedPhoneNumber(userData.phone_number || '');
         setEditedEmail(userData.email || '');
     }, []);
@@ -88,10 +92,10 @@ const CompleteProfileScreen = () => {
                             <H6 bmargin='5px'>Phone Number</H6>
                             <TextContainer bgColor='grey'>{userData.phone_number}</TextContainer>
                             <H6 bmargin='5px'>First Name</H6>
-                            <InputTxt bcolor='white' value={editedFullName} onChangeText={setEditedFullName}
+                            <InputTxt bcolor='white' value={editedFirstName} onChangeText={setEditedFirstName}
                                       placeholder="First Name"/>
                             <H6 bmargin='5px'>Last Name</H6>
-                            <InputTxt bcolor='white' value={editedFullName} onChangeText={setEditedFullName}
+                            <InputTxt bcolor='white' value={editedSurname} onChangeText={setEditedSurname}
                                       placeholder="Last Name"/>
                             <H6 bmargin='5px'>Email</H6>
                             <InputTxt bcolor='white' value={editedEmail} onChangeText={setEditedEmail}

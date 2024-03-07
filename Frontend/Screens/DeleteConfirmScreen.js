@@ -23,7 +23,7 @@ const apiKey = process.env.REACT_NATIVE_API_KEY;
 const DeleteConfirmScreen = () => {
     const navigate = useNavigation();
 
-    const {logout} = useCombinedContext();
+    const {logout, token } = useCombinedContext();
 
     const handleConfirmDelete = async () => {
 
@@ -44,6 +44,7 @@ const DeleteConfirmScreen = () => {
             const config = {
                 headers: {
                     'X-API-Key': apiKey,
+                    'Authorization': `Bearer ${token}`
                 },
             };
 
@@ -52,9 +53,9 @@ const DeleteConfirmScreen = () => {
                 const decodedToken = jwtDecode(storedToken);
                 console.log(decodedToken);
 
-                const phone = decodedToken.sub;
+                const user_id = decodedToken.sub;
 
-                const response = await axios.post(`${url}/delete_account`, {phone_number: phone}, config);
+                const response = await axios.post(`${url}/delete_account`, {id: user_id}, config);
 
                 if (response.data.message === 'Account deleted successfully!') {
                     try {

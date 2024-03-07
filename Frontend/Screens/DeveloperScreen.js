@@ -13,6 +13,7 @@ import {
 } from '../styles/styles';
 import MainLogo from '../styles/mainLogo';
 import {H3, H4, H5, H6} from "../styles/text";
+import {useCombinedContext} from "../CombinedContext";
 
 const url = process.env.REACT_APP_BACKEND_URL
 
@@ -21,6 +22,8 @@ const DeveloperScreen = () => {
     const [loading, setLoading] = useState(true);
 
     const navigation = useNavigation();
+
+    const { token } = useCombinedContext();
 
     const handleDelete = () => {
         navigation.navigate('DeleteConfirm');
@@ -34,6 +37,7 @@ const DeveloperScreen = () => {
                 const config = {
                     headers: {
                         'X-API-Key': apiKey,
+                        'Authorization': `Bearer ${token}`
                     },
                 };
 

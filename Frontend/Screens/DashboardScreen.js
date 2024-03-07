@@ -52,7 +52,7 @@ const DashboardScreen = () => {
 
     const barLabels = ["Nov", "Dec", "Jan"];
 
-    const {token, userData, updateUserFromBackend} = useCombinedContext();
+    const {token, userData, updateUserFromBackend, logout} = useCombinedContext();
 
 
     useEffect(() => {
