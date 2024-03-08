@@ -12,6 +12,8 @@ from datetime import datetime
 from sklearn.preprocessing import MinMaxScaler
 import pandas as pd
 import numpy as np
+import json
+import requests
 
 
 @require_api_key
@@ -114,68 +116,53 @@ def get_deductions():
         return jsonify({"error": "User not found"}), 404
     except Exception as e:
         return handle_api_error(e)
-
-
+    
 @require_api_key
 @jwt_required()
 def user_suggested_budget():
-
-    # Define the model path and look_back period
-    look_back = 10
-    model_path = 'Backend/src/neural_network/Updated_user_model.h5'
-
-    # Load the pre-trained model
-    model = load_saved_model(model_path)
-
-    # Initialize the scaler
-    scaler = MinMaxScaler(feature_range=(0, 1))
-    df = pd.read_csv(
-        'Backend-Rework/src/neural_network/unseen_spending_data.csv')
-    data = df['Total'].values.reshape(-1, 1)
-    scaler.fit(data)
-
     current_user = request.get_json()
     username = current_user['username']
+    
+    user_budget_history = BudgetHistory.objects(user=Users.objects(username=username).first()).order_by('-date_created')
+    
+    if not user_budget_history:
+        return jsonify({"error": "Budget not set"}), 404
 
-    user_budget_history = BudgetHistory.objects(user=Users.objects(
-        username=username).first()).order_by('-date_created')
-
-    if user_budget_history:
-        for budget_history in user_budget_history:
-            print(budget_history.new_budget)
+    last_weeks_data = [budget_history.new_budget for budget_history in user_budget_history][:10]
+    
+    data_for_prediction = [last_weeks_data]
+    
+    # Get REST URL
+    model_name = 'model_tf_serving_1709861331' 
+    url = get_rest_url(model_name)
+    
+    # Make REST API request
+    response = rest_request(data_for_prediction, url)
+    
+    if response.status_code == 200:
+        # Process the response from your model
+        prediction = response.json()
+        # Extract and use your prediction result
+        predicted_budget = prediction['predictions'][0]  # Adjust based on your model's response structure
+        
+        # Further logic to use predicted_budget...
+        return jsonify({"predicted_budget": predicted_budget})
     else:
-        print('Budget not set')
+        return jsonify({"error": "Failed to get prediction from the model"}), response.status_code
+    
+def get_rest_url(model_name, host='ec2-54-81-41-60.compute-1.amazonaws.com', port='8505', verb='predict'):
+     url = 'http://{0}:{1}/v1/models/{2}:predict'.format(host,port,model_name)
 
-    def round_to_nearest_10(predicted_price):
-        # Round the predicted price to the nearest 10
-        adjusted_predicted_price = round(predicted_price / 10) * 10
-        return adjusted_predicted_price
+     return url
+ 
+def rest_request(data, url):
+    payload = json.dumps({'instances': data})
+    response = requests.post(url=url, data=payload)
+    return response
 
-    # Get the last week's data
-    last_weeks_data = [
-        budget_history.new_budget for budget_history in user_budget_history][:look_back]
+def round_to_nearest_10(predicted_price):
+    return round(predicted_price / 10) * 10
 
-    # Make the prediction
-    predicted_price = make_prediction(
-        model, scaler, last_weeks_data, look_back)
-
-    # Adjust the prediction to the nearest 10
-    adjusted_predicted_price = round_to_nearest_10(predicted_price)
-
-    print("Next Week's Predicted Price is: ", predicted_price)
-    print("Adjusted Predicted Price to the nearest 10 is: ",
-          adjusted_predicted_price)
-
-# Budget Reset
-def reset_weekly_budgets():
-    users = Users.objects()
-
-    for user in users:
-        budget_history = BudgetHistory.objects(user=user).first()
-
-        if budget_history:
-            user.weekly_budget = budget_history.initial_weekly_budget
-            user.save()
-
-    print("Weekly budgets reset successfully.")
-schedule.every().monday.at("00:00").do(reset_weekly_budgets)
+def extract_predicted_price(prediction_result):
+    predicted_price = prediction_result['predictions'][0]
+    return predicted_price
