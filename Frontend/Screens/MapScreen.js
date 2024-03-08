@@ -37,6 +37,14 @@ import CustomMarker from "../Components/customMarker";
 import axios from "axios";
 import {jwtDecode} from "jwt-decode";
 
+// Images
+import carWashIcon from '../assets/serviceIcons/fs_carwash.png';
+import foodIcon from '../assets/serviceIcons/fs_hot_food.png';
+import atmIcon from '../assets/serviceIcons/fs_atm.png';
+import parkingIcon from '../assets/serviceIcons/fs_parking.png';
+import serviceIcon from '../assets/serviceIcons/fs_service.png';
+import conStoreIcon from '../assets/serviceIcons/fs_con_store.png';
+
 
 const apiMapKey = process.env.REACT_NATIVE_GoogleMaps_API_KEY;
 const apiKey = process.env.REACT_NATIVE_API_KEY;
@@ -48,7 +56,7 @@ const MapScreen = () => {
     const [petrolStations, setPetrolStations] = useState([]);
 
     const [location, setLocation] = useState(null);
-    const { token, userData, setUser, updateUserFromBackend } = useCombinedContext();
+    const {token, userData, setUser, updateUserFromBackend} = useCombinedContext();
     const [userHeading, setUserHeading] = useState(null);
 
     const [favoriteStations, setFavoriteStations] = useState([]);
@@ -600,6 +608,27 @@ const MapScreen = () => {
                             <H6>Address</H6>
                             <H6 style={{opacity: 0.6}}>{selectedStation.address},</H6>
                             <H6 style={{opacity: 0.6}}>Ireland</H6>
+                            <H6>Services</H6>
+                            <View style={{flexDirection: 'row', flexWrap: 'wrap'}}> {/* Container for icons */}
+                                {selectedStations.services && Object.entries(selectedStations.services).map(([service, available]) => (
+                                    available && (
+                                        <View key={service} style={{marginRight: 8}}>
+                                            <Image source={
+                                                service === 'car_wash' ? carWashIcon :
+                                                service === 'food' ? foodIcon :
+                                                service === 'convenience_store' ? conStoreIcon :
+                                                service === 'car_parking' ? parkingIcon :
+                                                service === 'atm' ? atmIcon :
+                                                service === 'car_service' ? serviceIcon :
+                                                null
+                                            }
+                                                   style={{width: 24, height: 24}}
+                                            />
+                                        </View>
+                                    )
+                                ))}
+                            </View>
+
                         </Container>)}
                 </BottomSheet>);
         } else {
@@ -701,10 +730,10 @@ const MapScreen = () => {
                 <ModalContent>
                     <H5 tmargin="10px" bmargin="30px" style={{textAlign: 'center'}}>Update Price</H5>
                     <ButtonContainer style={{position: 'absolute', marginTop: 20, marginLeft: 20}}>
-                            <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
-                                <ButtonButton icon="cross" color="#eaedea" iconColor="#b8bec2"
-                                      onPress={() => setUpdateModalVisible(false)}/>
-                            </View>
+                        <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
+                            <ButtonButton icon="cross" color="#eaedea" iconColor="#b8bec2"
+                                          onPress={() => setUpdateModalVisible(false)}/>
+                        </View>
                     </ButtonContainer>
                     <InputTxt
                         placeholder="New Petrol Price"
