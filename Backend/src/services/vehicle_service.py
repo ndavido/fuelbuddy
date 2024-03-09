@@ -4,10 +4,13 @@ from flask import request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from mongoengine.errors import DoesNotExist
 from src.models import Vehicle
+from src.models.vehicle import UserVehicle
 from src.middleware.api_key_middleware import require_api_key
 from datetime import datetime
 from mongoengine.queryset.visitor import Q
 from src.utils.helper_utils import get_trim_info_by_year
+
+
 
 # ref: https://docs.python.org/3/tutorial/datastructures.html
 # ref: https://www.geeksforgeeks.org/python-set-method/
@@ -46,3 +49,28 @@ def get_years_for_model(model):
         return jsonify(trim_info_by_year), 200
     except Exception as e:
         return jsonify({'error': 'Failed to retrieve years for the model', 'details': str(e)}), 500
+
+# POST |
+@require_api_key
+@jwt_required()
+def add_vehicle_to_user():
+    try:
+        current_user_id = get_jwt_identity()
+        vehicle_data = request.get_json()
+
+        make = vehicle_data.get('make')
+        model = vehicle_data.get('model')
+        year = vehicle_data.get('year')
+
+        user_vehicle = UserVehicle(
+            user_id=current_user_id,
+            make=make,
+            model=model,
+            year=year
+        )
+        user_vehicle.save()
+
+        return jsonify({'message': 'Vehicle added to user successfully'}), 200
+
+    except Exception as e:
+        return jsonify({'error': 'Failed to add vehicle to user', 'details': str(e)}), 500
