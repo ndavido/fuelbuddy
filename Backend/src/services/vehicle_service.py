@@ -9,6 +9,9 @@ from datetime import datetime
 from mongoengine.queryset.visitor import Q
 from src.utils.helper_utils import handle_api_error
 
+from Backend.src.models.vehicle import YearInfo, TrimInfo, ModelInfo
+
+
 # ref: https://docs.python.org/3/tutorial/datastructures.html
 # ref: https://www.geeksforgeeks.org/python-set-method/
 
@@ -20,25 +23,23 @@ from src.utils.helper_utils import handle_api_error
 def get_vehicle_makes():
     try:
         makes = Vehicle.objects.distinct('make')
-
-        return jsonify({'makes': makes})
+        return jsonify({'makes': makes}), 200
     except Exception as e:
-        return handle_api_error(e)
+        return jsonify({'error': 'Failed to retrieve vehicle makes', 'details': str(e)}), 500
 
 
 @require_api_key
 @jwt_required()
 def get_models_for_make(make):
     try:
-        models = set()
         vehicles = Vehicle.objects(make=make)
+        models = set()
         for vehicle in vehicles:
             for model_info in vehicle.models:
                 models.add(model_info.model)
-        return jsonify({'models': list(models)})
+        return jsonify({'make': make, 'models': list(models)}), 200
     except Exception as e:
-        return handle_api_error(e)
-
+        return jsonify({'error': 'Failed to retrieve models for the make', 'details': str(e)}), 500
 
 # Route to get all years for the selected model
 @require_api_key
