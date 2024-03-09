@@ -1,15 +1,11 @@
 import React, {useState, useEffect, useRef, useMemo} from "react";
 import {
     View,
-    Text,
     StyleSheet,
-    Animated,
     Platform,
     Linking,
-    Button,
-    TextInput,
+    Image,
     Modal,
-    StatusBar,
     ScrollView
 } from "react-native";
 import BottomSheet from '@gorhom/bottom-sheet';
@@ -55,6 +51,7 @@ const MapScreen = () => {
     const [currentTime, setCurrentTime] = useState(new Date());
     const [petrolStations, setPetrolStations] = useState([]);
 
+    const [initialAnimationDone, setInitialAnimationDone] = useState(false);
     const [location, setLocation] = useState(null);
     const {token, userData, setUser, updateUserFromBackend} = useCombinedContext();
     const [userHeading, setUserHeading] = useState(null);
@@ -67,9 +64,9 @@ const MapScreen = () => {
     const [estimatedDuration, setEstimatedDuration] = useState(null);
     const [estimatedDistance, setEstimatedDistance] = useState(null);
     const [estimatedTime, setEstimatedTime] = useState(null);
+    const [estimatedPrice, setEstimatedPrice] = useState(null);
 
     const [detailedSteps, setDetailedSteps] = useState([]);
-
     const [isJourneyActive, setIsJourneyActive] = useState(false);
     const [journeyCoordinates, setJourneyCoordinates] = useState([]);
     const [journeyMode, setJourneyMode] = useState(false);
@@ -151,22 +148,24 @@ const MapScreen = () => {
 
                 // TODO DEV ONLY
                 console.log("User Location: ", location);
-                mapRef.current?.animateToRegion({
-                    latitude: location.coords.latitude,
-                    longitude: location.coords.longitude,
-                    latitudeDelta: 0.0922,
-                    longitudeDelta: 0.0421,
-                });
+                if (!initialAnimationDone) {
+                mapRef.current?.animateCamera(
+                    {
+                        center: {
+                            latitude: location.coords.latitude,
+                            longitude: location.coords.longitude,
+                        },
+                        altitude: 20000,
+                        pitch: 0,
+                        heading: 1,
+                    },
+                    { duration: 1500 }
+                );
+                setInitialAnimationDone(true);
+            }
 
                 Location.watchPositionAsync({distanceInterval: 10}, (newLocation) => {
                     setLocation(newLocation);
-
-                    mapRef.current?.animateToRegion({
-                        latitude: newLocation.coords.latitude,
-                        longitude: newLocation.coords.longitude,
-                        latitudeDelta: 0.0922,
-                        longitudeDelta: 0.0421,
-                    });
 
                     updateDirectionIndexBasedOnLocation(newLocation.coords);
                 });
@@ -357,8 +356,12 @@ const MapScreen = () => {
         }
     };
 
-    const updateCurrentDirectionIndex = (index) => {
-        setCurrentDirectionIndex(index);
+    const calculateJourneyPrice = (distance, kmPerLiter, petrolCostPerLiter) => {
+        const distanceValue = parseFloat(distance.split(" ")[0]);
+        const litersNeeded = distanceValue / kmPerLiter;
+        const totalPrice = litersNeeded * petrolCostPerLiter;
+
+        return totalPrice.toFixed(2);
     };
 
     const handleRoutePress = async () => {
@@ -392,6 +395,18 @@ const MapScreen = () => {
                 setEstimatedTime(newEstimatedTime);
                 console.log("New Estimated Time:", newEstimatedTime);
             }
+
+            let petrolCostPerLiter;
+            if (selectedStation.prices && selectedStation.prices.petrol_price) {
+                petrolCostPerLiter = parseFloat(selectedStation.prices.petrol_price);
+            } else {
+                petrolCostPerLiter = 1.72; // Hardcoded value
+            }
+
+            const journeyPrice = calculateJourneyPrice(directionsInfo.distance.text, 18, petrolCostPerLiter);
+            console.log("Journey Price:", journeyPrice);
+
+            setEstimatedPrice(journeyPrice);
 
             mapRef.current.fitToCoordinates([origin, destination], {
                 edgePadding: {top: 50, right: 50, bottom: 200, left: 50},
@@ -453,6 +468,13 @@ const MapScreen = () => {
         );
     }
 
+    const watchUserPosition = () => {
+    return Location.watchPositionAsync({ distanceInterval: 10 }, (newLocation) => {
+        setLocation(newLocation);
+        updateDirectionIndexBasedOnLocation(newLocation.coords);
+        });
+    };
+
     const handleJourney = async () => {
         if (selectedStation && location) {
             const origin = {
@@ -480,13 +502,15 @@ const MapScreen = () => {
                 longitude: step.end_location.lng,
             })));
 
+            watchUserPosition();
+
             mapRef.current?.animateCamera(
                 {
                     center: {
                         latitude: location.coords.latitude,
                         longitude: location.coords.longitude,
                     },
-                    altitude: 160,
+                    altitude: 100,
                     pitch: 45,
                     heading: location.coords.heading,
                 },
@@ -594,6 +618,26 @@ const MapScreen = () => {
                                 </Card>
                             </CardContainer>
                             <H4>About</H4>
+                            <H6>Services</H6>
+                            <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+                                {selectedStation.facilities && Object.entries(selectedStation.facilities).map(([facility, available]) => (
+                                    available && (
+                                        <View key={facility} style={{marginRight: 10, marginTop: 10, marginBottom: 30}}>
+                                            <Image source={
+                                                facility === 'convenience_store' ? conStoreIcon :
+                                                facility === 'food' ? foodIcon :
+                                                facility === 'atm' ? atmIcon :
+                                                facility === 'car_parking' ? parkingIcon :
+                                                facility === 'car_wash' ? carWashIcon :
+                                                facility === 'car_service' ? serviceIcon :
+                                                null
+                                            }
+                                                   style={{width: 40, height: 40}}
+                                            />
+                                        </View>
+                                    )
+                                ))}
+                            </View>
                             <H6>Opening Hours</H6>
                             <H6 style={{opacity: 0.6}}>{selectedStation.opening_hours}</H6>
                             <H6>Phone Number</H6>
@@ -608,26 +652,6 @@ const MapScreen = () => {
                             <H6>Address</H6>
                             <H6 style={{opacity: 0.6}}>{selectedStation.address},</H6>
                             <H6 style={{opacity: 0.6}}>Ireland</H6>
-                            <H6>Services</H6>
-                            <View style={{flexDirection: 'row', flexWrap: 'wrap'}}> {/* Container for icons */}
-                                {selectedStations.services && Object.entries(selectedStations.services).map(([service, available]) => (
-                                    available && (
-                                        <View key={service} style={{marginRight: 8}}>
-                                            <Image source={
-                                                service === 'car_wash' ? carWashIcon :
-                                                service === 'food' ? foodIcon :
-                                                service === 'convenience_store' ? conStoreIcon :
-                                                service === 'car_parking' ? parkingIcon :
-                                                service === 'atm' ? atmIcon :
-                                                service === 'car_service' ? serviceIcon :
-                                                null
-                                            }
-                                                   style={{width: 24, height: 24}}
-                                            />
-                                        </View>
-                                    )
-                                ))}
-                            </View>
 
                         </Container>)}
                 </BottomSheet>);
@@ -642,7 +666,8 @@ const MapScreen = () => {
                 <BottomSheet snapPoints={['20%', '90%']} index={0} ref={bottomSheetRef}>
                     <Container>
                         <H4 style={{flexDirection: 'row'}}>{estimatedDuration} ({estimatedDistance})</H4>
-                        <H6>Estimated Price: €</H6>
+                        <H6 style={{opacity: 0.7}}>Estimated Price: €{estimatedPrice} - 18km/l @ €1.77</H6>
+                        <H6 style={{opacity: 0.7}}>(Based Off Your Selected Vehicle)</H6>
                         <ButtonContainer>
                             <ButtonButton icon="arrow-with-circle-up" text="Start Journey"
                                           onPress={handleJourney}/>
@@ -697,7 +722,7 @@ const MapScreen = () => {
         }
     };
 
-    const renderUpcomingDirectionView = () => {
+    /*const renderUpcomingDirectionView = () => {
         if (!isWeb && journeyMode && isJourneyActive) {
             const upcomingDirection = detailedSteps[currentDirectionIndex];
 
@@ -712,14 +737,14 @@ const MapScreen = () => {
         } else {
             return null;
         }
-    };
+    };*/
 
     return (<View style={{flex: 1}}>
         {renderMap()}
         {renderStationBottomSheet()}
         {renderRouteInfoBottomSheet()}
         {renderJourneyBottomSheet()}
-        {renderUpcomingDirectionView()}
+        {/*{renderUpcomingDirectionView()}*/}
         <Modal
             animationType="slide"
             transparent={true}
