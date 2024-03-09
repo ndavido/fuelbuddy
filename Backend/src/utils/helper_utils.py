@@ -2,6 +2,8 @@
 
 from flask import jsonify
 
+from src.models import Vehicle
+
 
 def radius_logic(coord1, coord2):
     # Haversine formula to calculate distance between two points on the Earth
@@ -52,3 +54,35 @@ def handle_api_error(e):
         error_message = "Missing required data in the request."
     print(f"Error: {str(e)}")
     return jsonify({"error": error_message}), 500
+
+def get_trim_info_by_year(model):
+    trim_info_by_year = {}
+    vehicles = Vehicle.objects(models__model=model)
+    for vehicle in vehicles:
+        for model_info in vehicle.models:
+            if model_info.model == model:
+                for year_info in model_info.years:
+                    year = year_info.year
+                    if year not in trim_info_by_year:
+                        trim_info_by_year[year] = []
+                    for trim_info in year_info.trims:
+                        trim_data = {
+                            "series": trim_info.series,
+                            "trim": trim_info.trim,
+                            "body_type": trim_info.body_type,
+                            "engine_type": trim_info.engine_type,
+                            "turnover_of_maximum_torque_rpm": trim_info.turnover_of_maximum_torque_rpm,
+                            "capacity_cm3": trim_info.capacity_cm3,
+                            "engine_hp": trim_info.engine_hp,
+                            "engine_hp_rpm": trim_info.engine_hp_rpm,
+                            "transmission": trim_info.transmission,
+                            "mixed_fuel_consumption_per_100_km_l": trim_info.mixed_fuel_consumption_per_100_km_l,
+                            "range_km": trim_info.range_km,
+                            "emission_standards": trim_info.emission_standards,
+                            "fuel_tank_capacity_l": trim_info.fuel_tank_capacity_l,
+                            "city_fuel_per_100km_l": trim_info.city_fuel_per_100km_l,
+                            "co2_emissions_g_km": trim_info.co2_emissions_g_km,
+                            "car_class": trim_info.car_class
+                        }
+                        trim_info_by_year[year].append(trim_data)
+    return trim_info_by_year
