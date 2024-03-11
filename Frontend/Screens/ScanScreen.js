@@ -1,19 +1,24 @@
 import React, {useState, useEffect, useRef} from 'react';
-import {View, Text, Button, StyleSheet, Modal, Image} from 'react-native';
+import {View, Text, Button, StyleSheet, Modal, Image, ActivityIndicator} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import {Camera, CameraType} from 'expo-camera';
 
 import MainLogo from '../styles/mainLogo';
-import {AccountContainer, Content, InputTxt, Main, TextWrapper, Wrapper} from '../styles/styles';
+import {AccountContainer, Content, InputTxt, Main, TextWrapper, Wrapper, WrapperScroll} from '../styles/styles';
 import {jwtDecode} from "jwt-decode";
 import {H3, H5, H6} from "../styles/text";
+import {useCombinedContext} from "../CombinedContext";
+import axios from "axios";
 
 const apiKey = process.env.REACT_NATIVE_API_KEY;
+const url = process.env.REACT_APP_BACKEND_URL;
 
 const ScanScreen = () => {
+    const {token, userData, setUser, updateUserFromBackend} = useCombinedContext();
     const [imageUri, setImageUri] = useState(null);
     const [type, setType] = useState(CameraType.back);
     const [cameraModalVisible, setCameraModalVisible] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const cameraRef = useRef(null);
 
@@ -66,27 +71,64 @@ const ScanScreen = () => {
         if (!imageUri) {
             return;
         }
-        try {
-            console.log('Uploading image:', imageUri);
 
+        setIsLoading(true);
+        try {
+            const response = await fetch(imageUri);
+            const blob = await response.blob();
+
+            const formData = new FormData();
+            formData.append('file', blob, 'image.jpg');
+
+            const requestOptions = {
+                method: 'POST',
+                headers: {
+
+                    'X-API-Key': apiKey,
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: formData
+            };
+
+            console.log('requestOptions:', requestOptions);
+            const backendResponse = await fetch(`${url}/ocr_reciept_image_upload`, requestOptions);
+            const responseData = await backendResponse.json();
+
+            console.log('Response:', responseData);
+            console.log('Extracted Info:', responseData.extracted_info);
+            console.log('Image (Base64):', responseData.image_base64);
         } catch (error) {
-            console.error('Error uploading image:', error);
+            console.error('Error sending image to backend:', error);
+        } finally {
+            setIsLoading(false);
         }
     };
 
     return (
         <Main>
             <MainLogo/>
-            <Wrapper>
+            <WrapperScroll>
                 <AccountContainer style={{minHeight: 800}}>
+                    {isLoading && (
+                        <Modal visible={isLoading} transparent={true}>
+                            <View style={styles.loadingContainer}>
+                                <ActivityIndicator size="large"/>
+                            </View>
+                        </Modal>
+                    )}
                     <Content>
-                        {/*<Button title="Pick Image" onPress={pickImage}/>*/}
-                        <Button title="Take Picture" onPress={() => setCameraModalVisible(true)}/>
+                        {userData.roles && userData.roles.includes("Developer") &&
+                            <>
+                                <H6 weight="400" style={{textAlign: 'center'}}>Developer Features</H6>
+                                <Button title="Pick Image" onPress={pickImage}/>
+                            </>}
+                        {imageUri ? (<Button title="Retake Picture" onPress={() => setCameraModalVisible(true)}/>) :
+                            (<Button title="Take Picture" onPress={() => setCameraModalVisible(true)}/>)}
                         <Button title="Confirm Image" onPress={sendImageToBackend} disabled={!imageUri}/>
-                        {imageUri && <Image source={{uri: imageUri}} style={{width: 200, height: 200}}/>}
+                        {imageUri && <Image source={{uri: imageUri}} style={{width: 300, height: 300}}/>}
                     </Content>
                 </AccountContainer>
-            </Wrapper>
+            </WrapperScroll>
 
             <Modal visible={cameraModalVisible} onRequestClose={() => setCameraModalVisible(false)}>
                 <View style={styles.cameraContainer}>
@@ -122,6 +164,12 @@ const styles = StyleSheet.create({
         alignItems: 'flex-end',
         marginBottom: 50,
     },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.3)'
+    }
 });
 
 export default ScanScreen;
