@@ -62,7 +62,9 @@
     "react-native-web": "~0.19.6",
     "react-native-web-maps": "^0.3.0",
     "react-native-webview": "13.6.4",
-    "styled-components": "^5.1.1"
+    "styled-components": "^5.1.1",
+    "expo-image-picker": "~14.7.1",
+    "expo-camera": "~14.0.6"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
