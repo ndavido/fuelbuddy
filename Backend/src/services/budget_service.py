@@ -1,14 +1,16 @@
 #! /usr/bin/env python3
+from decimal import Decimal
+
 import schedule
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from src.middleware.api_key_middleware import require_api_key
 from src.models.user import Users
-from src.models.budget import BudgetHistory, WeeklyBudget, Deduction
+from src.models.budget import BudgetHistory, WeeklyBudgetHistory, WeeklyBudget, Deduction
 from src.utils.helper_utils import handle_api_error
 from src.utils.nn_utils import load_saved_model, make_prediction
 from mongoengine.errors import DoesNotExist, ValidationError
-from datetime import datetime
+from datetime import datetime, timedelta
 from sklearn.preprocessing import MinMaxScaler
 import pandas as pd
 import numpy as np
@@ -58,6 +60,31 @@ def update_budget():
 
     except Exception as e:
         return handle_api_error(e)
+
+
+
+@require_api_key
+@jwt_required()
+def save_weekly_data():
+    try:
+        user_id = get_jwt_identity()
+
+        end_date = datetime.utcnow()
+        start_date = end_date - timedelta(days=7)
+
+        budget_history = BudgetHistory.objects(
+            user=user_id,
+            change_date__gte=start_date,
+            change_date__lte=end_date
+        ).first()
+
+        if budget_history is None:
+            return jsonify({"error": "No budget history found for the last week"}), 404
+
+        return jsonify({"message": "Weekly data saved successfully"})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 @require_api_key
 @jwt_required()
 def update_user_deduction():
