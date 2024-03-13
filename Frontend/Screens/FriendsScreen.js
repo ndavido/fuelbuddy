@@ -26,7 +26,7 @@ import {jwtDecode} from "jwt-decode";
 import {H3, H4, H5, H6} from "../styles/text";
 import {ButtonButton} from "../styles/buttons";
 import {useCombinedContext} from "../CombinedContext";
-
+import { Ionicons } from '@expo/vector-icons';
 
 const apiKey = process.env.REACT_NATIVE_API_KEY;
 const url = process.env.REACT_APP_BACKEND_URL
@@ -41,7 +41,8 @@ const FriendsScreen = () => {
     const hasRequestedFriends = requestedFriends.length > 0;
 
     const [pendingRequests, setPendingRequests] = useState([]);
-
+    const [friendRequestsCount, setFriendRequestsCount] = useState(0);
+    const [isFriendRequestModalVisible, setFriendRequestModalVisible] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
 
     const { token, userData, setUser, updateUserFromBackend } = useCombinedContext();
@@ -88,28 +89,27 @@ const FriendsScreen = () => {
         try {
             const token = await AsyncStorage.getItem('token');
             const user_id = jwtDecode(token).sub;
-
+    
             const config = {
                 headers: {
                     'X-API-Key': apiKey,
                     'Authorization': `Bearer ${token}`,
                 },
             };
-
-            console.log(user_id)
-
+    
             const response = await axios.post(
                 `${url}/requested_friends`,
                 {id: user_id},
                 config
             );
-
+    
             console.log(response.data)
-
+    
             if (response.data && response.data.requested_friends) {
                 setRequestedFriends(response.data.requested_friends);
+                setFriendRequestsCount(response.data.requested_friends.length); // Update friendRequestsCount
             }
-
+    
         } catch (error) {
             console.error('Error fetching requested friends:', error);
         } finally {
@@ -124,6 +124,15 @@ const FriendsScreen = () => {
     const closeSearchModal = () => {
         setSearchModalVisible(false);
     };
+
+    const openFriendRequestsModal = () => {
+        setFriendRequestModalVisible(true);
+    };
+
+    const closeFriendRequestsModal = () => {
+        setFriendRequestModalVisible(false); 
+    };
+
 
     useEffect(() => {
         const searchUsers = async () => {
@@ -274,49 +283,28 @@ const FriendsScreen = () => {
                 />
             }>
                 <AccountContainer style={{minHeight: 800}}>
+
+
+                        <TouchableOpacity onPress={openFriendRequestsModal} style={styles.touchableContent}>
+                            <View style={styles.bellIconContainer}>
+                                <ButtonButton icon="bell" color='yellow' iconColor='black' onPress={openFriendRequestsModal} />
+                                {friendRequestsCount > 0 && (
+                                    <View style={styles.badgeContainer}>
+                                        <Text style={styles.badgeText}>{friendRequestsCount}</Text>
+                                    </View>
+                                )}
+                            </View>
+                        </TouchableOpacity>
+
+
                     <H3 tmargin='20px' lmargin='0px' bmargin='5px'>Friends</H3>
-                    <ButtonContainer style={{position: 'absolute', marginTop: 15, marginLeft: 10}}>
+                    <ButtonContainer style={{position: 'absolute', marginTop: 70, marginLeft: 10}}>
                         <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
-                            <ButtonButton text="Add Friends" onPress={openSearchModal}/>
+                            <ButtonButton text="Add friends" onPress={openSearchModal}/>
                         </View>
                     </ButtonContainer>
                     <TextWrapper>
-                        {hasRequestedFriends && (
-                            <>
-                                <H5 tmargin='10px' bmargin='10px'>Added Me</H5>
-                                <View>
-                                    {searchTerm ? (
-                                        searchResults.map(item => (
-                                            <View style={styles.friendItem} key={item.request_id}>
-                                                <H6 weight="400" bmargin='5px'
-                                                    style={{opacity: 0.5}}>{item.friend_name}</H6>
-                                                <View style={{zIndex: 1, marginLeft: 'auto', flexDirection: "row"}}>
-                                                    <ButtonButton text={"Accept"} color={"#6BFF91"}
-                                                                  onPress={() => decideFriend(item.request_id, 'accept')}/>
-                                                    <ButtonButton color={"#3891FA"}
-                                                                  text={"Deny"}
-                                                                  onPress={() => decideFriend(item.request_id, 'reject')}/>
-                                                </View>
-                                            </View>
-                                        ))
-                                    ) : (
-                                        requestedFriends.map(item => (
-                                            <View style={styles.friendItem} key={item.request_id}>
-                                                <H6 weight="400" bmargin='5px'
-                                                    style={{opacity: 0.5}}>{item.friend_name}</H6>
-                                                <View style={{zIndex: 1, marginLeft: 'auto', flexDirection: "row"}}>
-                                                    <ButtonButton text={"Accept"} color={"#6BFF91"}
-                                                                  onPress={() => decideFriend(item.request_id, 'accept')}/>
-                                                    <ButtonButton color={"#3891FA"}
-                                                                  text={"Deny"}
-                                                                  onPress={() => decideFriend(item.request_id, 'reject')}/>
-                                                </View>
-                                            </View>
-                                        ))
-                                    )}
-                                </View>
-                            </>
-                        )}
+                    
                         <View>
                             {friends.map(item => (
                                 <View style={styles.friendItem} key={item.friend_id}>
@@ -376,11 +364,67 @@ const FriendsScreen = () => {
                     </TextWrapper>
                 </AccountContainer>
             </WrapperScroll>
+
+            <Modal
+    animationType="fade"
+    transparent={true}
+    visible={isFriendRequestModalVisible}
+    onRequestClose={() => setFriendRequestModalVisible(false)}
+>
+    <View style={styles.modalContainer}>
+        <ModalContent>
+        <TouchableOpacity onPress={() => setFriendRequestModalVisible(false)} style={styles.closeButton}>
+                <Ionicons name="close" style={styles.closeIcon} />
+            </TouchableOpacity>
+            <H5 tmargin='10px' bmargin='10px'>Friend Requests</H5>
+            <FlatList
+                data={requestedFriends}
+                renderItem={({ item }) => (
+                    <View style={styles.friendItem} key={item.request_id}>
+                        <H6 weight="400" bmargin='5px' style={{ opacity: 0.5 }}>{item.friend_name}</H6>
+                        <View style={{ zIndex: 1, marginLeft: 'auto', flexDirection: "row" }}>
+                            <ButtonButton text={"Accept"} color={"#6BFF91"} onPress={() => decideFriend(item.request_id, 'accept')} />
+                            <ButtonButton color={"#3891FA"} text={"Deny"} onPress={() => decideFriend(item.request_id, 'reject')} />
+                        </View>
+                    </View>
+                )}
+                keyExtractor={(item) => item.request_id.toString()}
+            />
+        </ModalContent>
+    </View>
+</Modal>
+
         </Main>
     );
 };
 
 const styles = StyleSheet.create({
+    touchableContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 15,
+        marginLeft: 1,
+    },
+
+    bellIconContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+
+    badgeContainer: {
+        position: 'absolute',
+        top: -5,
+        right: -10,
+        backgroundColor: 'red',
+        borderRadius: 10,
+        paddingVertical: 2,
+        paddingHorizontal: 5,
+        marginLeft: 5,
+    },
+    badgeText: {
+        color: 'white',
+        fontSize: 12,
+    },
     modalContainer: {
         flex: 1,
         justifyContent: 'center',
