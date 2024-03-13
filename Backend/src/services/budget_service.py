@@ -81,6 +81,20 @@ def save_weekly_data():
         if budget_history is None:
             return jsonify({"error": "No budget history found for the last week"}), 404
 
+        weekly_budgets = [{"amount": float(weekly.amount)} for weekly in budget_history.weekly_budgets]
+        deductions = [{"amount": float(d.amount)} for d in budget_history.deductions]
+
+        print(deductions, 'deductions')
+        print(weekly_budgets, 'weekly_budget')
+
+        weekly_budget_history = WeeklyBudgetHistory(
+            user=user_id,
+            weekly_budgets=weekly_budgets,
+            deductions=deductions,
+            change_date=datetime.utcnow()
+        )
+        weekly_budget_history.save()
+
         return jsonify({"message": "Weekly data saved successfully"})
 
     except Exception as e:
