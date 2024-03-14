@@ -62,11 +62,30 @@ def add_vehicle_to_user():
         model = vehicle_data.get('model')
         year = vehicle_data.get('year')
 
+        # Additional fields (optional)
+        series = vehicle_data.get('series')
+        trim = vehicle_data.get('trim')
+        body_type = vehicle_data.get('body_type')
+        engine_type = vehicle_data.get('engine_type')
+        transmission = vehicle_data.get('transmission')
+        fuel_tank_capacity = vehicle_data.get('fuel_tank_capacity_l')
+        city_fuel_per_100km = vehicle_data.get('city_fuel_per_100km_l')
+        co2_emissions = vehicle_data.get('co2_emissions_g_km')
+
+        # Create the user vehicle object
         user_vehicle = UserVehicle(
             user_id=current_user_id,
             make=make,
             model=model,
-            year=year
+            year=year,
+            series=series,
+            trim=trim,
+            body_type=body_type,
+            engine_type=engine_type,
+            transmission=transmission,
+            fuel_tank_capacity=fuel_tank_capacity,
+            city_fuel_per_100km=city_fuel_per_100km,
+            co2_emissions=co2_emissions
         )
         user_vehicle.save()
 

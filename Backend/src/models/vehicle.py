@@ -31,6 +31,16 @@ class UserVehicle(Document):
     model = StringField(required=True)
     year = StringField(required=True)
 
+    # Additional fields (optional)
+    series = StringField()
+    trim = StringField()
+    body_type = StringField()
+    engine_type = StringField()
+    transmission = StringField()
+    fuel_tank_capacity = StringField()
+    city_fuel_per_100km = StringField()
+    co2_emissions = StringField()
+
     meta = {
         'collection': 'user_vehicles'
     }
