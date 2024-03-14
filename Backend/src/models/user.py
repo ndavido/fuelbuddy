@@ -21,6 +21,7 @@ class Users(Document):
     updated_at = DateTimeField()
     reg_full = BooleanField(default=False)
     weekly_budget = DecimalField(precision=2)
+    profile_picture = StringField()
 
     meta = {
         'collection': 'users',
