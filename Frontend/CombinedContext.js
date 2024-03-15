@@ -6,7 +6,7 @@ import "core-js/stable/atob";
 
 const url = process.env.REACT_APP_BACKEND_URL
 
-const connectivityCheckUrl = 'http://google.com/';
+const connectivityCheckUrl = 'http://ec2-3-89-63-222.compute-1.amazonaws.com/';
 
 const CombinedContext = createContext();
 

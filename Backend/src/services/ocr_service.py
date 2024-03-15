@@ -20,23 +20,18 @@ def upload_receipt():
     if not image_data_base64:
         return jsonify({'error': 'No image data provided'}), 400
 
-    # Decoding the base64 string to bytes
-    image_data = decode_base64_image(image_data_base64)
-    if image_data is None:
+    image_data_bytes = decode_base64_image(image_data_base64)  # Decode from Base64
+
+    image = cv2.imdecode(np.frombuffer(image_data_bytes, dtype=np.uint8), cv2.IMREAD_COLOR)
+
+    if image is None:
         return jsonify({'error': 'Invalid or missing image data'}), 400
 
-    # Convert the bytes data to a numpy array and then to an OpenCV image
-    nparr = np.frombuffer(image_data, np.uint8)
-    img_np = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-
     try:
-        # Assuming ocr_cleanup and extract_receipt_info_single can work directly with the OpenCV image
-        extracted_info_single = extract_receipt_info_single(
-            ocr_cleanup(img_np), img_np)
+        extracted_info_single = extract_receipt_info_single(ocr_cleanup(image), image)
 
-        # Re-encode the OpenCV image to base64 for the response if necessary
-        _, buffer = cv2.imencode('.jpg', img_np)
-        receipt_image_base64 = base64.b64encode(buffer).decode('utf-8')
+        retval, buffer = cv2.imencode('.jpg', image)  # Encode as JPEG
+        receipt_image_base64 = convert_image_to_base64(buffer.tobytes())  # Encode the buffer
 
         return jsonify({
             'extracted_info': extracted_info_single,

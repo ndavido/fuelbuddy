@@ -149,20 +149,20 @@ const MapScreen = () => {
                 // TODO DEV ONLY
                 console.log("User Location: ", location);
                 if (!initialAnimationDone) {
-                mapRef.current?.animateCamera(
-                    {
-                        center: {
-                            latitude: location.coords.latitude,
-                            longitude: location.coords.longitude,
+                    mapRef.current?.animateCamera(
+                        {
+                            center: {
+                                latitude: location.coords.latitude,
+                                longitude: location.coords.longitude,
+                            },
+                            altitude: 20000,
+                            pitch: 0,
+                            heading: 1,
                         },
-                        altitude: 20000,
-                        pitch: 0,
-                        heading: 1,
-                    },
-                    { duration: 1500 }
-                );
-                setInitialAnimationDone(true);
-            }
+                        {duration: 1500}
+                    );
+                    setInitialAnimationDone(true);
+                }
 
                 Location.watchPositionAsync({distanceInterval: 10}, (newLocation) => {
                     setLocation(newLocation);
@@ -281,6 +281,16 @@ const MapScreen = () => {
 
             if (response.ok) {
                 console.log('Successfully updated fuel prices');
+                setSelectedStation(prevStation => ({
+                    ...prevStation,
+                    prices: {
+                        petrol_price: newPetrolPrice,
+                        diesel_price: newDieselPrice,
+                        petrol_updated_at: new Date().toISOString(),
+                        diesel_updated_at: new Date().toISOString(),
+                    }
+                }));
+
                 await manualRefresh();
             } else {
                 console.error('Failed to update fuel prices');
@@ -469,9 +479,9 @@ const MapScreen = () => {
     }
 
     const watchUserPosition = () => {
-    return Location.watchPositionAsync({ distanceInterval: 10 }, (newLocation) => {
-        setLocation(newLocation);
-        updateDirectionIndexBasedOnLocation(newLocation.coords);
+        return Location.watchPositionAsync({distanceInterval: 10}, (newLocation) => {
+            setLocation(newLocation);
+            updateDirectionIndexBasedOnLocation(newLocation.coords);
         });
     };
 
@@ -541,6 +551,7 @@ const MapScreen = () => {
                 {petrolStations.map((station, index) => (
                     <CustomMarker
                         key={index}
+                        tracksViewChanges={false}
                         coordinate={{
                             latitude: station.location.latitude,
                             longitude: station.location.longitude,
@@ -605,14 +616,14 @@ const MapScreen = () => {
                                 <Card>
                                     <H5 style={{opacity: 0.6, textAlign: 'center'}}>Petrol</H5>
                                     <H3 weight='600'
-                                        style={{textAlign: 'center'}}>{selectedStation.prices.petrol_price}</H3>
+                                        style={{textAlign: 'center'}}>{selectedStation.prices.petrol_price ? parseFloat(selectedStation.prices.petrol_price).toFixed(2) : 'NA'}</H3>
                                     <H8 style={{opacity: 0.6, textAlign: 'center'}}>Last
                                         Updated: {selectedStation.prices.petrol_updated_at}</H8>
                                 </Card>
                                 <Card>
                                     <H5 style={{opacity: 0.6, textAlign: 'center'}}>Diesel</H5>
                                     <H3 weight='600'
-                                        style={{textAlign: 'center'}}>{selectedStation.prices.diesel_price}</H3>
+                                        style={{textAlign: 'center'}}>{selectedStation.prices.diesel_price ? parseFloat(selectedStation.prices.diesel_price).toFixed(2) : 'NA'}</H3>
                                     <H8 style={{opacity: 0.6, textAlign: 'center'}}>Last
                                         Updated: {selectedStation.prices.diesel_updated_at}</H8>
                                 </Card>
@@ -625,12 +636,12 @@ const MapScreen = () => {
                                         <View key={facility} style={{marginRight: 10, marginTop: 10, marginBottom: 30}}>
                                             <Image source={
                                                 facility === 'convenience_store' ? conStoreIcon :
-                                                facility === 'food' ? foodIcon :
-                                                facility === 'atm' ? atmIcon :
-                                                facility === 'car_parking' ? parkingIcon :
-                                                facility === 'car_wash' ? carWashIcon :
-                                                facility === 'car_service' ? serviceIcon :
-                                                null
+                                                    facility === 'food' ? foodIcon :
+                                                        facility === 'atm' ? atmIcon :
+                                                            facility === 'car_parking' ? parkingIcon :
+                                                                facility === 'car_wash' ? carWashIcon :
+                                                                    facility === 'car_service' ? serviceIcon :
+                                                                        null
                                             }
                                                    style={{width: 40, height: 40}}
                                             />

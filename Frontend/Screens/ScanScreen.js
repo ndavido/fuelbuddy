@@ -2,6 +2,7 @@ import React, {useState, useEffect, useRef} from 'react';
 import {View, Text, Button, StyleSheet, Modal, Image, ActivityIndicator} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import {Camera, CameraType} from 'expo-camera';
+import * as FileSystem from 'expo-file-system';
 
 import MainLogo from '../styles/mainLogo';
 import {AccountContainer, Content, InputTxt, Main, TextWrapper, Wrapper, WrapperScroll} from '../styles/styles';
@@ -19,6 +20,7 @@ const ScanScreen = () => {
     const [type, setType] = useState(CameraType.back);
     const [cameraModalVisible, setCameraModalVisible] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [jsonResponse, setJsonResponse] = useState({});
 
     const cameraRef = useRef(null);
 
@@ -77,26 +79,30 @@ const ScanScreen = () => {
             const response = await fetch(imageUri);
             const blob = await response.blob();
 
-            const formData = new FormData();
-            formData.append('file', blob, 'image.jpg');
+            const reader = new FileReader();
+            reader.readAsDataURL(blob);
+            reader.onloadend = async () => {
+                const base64data = reader.result.replace(/^data:image\/\w+;base64,/, "");
 
-            const requestOptions = {
-                method: 'POST',
-                headers: {
+                const requestOptions = {
+                    method: 'POST',
+                    headers: {
+                        'X-API-Key': apiKey,
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({image: base64data})
+                };
 
-                    'X-API-Key': apiKey,
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: formData
-            };
+                console.log('requestOptions:', requestOptions);
+                const backendResponse = await fetch(`${url}/ocr_reciept_image_upload`, requestOptions);
+                const responseData = await backendResponse.json();
 
-            console.log('requestOptions:', requestOptions);
-            const backendResponse = await fetch(`${url}/ocr_reciept_image_upload`, requestOptions);
-            const responseData = await backendResponse.json();
-
-            console.log('Response:', responseData);
-            console.log('Extracted Info:', responseData.extracted_info);
-            console.log('Image (Base64):', responseData.image_base64);
+                console.log('Response:', responseData);
+                console.log('Extracted Info:', responseData.extracted_info);
+                setJsonResponse(responseData.extracted_info);
+                console.log('Image (Base64):', responseData.receipt_image_base64);
+            }
         } catch (error) {
             console.error('Error sending image to backend:', error);
         } finally {
@@ -126,6 +132,7 @@ const ScanScreen = () => {
                             (<Button title="Take Picture" onPress={() => setCameraModalVisible(true)}/>)}
                         <Button title="Confirm Image" onPress={sendImageToBackend} disabled={!imageUri}/>
                         {imageUri && <Image source={{uri: imageUri}} style={{width: 300, height: 300}}/>}
+                        {jsonResponse && (<H5>JSON Response: {JSON.stringify(jsonResponse)}</H5>)}
                     </Content>
                 </AccountContainer>
             </WrapperScroll>

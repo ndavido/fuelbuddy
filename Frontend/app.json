@@ -2,7 +2,7 @@
   "expo": {
     "name": "fuelbuddy",
     "slug": "fuelbuddy",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/iconDrop.png",
     "userInterfaceStyle": "light",
@@ -60,7 +60,9 @@
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION",
-        "android.permission.FOREGROUND_SERVICE"
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.CAMERA",
+        "android.permission.CAMERA_ROLL"
       ],
       "package": "com.dcampion.fuelbuddy",
       "config": {
