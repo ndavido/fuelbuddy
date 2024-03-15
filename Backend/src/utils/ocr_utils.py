@@ -19,7 +19,10 @@ def preprocess(image):
 
 
 def ocr_cleanup(image):
-    pytesseract.pytesseract.tesseract_cmd = "C:/Program Files/Tesseract-OCR/tesseract.exe"
+    #! Windows
+    #pytesseract.pytesseract.tesseract_cmd = "C:/Program Files/Tesseract-OCR/tesseract.exe"
+    #! Linux
+    #pytesseract.pytesseract.tesseract_cmd = r'/usr/bin/tesseract'
     custom_config = r'--oem 3 --psm 6 outputbase'
 
     text = pytesseract.image_to_string(image, config=custom_config)
