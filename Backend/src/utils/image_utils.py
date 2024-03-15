@@ -12,9 +12,20 @@ def convert_image_to_base64(image_data):
 
 def decode_base64_image(image_data):
     if image_data:
+        # Split the header if present
         if 'data:image/jpeg;base64,' in image_data:
             header, image_data = image_data.split(',', 1)
-        return base64.b64decode(image_data)
+        else:
+            header = None
+
+        # Correct padding if necessary
+        missing_padding = len(image_data) % 4
+        if missing_padding:
+            image_data += '=' * (4 - missing_padding)
+
+        image_data_bytes = base64.b64decode(image_data)
+
+        return image_data_bytes
     else:
         return None
 
