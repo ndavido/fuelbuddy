@@ -7,6 +7,7 @@ from src.utils.encryption_utils import aes_decrypt, aes_encrypt, encryption_key
 from src.models.user import Users
 from src.models.friends import Friends, FriendRequest
 from src.models.budget import BudgetHistory, WeeklyBudgetHistory
+from src.models.fuel_station import FavoriteFuelStation
 
 
 
@@ -58,6 +59,8 @@ def delete_account():
             # Delete weekly budget history
             WeeklyBudgetHistory.objects(user=user_info).delete()
 
+            # Delete favorite fuel stations
+            FavoriteFuelStation.objects(user=user_info).delete()
             user_info.delete()
 
             return jsonify({"message": "Account deleted successfully!"}), 200
