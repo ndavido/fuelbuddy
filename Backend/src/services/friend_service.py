@@ -3,10 +3,11 @@
 from flask import request, jsonify
 from mongoengine.errors import DoesNotExist
 from mongoengine.queryset.visitor import Q
-from src.models import Users, FriendRequest, Friends, Notification
+from src.models import Users, FriendRequest, Friends, Notification, FavoriteFuelStation, FuelStation
 from src.middleware.api_key_middleware import require_api_key
 from src.utils.helper_utils import handle_api_error
 from flask_jwt_extended import jwt_required, get_jwt_identity
+import random
 
 
 @require_api_key
@@ -197,5 +198,65 @@ def search_users():
 
         return jsonify({"users": users_list}), 200
 
+    except Exception as e:
+        return handle_api_error(e)
+
+
+@require_api_key
+@jwt_required()
+def view_friend_profile():
+    try:
+        user_id = get_jwt_identity()
+        friend_id = request.get_json('friend_id')
+
+        # Verify if users are friends
+        friendship = Friends.__objects(
+            ((Q(user1=user_id) & Q(user2=friend_id)) |
+             (Q(user1=friend_id) & Q(user2=user_id))) &
+            Q(status='accepted')
+        ).first()
+
+        if not friendship:
+            return jsonify({"error": "You are not friends with the requested user"}), 403
+
+        friend_profile = Users.objects.get(id=friend_id)
+        friends_fav_stations = FavoriteFuelStation.objects.get(
+            user=friend_profile)
+
+        favorite_doc = FavoriteFuelStation.objects(
+            user=friend_profile).first()
+
+        random_station_info = None
+        if friends_fav_stations and friends_fav_stations.favorite_stations:
+
+            random_favorite = random.choice(
+                friends_fav_stations.favorite_stations)
+
+            random_station = FuelStation.objects(id=random_favorite.id).first()
+
+            if random_station:
+                random_station_info = {
+                    "station_id": str(random_station.id),
+                    "name": random_station.name,
+                    "phone_number": random_station.phone_number,
+                    "location": {
+                        "latitude": random_station.latitude,
+                        "longitude": random_station.longitude,
+                    }
+                }
+
+        profile_data = {
+            'username': friend_profile.username,
+            'first_name': friend_profile.first_name,
+            'surname': friend_profile.surname,
+            'phone_number': friend_profile.phone_number,
+            'random_fav_station': random_station_info,
+            'friendship_start_date': friendship.friendship_start_date.strftime('%Y-%m-%d')
+        }
+
+        return jsonify({"friend_profile": profile_data}), 200
+
+    except DoesNotExist:
+        return jsonify({"error": "User not found"}), 404
     except Exception as e:
         return handle_api_error(e)
