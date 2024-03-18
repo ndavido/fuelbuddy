@@ -242,12 +242,19 @@ def view_friend_profile():
                     }
                 }
 
+        recent_activity = UserActivity.objects(
+            user=friend_profile).order_by('-timestamp').first()
+
         profile_data = {
             'username': friend_profile.username,
             'first_name': friend_profile.first_name,
             'surname': friend_profile.surname,
             'phone_number': friend_profile.phone_number,
             'random_fav_station': random_station_info,
+            'recent_activity': {
+                'activity': recent_activity.details,
+                'timestamp': recent_activity.timestamp.isoformat()
+            } if recent_activity else None,
             'friendship_start_date': friendship.friendship_start_date.strftime('%Y-%m-%d')
         }
 
