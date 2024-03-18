@@ -33,7 +33,7 @@ class Facilities(EmbeddedDocument):
 class RatingUpdate(EmbeddedDocument):
     rating = DecimalField(min_value=0, max_value=5, required=True)
     updated_at = DateTimeField(default=datetime.utcnow, required=True)
-    #
+
 class FuelStation(Document):
     name = StringField(required=True)
     address = StringField(required=True)

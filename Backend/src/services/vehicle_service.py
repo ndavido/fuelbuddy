@@ -50,10 +50,11 @@ def get_years_for_model(model):
     except Exception as e:
         return jsonify({'error': 'Failed to retrieve years for the model', 'details': str(e)}), 500
 
+# User Vehicle Routes
 # POST |
 @require_api_key
 @jwt_required()
-def add_vehicle_to_user():
+def create_user_vehicle():
     try:
         current_user_id = get_jwt_identity()
         vehicle_data = request.get_json()
@@ -93,3 +94,43 @@ def add_vehicle_to_user():
 
     except Exception as e:
         return jsonify({'error': 'Failed to add vehicle to user', 'details': str(e)}), 500
+
+@require_api_key
+@jwt_required()
+def get_vehicle():
+    try:
+        current_user_id = get_jwt_identity()
+
+        vehicle = UserVehicle.objects.get(user_id=current_user_id)
+
+        # Convert to a dictionary
+        vehicle_dict = {
+            'make': vehicle.make,
+            'model': vehicle.model,
+            'year': vehicle.year,
+        }
+
+        return jsonify(vehicle_dict), 200
+
+    except DoesNotExist:
+        return jsonify({'error': 'Vehicle not found'}), 404
+    except Exception as e:
+        return jsonify({'error': 'Failed to retrieve vehicle', 'details': str(e)}), 500
+
+
+# Delete a vehicle
+@require_api_key
+@jwt_required()
+def delete_vehicle():
+    try:
+        current_user_id = get_jwt_identity()
+
+        vehicle = UserVehicle.objects.get(user_id=current_user_id)
+        vehicle.delete()
+
+        return jsonify({'message': 'Vehicle deleted successfully'}), 200
+
+    except DoesNotExist:
+        return jsonify({'error': 'Vehicle not found'}), 404
+    except Exception as e:
+        return jsonify({'error': 'Failed to delete vehicle', 'details': str(e)}), 500
