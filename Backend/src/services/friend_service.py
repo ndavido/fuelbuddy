@@ -59,7 +59,7 @@ def list_friends():
 
 @require_api_key
 @jwt_required()
-def requested_friends():
+def received_friend_requests():
     try:
         user_id = get_jwt_identity()
         recipient = Users.objects.get(id=user_id)
@@ -67,13 +67,37 @@ def requested_friends():
         friend_requests = FriendRequest.objects(
             recipient=recipient, status='pending')
 
-        requested_friends_list = [{
-            'friend_id': str(requested_friend_user.id),
-            'friend_name': requested_friend_user.first_name,
+        received_requests_list = [{
+            'friend_id': str(sender_user.id),
+            'friend_name': sender_user.first_name,
             'request_id': str(friend_request.id),
-        } for friend_request in friend_requests for requested_friend_user in [friend_request.sender]]
+            'sent_at': friend_request.sent_at.isoformat()
+        } for friend_request in friend_requests for sender_user in [friend_request.sender]]
 
-        return jsonify({"requested_friends": requested_friends_list}), 200
+        return jsonify({"received_requests": received_requests_list}), 200
+
+    except Exception as e:
+        return handle_api_error(e)
+
+
+@require_api_key
+@jwt_required()
+def sent_friend_requests():
+    try:
+        user_id = get_jwt_identity()
+        sender = Users.objects.get(id=user_id)
+
+        friend_requests = FriendRequest.objects(
+            sender=sender, status='pending')
+
+        sent_requests_list = [{
+            'friend_id': str(recipient_user.id),
+            'friend_name': recipient_user.first_name,
+            'request_id': str(friend_request.id),
+            'sent_at': friend_request.sent_at.isoformat()
+        } for friend_request in friend_requests for recipient_user in [friend_request.recipient]]
+
+        return jsonify({"sent_requests": sent_requests_list}), 200
 
     except Exception as e:
         return handle_api_error(e)
