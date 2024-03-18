@@ -49,20 +49,16 @@ def delete_account():
         if user_info:
             # Deleting Friends
             Friends.objects(Q(user1=user_info) | Q(user2=user_info)).delete()
-
             # Deleting Friend Requests
             FriendRequest.objects(Q(sender=user_info) | Q(recipient=user_info)).delete()
-
             # Delete budget history
             BudgetHistory.objects(user=user_info).delete()
-
             # Delete weekly budget history
             WeeklyBudgetHistory.objects(user=user_info).delete()
-
             # Delete favorite fuel stations
             FavoriteFuelStation.objects(user=user_info).delete()
-            user_info.delete()
 
+            user_info.delete()
             return jsonify({"message": "Account deleted successfully!"}), 200
         else:
             return jsonify({"error": "User not found"}), 404

@@ -1,7 +1,8 @@
 #! /usr/bin/env python3
 
 from datetime import datetime
-from mongoengine import Document, StringField, DateTimeField, FloatField, ListField, EmbeddedDocumentField, BooleanField, ReferenceField, EmbeddedDocument
+from mongoengine import Document, StringField, DateTimeField, FloatField, ListField, EmbeddedDocumentField, \
+    BooleanField, ReferenceField, EmbeddedDocument, DecimalField
 from .user import Users
 
 
@@ -28,6 +29,11 @@ class Facilities(EmbeddedDocument):
     convenience_store = BooleanField(default=False)
     food = BooleanField(default=False)
 
+# https://docs.mongoengine.org/apireference.html
+class RatingUpdate(EmbeddedDocument):
+    rating = DecimalField(min_value=0, max_value=5, required=True)
+    updated_at = DateTimeField(default=datetime.utcnow, required=True)
+    #
 class FuelStation(Document):
     name = StringField(required=True)
     address = StringField(required=True)
@@ -39,6 +45,7 @@ class FuelStation(Document):
     diesel_prices = ListField(EmbeddedDocumentField(DieselPrices))
     opening_hours = ListField(EmbeddedDocumentField(OpeningHours))
     facilities = EmbeddedDocumentField(Facilities)
+    ratings = ListField(EmbeddedDocumentField(RatingUpdate))
     meta = {
         'collection': 'FuelStationData'
     }
