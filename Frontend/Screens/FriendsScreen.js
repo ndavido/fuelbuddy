@@ -34,17 +34,20 @@ const url = process.env.REACT_APP_BACKEND_URL
 const FriendsScreen = () => {
     const [friends, setFriends] = useState([]);
     const [requestedFriends, setRequestedFriends] = useState([]);
+    const [friendsRequested, setFriendsRequested] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [isSearchModalVisible, setSearchModalVisible] = useState(false);
     const [loading, setLoading] = useState(true);
     const hasRequestedFriends = requestedFriends.length > 0;
+    const hasFriends = friends.length > 0;
+    const hasFriendsRequested = friendsRequested.length > 0;
 
     const [pendingRequests, setPendingRequests] = useState([]);
 
     const [refreshing, setRefreshing] = useState(false);
 
-    const { token, userData, setUser, updateUserFromBackend } = useCombinedContext();
+    const {token, userData, setUser, updateUserFromBackend} = useCombinedContext();
 
     console.log(url)
 
@@ -81,7 +84,14 @@ const FriendsScreen = () => {
         setRefreshing(true);
         await fetchFriends();
         await fetchRequestedFriends();
+        await fetchFriendsRequested();
         setRefreshing(false);
+    };
+
+    const silentRefresh = async () => {
+        await fetchFriends();
+        await fetchRequestedFriends();
+        await fetchFriendsRequested();
     };
 
     const fetchRequestedFriends = async () => {
@@ -108,6 +118,39 @@ const FriendsScreen = () => {
 
             if (response.data && response.data.requested_friends) {
                 setRequestedFriends(response.data.requested_friends);
+            }
+
+        } catch (error) {
+            console.error('Error fetching requested friends:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchFriendsRequested = async () => {
+        try {
+            const token = await AsyncStorage.getItem('token');
+            const user_id = jwtDecode(token).sub;
+
+            const config = {
+                headers: {
+                    'X-API-Key': apiKey,
+                    'Authorization': `Bearer ${token}`,
+                },
+            };
+
+            console.log(user_id)
+
+            const response = await axios.post(
+                `${url}/friends_requested`,
+                {id: user_id},
+                config
+            );
+
+            console.log("Friends Requested", response.data)
+
+            if (response.data && response.data.friends_requested) {
+                setFriendsRequested(response.data.friends_requested);
             }
 
         } catch (error) {
@@ -149,7 +192,12 @@ const FriendsScreen = () => {
                     !friends.some(friend => friend.friend_id === user.user_id)
                 ));
 
-                setSearchResults(filteredResults);
+                const resultsWithStatus = filteredResults.map(result => ({
+                    ...result,
+                    isPending: friendsRequested.some(fr => fr.friend_id === result.user_id)
+                }));
+
+                setSearchResults(resultsWithStatus);
             } catch (error) {
                 console.error('Error searching users:', error);
             }
@@ -181,6 +229,13 @@ const FriendsScreen = () => {
 
             setPendingRequests(prevRequests => [...prevRequests, friendId]);
 
+            setSearchResults(prevResults => prevResults.map(result => {
+                if (result.phone_number === friendId) {
+                    return {...result, isPending: true};
+                }
+                return result;
+            }));
+
             setFriends(prevFriends => {
                 return prevFriends.map(friend => {
                     if (friend.friend_id === friendId) {
@@ -203,6 +258,10 @@ const FriendsScreen = () => {
                     },
                 }
             );
+
+            console.log("Friend Request:", response.data.message);
+
+            await silentRefresh();
 
             setPendingRequests(prevRequests => prevRequests.filter(id => id !== friendId));
 
@@ -262,6 +321,7 @@ const FriendsScreen = () => {
     useEffect(() => {
         fetchFriends();
         fetchRequestedFriends()
+        fetchFriendsRequested()
     }, []);
 
     return (
@@ -357,7 +417,7 @@ const FriendsScreen = () => {
                                                             marginLeft: 'auto',
                                                             flexDirection: "row"
                                                         }}>
-                                                            {pendingRequests.includes(item.phone_number) ? (
+                                                            {item.isPending || pendingRequests.includes(item.phone_number) ? (
                                                                 <ButtonButton text={"Pending"} color={"#FFD700"}
                                                                               disabled={true}/>
                                                             ) : (

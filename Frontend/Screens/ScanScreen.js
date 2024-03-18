@@ -60,6 +60,8 @@ const ScanScreen = () => {
         if (cameraRef.current) {
             let result = await cameraRef.current.takePictureAsync({
                 quality: 0.5,
+                aspect: [4, 3],
+                allowsEditing: true,
             });
 
             if (!result.cancelled) {
@@ -131,7 +133,12 @@ const ScanScreen = () => {
                         {imageUri ? (<Button title="Retake Picture" onPress={() => setCameraModalVisible(true)}/>) :
                             (<Button title="Take Picture" onPress={() => setCameraModalVisible(true)}/>)}
                         <Button title="Confirm Image" onPress={sendImageToBackend} disabled={!imageUri}/>
-                        {imageUri && <Image source={{uri: imageUri}} style={{width: 300, height: 300}}/>}
+                        {imageUri && <Image source={{uri: imageUri}} style={{
+                            flex: 1,
+                            width: null,
+                            height: null,
+                            resizeMode: 'contain'
+                        }}/>}
                         {jsonResponse && (<H5>JSON Response: {JSON.stringify(jsonResponse)}</H5>)}
                     </Content>
                 </AccountContainer>
