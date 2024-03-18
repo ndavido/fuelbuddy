@@ -3,7 +3,7 @@
 from flask import request, jsonify
 from mongoengine.errors import DoesNotExist
 from mongoengine.queryset.visitor import Q
-from src.models import Users, FriendRequest, Friends, Notification, FavoriteFuelStation, FuelStation
+from src.models import Users, FriendRequest, Friends, Notification, FavoriteFuelStation, FuelStation, FuelPrices, UserActivity
 from src.middleware.api_key_middleware import require_api_key
 from src.utils.helper_utils import handle_api_error
 from flask_jwt_extended import jwt_required, get_jwt_identity
@@ -223,9 +223,6 @@ def view_friend_profile():
         friends_fav_stations = FavoriteFuelStation.objects.get(
             user=friend_profile)
 
-        favorite_doc = FavoriteFuelStation.objects(
-            user=friend_profile).first()
-
         random_station_info = None
         if friends_fav_stations and friends_fav_stations.favorite_stations:
 
@@ -258,5 +255,29 @@ def view_friend_profile():
 
     except DoesNotExist:
         return jsonify({"error": "User not found"}), 404
+    except Exception as e:
+        return handle_api_error(e)
+
+
+@require_api_key
+@jwt_required()
+def friend_activity_dashboard():
+    try:
+        user_id = get_jwt_identity()
+
+        friends = Friends.objects(Q(user1=user_id) | Q(user2=user_id))
+
+        activities = UserActivity.objects(
+            user__in=friends).order_by('-timestamp')
+
+        activity_list = [{
+            'username': activity.user.username,
+            'activity': activity.details,
+            'fuel_station': activity.station if activity.station else None,
+            'timestamp': activity.timestamp.isoformat(),
+        } for activity in activities]
+
+        return jsonify({"activities": activity_list}), 200
+
     except Exception as e:
         return handle_api_error(e)

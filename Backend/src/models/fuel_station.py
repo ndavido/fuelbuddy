@@ -19,6 +19,7 @@ class OpeningHours(EmbeddedDocument):
     day = StringField()
     hours = StringField()
 
+
 class Facilities(EmbeddedDocument):
     car_wash = BooleanField(default=False)
     car_repair = BooleanField(default=False)
@@ -27,6 +28,7 @@ class Facilities(EmbeddedDocument):
     atm = BooleanField(default=False)
     convenience_store = BooleanField(default=False)
     food = BooleanField(default=False)
+
 
 class FuelStation(Document):
     name = StringField(required=True)
@@ -42,6 +44,7 @@ class FuelStation(Document):
     meta = {
         'collection': 'FuelStationData'
     }
+
 
 class FavoriteFuelStation(Document):
     user = ReferenceField(Users, required=True)
