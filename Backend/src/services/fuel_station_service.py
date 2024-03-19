@@ -118,7 +118,13 @@ def get_favorite_fuel_stations():
                             "location": {
                                 "latitude": station.latitude,
                                 "longitude": station.longitude,
-                            }
+                            },
+                            "prices": {
+                                "petrol_price": station.petrol_prices[-1].price if station.petrol_prices else None,
+                                "petrol_updated_at": station.petrol_prices[-1].updated_at.strftime('%Y-%m-%d %H:%M:%S') if station.petrol_prices else None,
+                                "diesel_price": station.diesel_prices[-1].price if station.diesel_prices else None,
+                                "diesel_updated_at": station.diesel_prices[-1].updated_at.strftime('%Y-%m-%d %H:%M:%S') if station.diesel_prices else None
+                            },
                         } for station in fuel_stations
                     ]
                     return jsonify({"favorite_stations": station_list}), 200

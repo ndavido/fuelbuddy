@@ -55,13 +55,12 @@ def update_budget():
             user.save()
 
             return jsonify({"message": "Budget updated successfully"})
-        except (DoesNotExist, ValidationError) as e:
-            return jsonify({"error": str(e)}), 400
+
+        except KeyError as ke:
+            return jsonify({"error": f"Missing required field: {ke.args[0]}"}), 400
 
     except Exception as e:
         return handle_api_error(e)
-
-
 
 @require_api_key
 @jwt_required()
