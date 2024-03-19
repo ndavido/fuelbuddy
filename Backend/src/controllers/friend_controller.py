@@ -15,6 +15,6 @@ friend_blueprint.route('/search_users', methods=['GET', 'POST'])(search_users)
 friend_blueprint.route('/view_friend_profile',
                        methods=['GET', 'POST'])(view_friend_profile)
 friend_blueprint.route('/received_friend_requests',
-                       methods=['GET'])(received_friend_requests)
+                       methods=['GET', 'POST'])(received_friend_requests)
 friend_blueprint.route('/sent_friend_requests',
-                       methods=['GET'])(sent_friend_requests)
+                       methods=['GET', 'POST'])(sent_friend_requests)
