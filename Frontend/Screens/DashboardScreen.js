@@ -161,6 +161,7 @@ const DashboardScreen = () => {
 
             console.log("TOKEN ON DASHBOARD", token)
 
+
             try {
                 const deductionsResponse = await axios.post(`${url}/get_deductions`, {id: userData.username}, {
                     headers: {

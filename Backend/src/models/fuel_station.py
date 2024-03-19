@@ -20,6 +20,7 @@ class OpeningHours(EmbeddedDocument):
     day = StringField()
     hours = StringField()
 
+
 class Facilities(EmbeddedDocument):
     car_wash = BooleanField(default=False)
     car_repair = BooleanField(default=False)
@@ -29,10 +30,12 @@ class Facilities(EmbeddedDocument):
     convenience_store = BooleanField(default=False)
     food = BooleanField(default=False)
 
+    
 # https://docs.mongoengine.org/apireference.html
 class RatingUpdate(EmbeddedDocument):
     rating = DecimalField(min_value=0, max_value=5, required=True)
     updated_at = DateTimeField(default=datetime.utcnow, required=True)
+
 
 class FuelStation(Document):
     name = StringField(required=True)
@@ -49,6 +52,7 @@ class FuelStation(Document):
     meta = {
         'collection': 'FuelStationData'
     }
+
 
 class FavoriteFuelStation(Document):
     user = ReferenceField(Users, required=True)

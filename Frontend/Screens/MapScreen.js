@@ -1,15 +1,11 @@
 import React, {useState, useEffect, useRef, useMemo} from "react";
 import {
     View,
-    Text,
     StyleSheet,
-    Animated,
     Platform,
     Linking,
-    Button,
-    TextInput,
+    Image,
     Modal,
-    StatusBar,
     ScrollView
 } from "react-native";
 import BottomSheet from '@gorhom/bottom-sheet';
@@ -37,6 +33,14 @@ import CustomMarker from "../Components/customMarker";
 import axios from "axios";
 import {jwtDecode} from "jwt-decode";
 
+// Images
+import carWashIcon from '../assets/serviceIcons/fs_carwash.png';
+import foodIcon from '../assets/serviceIcons/fs_hot_food.png';
+import atmIcon from '../assets/serviceIcons/fs_atm.png';
+import parkingIcon from '../assets/serviceIcons/fs_parking.png';
+import serviceIcon from '../assets/serviceIcons/fs_service.png';
+import conStoreIcon from '../assets/serviceIcons/fs_con_store.png';
+
 
 const apiMapKey = process.env.REACT_NATIVE_GoogleMaps_API_KEY;
 const apiKey = process.env.REACT_NATIVE_API_KEY;
@@ -47,8 +51,9 @@ const MapScreen = () => {
     const [currentTime, setCurrentTime] = useState(new Date());
     const [petrolStations, setPetrolStations] = useState([]);
 
+    const [initialAnimationDone, setInitialAnimationDone] = useState(false);
     const [location, setLocation] = useState(null);
-    const { token, userData, setUser, updateUserFromBackend } = useCombinedContext();
+    const {token, userData, setUser, updateUserFromBackend} = useCombinedContext();
     const [userHeading, setUserHeading] = useState(null);
 
     const [favoriteStations, setFavoriteStations] = useState([]);
@@ -59,9 +64,9 @@ const MapScreen = () => {
     const [estimatedDuration, setEstimatedDuration] = useState(null);
     const [estimatedDistance, setEstimatedDistance] = useState(null);
     const [estimatedTime, setEstimatedTime] = useState(null);
+    const [estimatedPrice, setEstimatedPrice] = useState(null);
 
     const [detailedSteps, setDetailedSteps] = useState([]);
-
     const [isJourneyActive, setIsJourneyActive] = useState(false);
     const [journeyCoordinates, setJourneyCoordinates] = useState([]);
     const [journeyMode, setJourneyMode] = useState(false);
@@ -143,22 +148,24 @@ const MapScreen = () => {
 
                 // TODO DEV ONLY
                 console.log("User Location: ", location);
-                mapRef.current?.animateToRegion({
-                    latitude: location.coords.latitude,
-                    longitude: location.coords.longitude,
-                    latitudeDelta: 0.0922,
-                    longitudeDelta: 0.0421,
-                });
+                if (!initialAnimationDone) {
+                    mapRef.current?.animateCamera(
+                        {
+                            center: {
+                                latitude: location.coords.latitude,
+                                longitude: location.coords.longitude,
+                            },
+                            altitude: 20000,
+                            pitch: 0,
+                            heading: 1,
+                        },
+                        {duration: 1500}
+                    );
+                    setInitialAnimationDone(true);
+                }
 
                 Location.watchPositionAsync({distanceInterval: 10}, (newLocation) => {
                     setLocation(newLocation);
-
-                    mapRef.current?.animateToRegion({
-                        latitude: newLocation.coords.latitude,
-                        longitude: newLocation.coords.longitude,
-                        latitudeDelta: 0.0922,
-                        longitudeDelta: 0.0421,
-                    });
 
                     updateDirectionIndexBasedOnLocation(newLocation.coords);
                 });
@@ -274,6 +281,16 @@ const MapScreen = () => {
 
             if (response.ok) {
                 console.log('Successfully updated fuel prices');
+                setSelectedStation(prevStation => ({
+                    ...prevStation,
+                    prices: {
+                        petrol_price: newPetrolPrice,
+                        diesel_price: newDieselPrice,
+                        petrol_updated_at: new Date().toISOString(),
+                        diesel_updated_at: new Date().toISOString(),
+                    }
+                }));
+
                 await manualRefresh();
             } else {
                 console.error('Failed to update fuel prices');
@@ -349,8 +366,12 @@ const MapScreen = () => {
         }
     };
 
-    const updateCurrentDirectionIndex = (index) => {
-        setCurrentDirectionIndex(index);
+    const calculateJourneyPrice = (distance, kmPerLiter, petrolCostPerLiter) => {
+        const distanceValue = parseFloat(distance.split(" ")[0]);
+        const litersNeeded = distanceValue / kmPerLiter;
+        const totalPrice = litersNeeded * petrolCostPerLiter;
+
+        return totalPrice.toFixed(2);
     };
 
     const handleRoutePress = async () => {
@@ -384,6 +405,18 @@ const MapScreen = () => {
                 setEstimatedTime(newEstimatedTime);
                 console.log("New Estimated Time:", newEstimatedTime);
             }
+
+            let petrolCostPerLiter;
+            if (selectedStation.prices && selectedStation.prices.petrol_price) {
+                petrolCostPerLiter = parseFloat(selectedStation.prices.petrol_price);
+            } else {
+                petrolCostPerLiter = 1.72; // Hardcoded value
+            }
+
+            const journeyPrice = calculateJourneyPrice(directionsInfo.distance.text, 18, petrolCostPerLiter);
+            console.log("Journey Price:", journeyPrice);
+
+            setEstimatedPrice(journeyPrice);
 
             mapRef.current.fitToCoordinates([origin, destination], {
                 edgePadding: {top: 50, right: 50, bottom: 200, left: 50},
@@ -445,6 +478,13 @@ const MapScreen = () => {
         );
     }
 
+    const watchUserPosition = () => {
+        return Location.watchPositionAsync({distanceInterval: 10}, (newLocation) => {
+            setLocation(newLocation);
+            updateDirectionIndexBasedOnLocation(newLocation.coords);
+        });
+    };
+
     const handleJourney = async () => {
         if (selectedStation && location) {
             const origin = {
@@ -472,13 +512,15 @@ const MapScreen = () => {
                 longitude: step.end_location.lng,
             })));
 
+            watchUserPosition();
+
             mapRef.current?.animateCamera(
                 {
                     center: {
                         latitude: location.coords.latitude,
                         longitude: location.coords.longitude,
                     },
-                    altitude: 160,
+                    altitude: 100,
                     pitch: 45,
                     heading: location.coords.heading,
                 },
@@ -509,6 +551,7 @@ const MapScreen = () => {
                 {petrolStations.map((station, index) => (
                     <CustomMarker
                         key={index}
+                        tracksViewChanges={false}
                         coordinate={{
                             latitude: station.location.latitude,
                             longitude: station.location.longitude,
@@ -573,19 +616,39 @@ const MapScreen = () => {
                                 <Card>
                                     <H5 style={{opacity: 0.6, textAlign: 'center'}}>Petrol</H5>
                                     <H3 weight='600'
-                                        style={{textAlign: 'center'}}>{selectedStation.prices.petrol_price}</H3>
+                                        style={{textAlign: 'center'}}>{selectedStation.prices.petrol_price ? parseFloat(selectedStation.prices.petrol_price).toFixed(2) : 'NA'}</H3>
                                     <H8 style={{opacity: 0.6, textAlign: 'center'}}>Last
                                         Updated: {selectedStation.prices.petrol_updated_at}</H8>
                                 </Card>
                                 <Card>
                                     <H5 style={{opacity: 0.6, textAlign: 'center'}}>Diesel</H5>
                                     <H3 weight='600'
-                                        style={{textAlign: 'center'}}>{selectedStation.prices.diesel_price}</H3>
+                                        style={{textAlign: 'center'}}>{selectedStation.prices.diesel_price ? parseFloat(selectedStation.prices.diesel_price).toFixed(2) : 'NA'}</H3>
                                     <H8 style={{opacity: 0.6, textAlign: 'center'}}>Last
                                         Updated: {selectedStation.prices.diesel_updated_at}</H8>
                                 </Card>
                             </CardContainer>
                             <H4>About</H4>
+                            <H6>Services</H6>
+                            <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+                                {selectedStation.facilities && Object.entries(selectedStation.facilities).map(([facility, available]) => (
+                                    available && (
+                                        <View key={facility} style={{marginRight: 10, marginTop: 10, marginBottom: 30}}>
+                                            <Image source={
+                                                facility === 'convenience_store' ? conStoreIcon :
+                                                    facility === 'food' ? foodIcon :
+                                                        facility === 'atm' ? atmIcon :
+                                                            facility === 'car_parking' ? parkingIcon :
+                                                                facility === 'car_wash' ? carWashIcon :
+                                                                    facility === 'car_service' ? serviceIcon :
+                                                                        null
+                                            }
+                                                   style={{width: 40, height: 40}}
+                                            />
+                                        </View>
+                                    )
+                                ))}
+                            </View>
                             <H6>Opening Hours</H6>
                             <H6 style={{opacity: 0.6}}>{selectedStation.opening_hours}</H6>
                             <H6>Phone Number</H6>
@@ -600,6 +663,7 @@ const MapScreen = () => {
                             <H6>Address</H6>
                             <H6 style={{opacity: 0.6}}>{selectedStation.address},</H6>
                             <H6 style={{opacity: 0.6}}>Ireland</H6>
+
                         </Container>)}
                 </BottomSheet>);
         } else {
@@ -613,7 +677,8 @@ const MapScreen = () => {
                 <BottomSheet snapPoints={['20%', '90%']} index={0} ref={bottomSheetRef}>
                     <Container>
                         <H4 style={{flexDirection: 'row'}}>{estimatedDuration} ({estimatedDistance})</H4>
-                        <H6>Estimated Price: €</H6>
+                        <H6 style={{opacity: 0.7}}>Estimated Price: €{estimatedPrice} - 18km/l @ €1.77</H6>
+                        <H6 style={{opacity: 0.7}}>(Based Off Your Selected Vehicle)</H6>
                         <ButtonContainer>
                             <ButtonButton icon="arrow-with-circle-up" text="Start Journey"
                                           onPress={handleJourney}/>
@@ -668,7 +733,7 @@ const MapScreen = () => {
         }
     };
 
-    const renderUpcomingDirectionView = () => {
+    /*const renderUpcomingDirectionView = () => {
         if (!isWeb && journeyMode && isJourneyActive) {
             const upcomingDirection = detailedSteps[currentDirectionIndex];
 
@@ -683,14 +748,14 @@ const MapScreen = () => {
         } else {
             return null;
         }
-    };
+    };*/
 
     return (<View style={{flex: 1}}>
         {renderMap()}
         {renderStationBottomSheet()}
         {renderRouteInfoBottomSheet()}
         {renderJourneyBottomSheet()}
-        {renderUpcomingDirectionView()}
+        {/*{renderUpcomingDirectionView()}*/}
         <Modal
             animationType="slide"
             transparent={true}
@@ -701,10 +766,10 @@ const MapScreen = () => {
                 <ModalContent>
                     <H5 tmargin="10px" bmargin="30px" style={{textAlign: 'center'}}>Update Price</H5>
                     <ButtonContainer style={{position: 'absolute', marginTop: 20, marginLeft: 20}}>
-                            <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
-                                <ButtonButton icon="cross" color="#eaedea" iconColor="#b8bec2"
-                                      onPress={() => setUpdateModalVisible(false)}/>
-                            </View>
+                        <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
+                            <ButtonButton icon="cross" color="#eaedea" iconColor="#b8bec2"
+                                          onPress={() => setUpdateModalVisible(false)}/>
+                        </View>
                     </ButtonContainer>
                     <InputTxt
                         placeholder="New Petrol Price"

@@ -3,7 +3,7 @@
 from flask import request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from mongoengine.errors import DoesNotExist
-from src.models import FuelStation, Location, PetrolPrices, DieselPrices, FuelPrices, Users, FavoriteFuelStation
+from src.models import FuelStation, Location, PetrolPrices, DieselPrices, FuelPrices, Users, FavoriteFuelStation, UserActivity
 from src.models import ChargingStation, EVPrices
 from src.middleware.api_key_middleware import require_api_key
 from datetime import datetime
@@ -160,13 +160,23 @@ def favorite_fuel_station():
 
             if not favorite_doc:
                 favorite_doc = FavoriteFuelStation(
-                    user=user, favorite_stations=[station])
+                    user=user, favorite_stations=[station], updated_at=datetime.utcnow())  # ! added updated_at field
                 favorite_doc.save()
+
+                # ? Marked as favorite station activity
+                UserActivity(user=user, activity_type="favorite_station",
+                             details=f"{user.username} marked {station.name} as a favorite.", station=station).save()
+
                 return jsonify({"message": f"Fuel station '{station.name}' has been added to favorites. user: '{user_id}'"}), 200
 
             elif station in favorite_doc.favorite_stations:
                 favorite_doc.favorite_stations.remove(station)
                 favorite_doc.save()
+
+                # ? UnMarked as favorite station activity
+                UserActivity(user=user, activity_type="favorite_station",
+                             details=f"{user.username} unmarked {station.name} as a favorite.", station=station).save()
+
                 return jsonify({"message": f"Fuel station '{station.name}' has been removed from favorites. user: '{user_id}'"}), 200
 
             else:
@@ -187,6 +197,7 @@ def favorite_fuel_station():
 @jwt_required()
 def store_fuel_prices():
     try:
+        user = Users.objects(id=get_jwt_identity()).first()
         data = request.get_json()
         fuel_prices_data = data.get('fuelPrices', [])
 
@@ -222,6 +233,9 @@ def store_fuel_prices():
             )
             print('new_price', new_price)
             new_price.save()
+
+            UserActivity(user=user, activity_type="fuel_price_update",
+                         details=f"{user.username} updated fuel price at {fuel_station.name}", station=fuel_station).save()
 
         return jsonify({"message": "Fuel prices stored successfully"})
     except DoesNotExist:
