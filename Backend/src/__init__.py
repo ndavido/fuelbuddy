@@ -15,6 +15,7 @@ from src.controllers.budget_controller import budget_blueprint
 from src.controllers.fuel_station_controller import fuel_station_blueprint
 from src.controllers.friend_controller import friend_blueprint
 from src.controllers.vehicle_controller import vehicle_blueprint
+from src.controllers.ocr_controller import ocr_blueprint
 from datetime import timedelta
 
 
@@ -34,6 +35,7 @@ app.register_blueprint(budget_blueprint)
 app.register_blueprint(fuel_station_blueprint)
 app.register_blueprint(friend_blueprint)
 app.register_blueprint(vehicle_blueprint)
+app.register_blueprint(ocr_blueprint)
 
 
 configure_jwt(app)
