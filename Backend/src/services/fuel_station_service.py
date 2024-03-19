@@ -160,7 +160,7 @@ def favorite_fuel_station():
 
             if not favorite_doc:
                 favorite_doc = FavoriteFuelStation(
-                    user=user, favorite_stations=[station], updated_at=datetime.utcnow())  # ! added updated_at field
+                    user=user, favorite_stations=[station])
                 favorite_doc.save()
 
                 # ? Marked as favorite station activity
