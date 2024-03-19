@@ -6,6 +6,9 @@ from src.middleware.api_key_middleware import require_api_key
 from src.utils.encryption_utils import aes_decrypt, aes_encrypt, encryption_key
 from src.models.user import Users
 from src.models.friends import Friends, FriendRequest
+from src.models.budget import BudgetHistory, WeeklyBudgetHistory
+from src.models.fuel_station import FavoriteFuelStation
+
 
 
 from src.utils.helper_utils import handle_api_error
@@ -46,16 +49,21 @@ def delete_account():
         if user_info:
             # Deleting Friends
             Friends.objects(Q(user1=user_info) | Q(user2=user_info)).delete()
-
             # Deleting Friend Requests
             FriendRequest.objects(Q(sender=user_info) | Q(recipient=user_info)).delete()
+            # Delete budget history
+            BudgetHistory.objects(user=user_info).delete()
+            # Delete weekly budget history
+            WeeklyBudgetHistory.objects(user=user_info).delete()
+            # Delete favorite fuel stations
+            FavoriteFuelStation.objects(user=user_info).delete()
 
             user_info.delete()
             return jsonify({"message": "Account deleted successfully!"}), 200
         else:
             return jsonify({"error": "User not found"}), 404
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"An error occurred while deleting the account: {str(e)}"}), 500
 
 
 @require_api_key
