@@ -16,6 +16,7 @@ from src.controllers.fuel_station_controller import fuel_station_blueprint
 from src.controllers.friend_controller import friend_blueprint
 from src.controllers.vehicle_controller import vehicle_blueprint
 from src.controllers.ocr_controller import ocr_blueprint
+from datetime import timedelta
 
 
 app = Flask(__name__)
@@ -26,6 +27,7 @@ CORS(app, resources={
 app.secret_key = "production"  # os.random(24)
 api_key = API_KEY
 app.config['JWT_SECRET_KEY'] = JWT_SECRET_KEY
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=31)
 
 app.register_blueprint(auth_blueprint)
 app.register_blueprint(account_blueprint)

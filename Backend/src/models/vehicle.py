@@ -25,7 +25,15 @@ class YearInfo(EmbeddedDocument):
 class ModelInfo(EmbeddedDocument):
     model = StringField()
     years = ListField(EmbeddedDocumentField(YearInfo))
+class UserVehicle(Document):
+    user_id = StringField(required=True)
+    make = StringField(required=True)
+    model = StringField(required=True)
+    year = StringField(required=True)
 
+    meta = {
+        'collection': 'user_vehicles'
+    }
 class Vehicle(Document):
     make = StringField()
     models = ListField(EmbeddedDocumentField(ModelInfo))

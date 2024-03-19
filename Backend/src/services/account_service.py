@@ -1,9 +1,13 @@
 # account_service.py
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_token
+from mongoengine import Q
 from src.middleware.api_key_middleware import require_api_key
 from src.utils.encryption_utils import aes_decrypt, aes_encrypt, encryption_key
 from src.models.user import Users
+from src.models.friends import Friends, FriendRequest
+
+
 from src.utils.helper_utils import handle_api_error
 
 
@@ -40,6 +44,12 @@ def delete_account():
         user_info = Users.objects(id=user_id).first()
 
         if user_info:
+            # Deleting Friends
+            Friends.objects(Q(user1=user_info) | Q(user2=user_info)).delete()
+
+            # Deleting Friend Requests
+            FriendRequest.objects(Q(sender=user_info) | Q(recipient=user_info)).delete()
+
             user_info.delete()
             return jsonify({"message": "Account deleted successfully!"}), 200
         else:

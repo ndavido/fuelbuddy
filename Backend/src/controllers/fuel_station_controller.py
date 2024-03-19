@@ -2,7 +2,6 @@
 
 from flask import Blueprint
 from src.services.fuel_station_service import get_fuel_stations, store_fuel_stations, get_favorite_fuel_stations, favorite_fuel_station, store_fuel_prices, store_ev_prices, search_fuel_stations
-
 fuel_station_blueprint = Blueprint('fuel_station', __name__)
 
 fuel_station_blueprint.route(
@@ -19,3 +18,4 @@ fuel_station_blueprint.route(
     '/store_ev_prices', methods=['POST'])(store_ev_prices)
 fuel_station_blueprint.route(
     '/search_fuel_stations', methods=['GET'])(search_fuel_stations)
+
