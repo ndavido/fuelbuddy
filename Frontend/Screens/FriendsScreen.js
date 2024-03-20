@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
     View,
     Text,
@@ -13,17 +13,18 @@ import {
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNavigation} from '@react-navigation/native';
+import BottomSheet from '@gorhom/bottom-sheet';
 
 // Styling
 import MainLogo from '../styles/mainLogo';
 import {
     ButtonContainer,
-    Main,
+    Main, Container,
     WrapperScroll, AccountContainer,
     ModalContent, SearchBox, TextWrapper
 } from '../styles/styles';
 import {jwtDecode} from "jwt-decode";
-import {H3, H4, H5, H6} from "../styles/text";
+import {H2, H3, H4, H5, H6} from "../styles/text";
 import {ButtonButton} from "../styles/buttons";
 import {useCombinedContext} from "../CombinedContext";
 import {Ionicons} from '@expo/vector-icons';
@@ -47,6 +48,8 @@ const FriendsScreen = () => {
     const [friendRequestsCount, setFriendRequestsCount] = useState(0);
     const [isFriendRequestModalVisible, setFriendRequestModalVisible] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
+
+    const bottomSheetRef = useRef(null);
 
     const {token, userData, setUser, updateUserFromBackend} = useCombinedContext();
 
@@ -115,9 +118,9 @@ const FriendsScreen = () => {
 
             console.log(response.data)
 
-            if (response.data && response.data.requested_friends) {
-                setRequestedFriends(response.data.requested_friends);
-                setFriendRequestsCount(response.data.requested_friends.length); // Update friendRequestsCount
+            if (response.data && response.data.received_requests) {
+                setRequestedFriends(response.data.received_requests);
+                setFriendRequestsCount(response.data.received_requests.length); // Update friendRequestsCount
             }
 
         } catch (error) {
@@ -151,8 +154,8 @@ const FriendsScreen = () => {
 
             console.log("Friends Requested", response.data)
 
-            if (response.data && response.data.friends_requested) {
-                setFriendsRequested(response.data.friends_requested);
+            if (response.data && response.data.sent_requests) {
+                setFriendsRequested(response.data.sent_requests);
             }
 
         } catch (error) {
@@ -163,11 +166,11 @@ const FriendsScreen = () => {
     };
 
     const openSearchModal = () => {
-        setSearchModalVisible(true);
+        bottomSheetRef.current.expand(); // Open the sheet
     };
 
     const closeSearchModal = () => {
-        setSearchModalVisible(false);
+        bottomSheetRef.current.close(); // Close the sheet
     };
 
     const openFriendRequestsModal = () => {
@@ -322,7 +325,7 @@ const FriendsScreen = () => {
             );
 
             console.log(response.data.message);
-            onRefresh();
+            await silentRefresh();
 
         } catch (error) {
             console.error('Error responding to friend request:', error);
@@ -345,8 +348,8 @@ const FriendsScreen = () => {
                 />
             }>
                 <AccountContainer style={{minHeight: 800}}>
-                    <TouchableOpacity onPress={openFriendRequestsModal} style={styles.touchableContent}>
-                        <View style={styles.bellIconContainer}>
+                        <ButtonContainer style={{position: 'absolute', marginTop: 15, marginLeft: 10, marginRight: 10}}>
+                        <View style={{zIndex: 1, marginLeft: 0, marginRight: 'auto'}}>
                             <ButtonButton icon="bell" color='yellow' iconColor='black'
                                           onPress={openFriendRequestsModal}/>
                             {friendRequestsCount > 0 && (
@@ -355,71 +358,68 @@ const FriendsScreen = () => {
                                 </View>
                             )}
                         </View>
-                    </TouchableOpacity>
-                    <H3 tmargin='20px' lmargin='0px' bmargin='5px'>Friends</H3>
-                    <ButtonContainer style={{position: 'absolute', marginTop: 70, marginLeft: 10}}>
                         <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
                             <ButtonButton text="Add friends" onPress={openSearchModal}/>
                         </View>
                     </ButtonContainer>
+                    <H2 tmargin='80px' lmargin='0px' bmargin='5px'>Friends</H2>
                     <TextWrapper>
                         <View>
                             {friends.map(item => (
                                 <View style={styles.friendItem} key={item.friend_id}>
-                                    <H6 weight="400" bmargin='5px' style={{opacity: 0.5}}>{item.friend_name}</H6>
+                                    <H6 weight="400" style={{opacity: 0.5}}>{item.friend_name}</H6>
                                 </View>
                             ))}
                         </View>
-                        <Modal
-                            animationType="fade"
-                            transparent={true}
-                            visible={isSearchModalVisible}
-                            onRequestClose={closeSearchModal}
-                        >
-                            <View style={styles.modalContainer}>
-                                <ModalContent>
-                                    <H5 tmargin="10px" bmargin="30px" style={{textAlign: 'center'}}>Add Friends</H5>
-                                    <ButtonContainer style={{position: 'absolute', marginTop: 20, marginLeft: 20}}>
-                                        <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
-                                            <ButtonButton icon="cross" color="#eaedea" iconColor="#b8bec2"
-                                                          onPress={closeSearchModal}/>
-                                        </View>
-                                    </ButtonContainer>
-                                    <SearchBox
-                                        placeholder="Search Friends"
-                                        value={searchTerm}
-                                        onChangeText={handleSearch}
-                                    />
-                                    {searchTerm && searchResults && (
-                                        <>
-                                            <H5 tmargin="40px" bmargin="10px">Results</H5>
-                                            <View>
-                                                {searchResults.map(item => (
-                                                    <View style={styles.friendItem} key={item.user_id}>
-                                                        <H6 weight="400" bmargin='5px'
-                                                            style={{opacity: 0.5}}>{item.username}</H6>
-                                                        <View style={{
-                                                            zIndex: 1,
-                                                            marginLeft: 'auto',
-                                                            flexDirection: "row"
-                                                        }}>
-                                                            {item.isPending || pendingRequests.includes(item.phone_number) ? (
-                                                                <ButtonButton text={"Pending"} color={"#FFD700"}
-                                                                              disabled={true}/>
-                                                            ) : (
-                                                                <ButtonButton text={"Add"} color={"#6BFF91"}
-                                                                              onPress={() => handleMakeFriend(item.phone_number)}/>
-                                                            )}
-                                                        </View>
-                                                    </View>
-                                                ))}
-                                            </View>
-                                        </>
-                                    )}
-                                </ModalContent>
-                            </View>
-                        </Modal>
                     </TextWrapper>
+                    <BottomSheet snapPoints={['50%', '99%']}
+                                 enablePanDownToClose={true}
+                                 index = {-1}
+                                 ref={bottomSheetRef}
+                                 backgroundStyle={{
+                                     backgroundColor: '#FFFFFF',
+                                 }}>
+                        <Container>
+                        <H5 tmargin="10px" bmargin="30px" style={{textAlign: 'center'}}>Add Friends</H5>
+                        <ButtonContainer style={{position: 'absolute', marginTop: 20, marginLeft: 20}}>
+                            <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
+                                <ButtonButton icon="cross" color="#eaedea" iconColor="#b8bec2"
+                                              onPress={closeSearchModal}/>
+                            </View>
+                        </ButtonContainer>
+                        <SearchBox
+                            placeholder="Search Friends"
+                            value={searchTerm}
+                            onChangeText={handleSearch}
+                        />
+                        {searchTerm && searchResults && (
+                            <>
+                                <H5 tmargin="40px" bmargin="10px">Results</H5>
+                                <View>
+                                    {searchResults.map(item => (
+                                        <View style={styles.friendItem} key={item.user_id}>
+                                            <H6 weight="400" bmargin='5px'
+                                                style={{opacity: 0.5}}>{item.username}</H6>
+                                            <View style={{
+                                                zIndex: 1,
+                                                marginLeft: 'auto',
+                                                flexDirection: "row"
+                                            }}>
+                                                {item.isPending || pendingRequests.includes(item.phone_number) ? (
+                                                    <ButtonButton text={"Pending"} color={"#FFD700"}
+                                                                  disabled={true}/>
+                                                ) : (
+                                                    <ButtonButton text={"Add"} color={"#6BFF91"}
+                                                                  onPress={() => handleMakeFriend(item.phone_number)}/>
+                                                )}
+                                            </View>
+                                        </View>
+                                    ))}
+                                </View>
+                            </>
+                        )}
+                            </Container>
+                    </BottomSheet>
                 </AccountContainer>
             </WrapperScroll>
             <Modal
@@ -430,11 +430,13 @@ const FriendsScreen = () => {
             >
                 <View style={styles.modalContainer}>
                     <ModalContent>
-                        <TouchableOpacity onPress={() => setFriendRequestModalVisible(false)}
-                                          style={styles.closeButton}>
-                            <Ionicons name="close" style={styles.closeIcon}/>
-                        </TouchableOpacity>
-                        <H5 tmargin='10px' bmargin='10px'>Friend Requests</H5>
+                        <H5 tmargin="10px" bmargin="30px" style={{textAlign: 'center'}}>Friend Requests</H5>
+                        <ButtonContainer style={{position: 'absolute', marginTop: 20, marginLeft: 20}}>
+                            <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
+                                <ButtonButton icon="cross" color="#eaedea" iconColor="#b8bec2"
+                                              onPress={() => setFriendRequestModalVisible(false)}/>
+                            </View>
+                        </ButtonContainer>
                         <FlatList
                             data={requestedFriends}
                             renderItem={({item}) => (
@@ -494,9 +496,10 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        borderTopWidth: 1,
-        borderTopColor: 'lightgray',
-        paddingVertical: 8,
+        minHeight: 50,
+        borderRadius: 10,
+        marginBottom: 10,
+        backgroundColor: '#ffffff',
     },
 });
 
