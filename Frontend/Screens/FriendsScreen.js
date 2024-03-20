@@ -26,7 +26,7 @@ import {jwtDecode} from "jwt-decode";
 import {H3, H4, H5, H6} from "../styles/text";
 import {ButtonButton} from "../styles/buttons";
 import {useCombinedContext} from "../CombinedContext";
-import { Ionicons } from '@expo/vector-icons';
+import {Ionicons} from '@expo/vector-icons';
 
 const apiKey = process.env.REACT_NATIVE_API_KEY;
 const url = process.env.REACT_APP_BACKEND_URL
@@ -99,27 +99,27 @@ const FriendsScreen = () => {
         try {
             const token = await AsyncStorage.getItem('token');
             const user_id = jwtDecode(token).sub;
-    
+
             const config = {
                 headers: {
                     'X-API-Key': apiKey,
                     'Authorization': `Bearer ${token}`,
                 },
             };
-    
+
             const response = await axios.post(
-                `${url}/requested_friends`,
+                `${url}/received_friend_requests`,
                 {id: user_id},
                 config
             );
-    
+
             console.log(response.data)
-    
+
             if (response.data && response.data.requested_friends) {
                 setRequestedFriends(response.data.requested_friends);
                 setFriendRequestsCount(response.data.requested_friends.length); // Update friendRequestsCount
             }
-    
+
         } catch (error) {
             console.error('Error fetching requested friends:', error);
         } finally {
@@ -139,10 +139,12 @@ const FriendsScreen = () => {
                 },
             };
 
+            console.log(url)
+
             console.log(user_id)
 
             const response = await axios.post(
-                `${url}/friends_requested`,
+                `${url}/sent_friend_requests`,
                 {id: user_id},
                 config
             );
@@ -154,7 +156,7 @@ const FriendsScreen = () => {
             }
 
         } catch (error) {
-            console.error('Error fetching requested friends:', error);
+            console.error('Error fetching friends requested:', error);
         } finally {
             setLoading(false);
         }
@@ -173,7 +175,7 @@ const FriendsScreen = () => {
     };
 
     const closeFriendRequestsModal = () => {
-        setFriendRequestModalVisible(false); 
+        setFriendRequestModalVisible(false);
     };
 
 
@@ -343,20 +345,17 @@ const FriendsScreen = () => {
                 />
             }>
                 <AccountContainer style={{minHeight: 800}}>
-
-
-                        <TouchableOpacity onPress={openFriendRequestsModal} style={styles.touchableContent}>
-                            <View style={styles.bellIconContainer}>
-                                <ButtonButton icon="bell" color='yellow' iconColor='black' onPress={openFriendRequestsModal} />
-                                {friendRequestsCount > 0 && (
-                                    <View style={styles.badgeContainer}>
-                                        <Text style={styles.badgeText}>{friendRequestsCount}</Text>
-                                    </View>
-                                )}
-                            </View>
-                        </TouchableOpacity>
-
-
+                    <TouchableOpacity onPress={openFriendRequestsModal} style={styles.touchableContent}>
+                        <View style={styles.bellIconContainer}>
+                            <ButtonButton icon="bell" color='yellow' iconColor='black'
+                                          onPress={openFriendRequestsModal}/>
+                            {friendRequestsCount > 0 && (
+                                <View style={styles.badgeContainer}>
+                                    <Text style={styles.badgeText}>{friendRequestsCount}</Text>
+                                </View>
+                            )}
+                        </View>
+                    </TouchableOpacity>
                     <H3 tmargin='20px' lmargin='0px' bmargin='5px'>Friends</H3>
                     <ButtonContainer style={{position: 'absolute', marginTop: 70, marginLeft: 10}}>
                         <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
@@ -364,7 +363,6 @@ const FriendsScreen = () => {
                         </View>
                     </ButtonContainer>
                     <TextWrapper>
-                    
                         <View>
                             {friends.map(item => (
                                 <View style={styles.friendItem} key={item.friend_id}>
@@ -424,35 +422,37 @@ const FriendsScreen = () => {
                     </TextWrapper>
                 </AccountContainer>
             </WrapperScroll>
-
             <Modal
-    animationType="fade"
-    transparent={true}
-    visible={isFriendRequestModalVisible}
-    onRequestClose={() => setFriendRequestModalVisible(false)}
->
-    <View style={styles.modalContainer}>
-        <ModalContent>
-        <TouchableOpacity onPress={() => setFriendRequestModalVisible(false)} style={styles.closeButton}>
-                <Ionicons name="close" style={styles.closeIcon} />
-            </TouchableOpacity>
-            <H5 tmargin='10px' bmargin='10px'>Friend Requests</H5>
-            <FlatList
-                data={requestedFriends}
-                renderItem={({ item }) => (
-                    <View style={styles.friendItem} key={item.request_id}>
-                        <H6 weight="400" bmargin='5px' style={{ opacity: 0.5 }}>{item.friend_name}</H6>
-                        <View style={{ zIndex: 1, marginLeft: 'auto', flexDirection: "row" }}>
-                            <ButtonButton text={"Accept"} color={"#6BFF91"} onPress={() => decideFriend(item.request_id, 'accept')} />
-                            <ButtonButton color={"#3891FA"} text={"Deny"} onPress={() => decideFriend(item.request_id, 'reject')} />
-                        </View>
-                    </View>
-                )}
-                keyExtractor={(item) => item.request_id.toString()}
-            />
-        </ModalContent>
-    </View>
-</Modal>
+                animationType="fade"
+                transparent={true}
+                visible={isFriendRequestModalVisible}
+                onRequestClose={() => setFriendRequestModalVisible(false)}
+            >
+                <View style={styles.modalContainer}>
+                    <ModalContent>
+                        <TouchableOpacity onPress={() => setFriendRequestModalVisible(false)}
+                                          style={styles.closeButton}>
+                            <Ionicons name="close" style={styles.closeIcon}/>
+                        </TouchableOpacity>
+                        <H5 tmargin='10px' bmargin='10px'>Friend Requests</H5>
+                        <FlatList
+                            data={requestedFriends}
+                            renderItem={({item}) => (
+                                <View style={styles.friendItem} key={item.request_id}>
+                                    <H6 weight="400" bmargin='5px' style={{opacity: 0.5}}>{item.friend_name}</H6>
+                                    <View style={{zIndex: 1, marginLeft: 'auto', flexDirection: "row"}}>
+                                        <ButtonButton text={"Accept"} color={"#6BFF91"}
+                                                      onPress={() => decideFriend(item.request_id, 'accept')}/>
+                                        <ButtonButton color={"#3891FA"} text={"Deny"}
+                                                      onPress={() => decideFriend(item.request_id, 'reject')}/>
+                                    </View>
+                                </View>
+                            )}
+                            keyExtractor={(item) => item.request_id.toString()}
+                        />
+                    </ModalContent>
+                </View>
+            </Modal>
 
         </Main>
     );

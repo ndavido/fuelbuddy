@@ -20,7 +20,7 @@ const ScanScreen = () => {
     const [type, setType] = useState(CameraType.back);
     const [cameraModalVisible, setCameraModalVisible] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [jsonResponse, setJsonResponse] = useState({});
+    const [jsonResponse, setJsonResponse] = useState(null);
 
     const cameraRef = useRef(null);
 
@@ -103,6 +103,7 @@ const ScanScreen = () => {
                 console.log('Response:', responseData);
                 console.log('Extracted Info:', responseData.extracted_info);
                 setJsonResponse(responseData.extracted_info);
+                setImageUri(null);
                 console.log('Image (Base64):', responseData.receipt_image_base64);
             }
         } catch (error) {
@@ -110,6 +111,10 @@ const ScanScreen = () => {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const clearJson = async () => {
+        setJsonResponse(null);
     };
 
     return (
@@ -125,14 +130,15 @@ const ScanScreen = () => {
                         </Modal>
                     )}
                     <Content>
+                        {imageUri ? (<Button title="Retake Picture" onPress={() => setCameraModalVisible(true)}/>) :
+                            (<Button title="Take Picture" onPress={() => setCameraModalVisible(true)}/>)}
+                        <Button title="Confirm Image" onPress={sendImageToBackend} disabled={!imageUri}/>
                         {userData.roles && userData.roles.includes("Developer") &&
                             <>
                                 <H6 weight="400" style={{textAlign: 'center'}}>Developer Features</H6>
                                 <Button title="Pick Image" onPress={pickImage}/>
+                                <Button title="Clear JSON" onPress={clearJson}/>
                             </>}
-                        {imageUri ? (<Button title="Retake Picture" onPress={() => setCameraModalVisible(true)}/>) :
-                            (<Button title="Take Picture" onPress={() => setCameraModalVisible(true)}/>)}
-                        <Button title="Confirm Image" onPress={sendImageToBackend} disabled={!imageUri}/>
                         {imageUri && <Image source={{uri: imageUri}} style={{
                             flex: 1,
                             width: null,
