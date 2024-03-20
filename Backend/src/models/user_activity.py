@@ -3,7 +3,7 @@
 from mongoengine import Document, ReferenceField, StringField, DateTimeField
 from .user import Users
 from .fuel_station import FuelStation
-import datetime
+from datetime import datetime
 
 
 class UserActivity(Document):
