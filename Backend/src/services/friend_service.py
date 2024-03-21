@@ -48,7 +48,8 @@ def list_friends():
 
         friends_list = [{
             'friend_id': str(friend_user.id),
-            'friend_name': friend_user.first_name
+            'friend_name': friend_user.first_name,
+            'friend_username': friend_user.username
         } for friend in friends for friend_user in [friend.user1, friend.user2] if friend_user.id != user.id]
 
         return jsonify({"friends": friends_list}), 200
@@ -231,13 +232,13 @@ def search_users():
 def view_friend_profile():
     try:
         user_id = get_jwt_identity()
-        friend_id = request.get_json('friend_id')
+        data = request.get_json()
+        friend_id = data['friend_id']
 
         # Verify if users are friends
-        friendship = Friends.__objects(
+        friendship = Friends.objects(
             ((Q(user1=user_id) & Q(user2=friend_id)) |
-             (Q(user1=friend_id) & Q(user2=user_id))) &
-            Q(status='accepted')
+             (Q(user1=friend_id) & Q(user2=user_id)))
         ).first()
 
         if not friendship:

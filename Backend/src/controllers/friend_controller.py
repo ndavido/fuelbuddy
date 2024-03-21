@@ -1,5 +1,5 @@
 from flask import Blueprint
-from src.services.friend_service import send_friend_request, list_friends, respond_friend_request, cancel_friend_request, remove_friend, search_users, view_friend_profile, received_friend_requests, sent_friend_requests
+from src.services.friend_service import send_friend_request, list_friends, respond_friend_request, cancel_friend_request, remove_friend, search_users, view_friend_profile, received_friend_requests, sent_friend_requests, friend_activity_dashboard
 
 friend_blueprint = Blueprint('friend', __name__)
 
@@ -18,3 +18,5 @@ friend_blueprint.route('/received_friend_requests',
                        methods=['GET', 'POST'])(received_friend_requests)
 friend_blueprint.route('/sent_friend_requests',
                        methods=['GET', 'POST'])(sent_friend_requests)
+friend_blueprint.route('/friend_activity_dashboard', methods=[
+                       'GET', 'POST'])(friend_activity_dashboard)
