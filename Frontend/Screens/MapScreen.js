@@ -364,6 +364,7 @@ const MapScreen = () => {
         setIsJourneyActive(false);
         setShowStationInfo(true);
         setShowRouteInfo(false);
+        setShowNearbyStationsSheet(false);
         // TODO Remove Dev Only
         console.log("Selected Station: ", station);
     };
@@ -759,7 +760,7 @@ const MapScreen = () => {
     const renderNearbyStationsBottomSheet = () => {
         if (!isWeb && showNearbyStationsSheet) {
             return (
-                <BottomSheet snapPoints={['20%', '90%']} index={0}>
+                <BottomSheet snapPoints={['20%', '85%']} index={0}>
                     <Container>
                         <H4 style={{marginBottom: 10}}>Stations Near Me</H4>
                         <View style={{flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10}}>
@@ -840,7 +841,7 @@ const MapScreen = () => {
         <TouchableOpacity
             style={{position: 'absolute', top: 55, left: 20, zIndex: 0}}
         >
-            <ButtonButton icon="list" color="#6BFF91" onPress={handleNearbyStationsPress}/>
+            <ButtonButton icon="list" iconColor="#6BFF91" color="#FFFFFF" onPress={handleNearbyStationsPress}/>
         </TouchableOpacity>
         {/*{renderUpcomingDirectionView()}*/}
         <Modal

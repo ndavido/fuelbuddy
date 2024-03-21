@@ -32,6 +32,7 @@ import PersonalInfoScreen from './Screens/PersonalInfoScreen';
 import DeleteConfirmScreen from './Screens/DeleteConfirmScreen';
 import VehicleScreen from './Screens/VehicleScreen';
 import DeveloperScreen from './Screens/DeveloperScreen';
+import FProfileScreen from "./Screens/FriendsProfileScreen";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -87,11 +88,20 @@ const AccountNavigator = () => {
             <Stack.Screen name="PersonalInfo" component={PersonalInfoScreen}/>
             <Stack.Screen name="DeleteConfirm" component={DeleteConfirmScreen}/>
             <Stack.Screen name="Vehicle" component={VehicleScreen}/>
-            {/*<Stack.Screen name="Friends" component={FriendsScreen}/>*/}
             <Stack.Screen name="Developer" component={DeveloperScreen}/>
         </Stack.Navigator>
     );
 };
+
+const FriendsNavigator = () => {
+    return (
+        <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName="Friends">
+            <Stack.Screen name="Friends" component={FriendsScreen}/>
+            <Stack.Screen name="FriendsProfile" component={FProfileScreen}/>
+        </Stack.Navigator>
+    );
+
+}
 
 function LoadingScreen({isVisible}) {
     const [progress, setProgress] = useState(0);
@@ -174,6 +184,7 @@ const AppNavigator = () => {
                                         iconName = 'map-marked-alt';
                                     } else if (route.name === 'OCR') {
                                         iconName = 'camera';
+                                        iconSize = 26;
                                     } else if (route.name === 'Friends') {
                                         iconName = 'user-friends';
                                     } else if (route.name === 'Account') {
@@ -190,7 +201,7 @@ const AppNavigator = () => {
                             <Tab.Screen name="Dashboard" component={DashboardScreen}/>
                             <Tab.Screen name="Map" component={MapScreen}/>
                             <Tab.Screen name="OCR" component={ScanScreen}/>
-                            <Tab.Screen name="Friends" component={FriendsScreen}/>
+                            <Tab.Screen name="Friends" component={FriendsNavigator}/>
                             <Tab.Screen name="Account" component={AccountNavigator}/>
                         </Tab.Navigator>
                     ) : (

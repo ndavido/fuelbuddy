@@ -132,6 +132,10 @@ const DashboardScreen = () => {
         setRefreshing(false);
     };
 
+    const silentRefresh = async () => {
+        await collectUserInfo();
+    };
+
     // TODO How to Quickly reload info on the dashboard
     const collectUserInfo = async () => {
         try {
@@ -281,7 +285,7 @@ const DashboardScreen = () => {
 
             if (response.data.message) {
                 console.log(response.data.message);
-                await onRefresh();
+                await silentRefresh();
             } else {
                 console.error('Failed to add deduction:', response.data.error);
             }
@@ -310,7 +314,7 @@ const DashboardScreen = () => {
             if (response.data.message) {
                 console.log(response.data.message);
                 updateUserFromBackend();
-                await onRefresh();
+                await silentRefresh();
             } else {
                 console.error('Failed to update weekly budget:', response.data.error);
             }
