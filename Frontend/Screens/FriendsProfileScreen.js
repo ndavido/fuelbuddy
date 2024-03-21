@@ -113,6 +113,7 @@ const FriendsProfileScreen = () => {
                         <H6>Name: {friendInfo.first_name} {friendInfo.surname}</H6>
                         <H6>Email: {friendInfo.email}</H6>
                         {friendInfo.random_fav_station && <H6>Random Favourite Station: {friendInfo.random_fav_station.name}</H6>}
+                        {friendInfo.recent_activity && <><H6>Recent Activity: {friendInfo.recent_activity.activity}</H6><H6>Time: {friendInfo.recent_activity.timestamp}</H6></>}
                     </TextWrapper>
                 </AccountContainer>
             </WrapperScroll>
