@@ -26,9 +26,6 @@ const DashboardScreen = () => {
     const [loading, setLoading] = useState(true);
     const [friendActivity, setFriendActivity] = useState([]);
 
-    const [newsData, setNewsData] = useState([]);
-    const [loadingNews, setLoadingNews] = useState(true);
-
     const [refreshing, setRefreshing] = useState(false);
 
     const [chartParentWidth, setChartParentWidth] = useState(0);
@@ -98,63 +95,6 @@ const DashboardScreen = () => {
             console.error('Error fetching friends:', error);
         }
     };
-
-    /*const fetchNews = async () => {
-        try {
-            const apiKey = process.env.NEWSAPI_KEY;
-            const newsApiUrl = 'https://newsapi.org/v2/everything';
-            const carResponse = await axios.get(newsApiUrl, {
-                params: {
-                    apiKey,
-                    q: 'car fuel',
-                    language: 'en',
-                    sortBy: 'publishedAt',
-                    pageSize: 50,
-                },
-            });
-
-            const petrolResponse = await axios.get(newsApiUrl, {
-                params: {
-                    apiKey,
-                    q: 'petrol',
-                    language: 'en',
-                    sortBy: 'publishedAt',
-                    pageSize: 50,
-                },
-            });
-
-            const dieselResponse = await axios.get(newsApiUrl, {
-                params: {
-                    apiKey,
-                    q: 'road',
-                    language: 'en',
-                    sortBy: 'publishedAt',
-                    pageSize: 50,
-                },
-            });
-
-            const combinedNews = [
-                ...filterRemovedArticles(carResponse.data.articles),
-                ...filterRemovedArticles(petrolResponse.data.articles),
-                ...filterRemovedArticles(dieselResponse.data.articles),
-            ].filter(article => containsUKOrIreland(article));
-
-            setNewsData(combinedNews);
-        } catch (error) {
-            console.error('Error fetching news:', error);
-        } finally {
-            setLoadingNews(false);
-        }
-    };*/
-
-    /*const filterRemovedArticles = (articles) => {
-        return articles.filter(article => !article.title.includes('[Removed]') && !article.description.includes('[Removed]'));
-    };
-
-    const containsUKOrIreland = (article) => {
-        const content = `${article.title} ${article.description}`;
-        return content.toLowerCase().includes('uk ') || content.toLowerCase().includes('ireland');
-    };*/
 
     const onRefresh = async () => {
         setRefreshing(true);
@@ -529,9 +469,6 @@ const DashboardScreen = () => {
                                         <H6>{activity.username}</H6>
                                         <H7 style={{opacity: 0.5}}>{activity.activity}</H7>
                                         <H7 style={{opacity: 0.3}}>
-                                            {activity.fuel_station && `Fueled up at: ${activity.fuel_station}`}
-                                        </H7>
-                                        <H7 style={{opacity: 0.3}}>
                                             {new Date(activity.timestamp).toLocaleString()}
                                         </H7>
                                     </View>
@@ -558,33 +495,6 @@ const DashboardScreen = () => {
                                 <H6 style={{opacity: 0.5}}>18Km/l Average</H6>
                             </View>
                         </Card>
-                        {/*<Card>
-                            <H8 style={{opacity: 0.5}}>News</H8>
-                            <H5>Trending Stories</H5>
-                            {loadingNews ? (
-                                <H4>Loading news...</H4>
-                            ) : (
-                                <View>
-                                    {newsData.map((article, index) => (
-                                        <View key={index}>
-                                            {article.urlToImage && (
-                                                <Image
-                                                    source={{uri: article.urlToImage}}
-                                                    style={{width: 200, height: 150, resizeMode: 'cover'}}
-                                                />
-                                            )}
-                                            <H5>{article.title}</H5>
-                                            <H6 style={{opacity: 0.5}}>{article.description}</H6>
-                                            <H7 style={{opacity: 0.3}}>{article.source?.name} - {new Date(article.publishedAt).toLocaleString('en-GB', {
-                                                timeZone: 'GMT',
-                                                dateStyle: 'short',
-                                                timeStyle: 'short'
-                                            })}</H7>
-                                        </View>
-                                    ))}
-                                </View>
-                            )}
-                        </Card>*/}
                     </CardOverlap>
                 </DashboardContainer>
                 <Modal
