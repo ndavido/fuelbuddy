@@ -24,6 +24,7 @@ const url = process.env.REACT_APP_BACKEND_URL
 const DashboardScreen = () => {
     const [userInfo, setUserInfo] = useState({});
     const [loading, setLoading] = useState(true);
+    const [friendActivity, setFriendActivity] = useState([]);
 
     const [newsData, setNewsData] = useState([]);
     const [loadingNews, setLoadingNews] = useState(true);
@@ -59,6 +60,8 @@ const DashboardScreen = () => {
         const fetchUserInfo = async () => {
             try {
                 await collectDashboardInfo();
+                await collectFriendActivity();
+
             } catch (error) {
                 console.error('Error fetching user account information:', error);
             }
@@ -66,6 +69,35 @@ const DashboardScreen = () => {
 
         fetchUserInfo();
     }, []);
+
+    const collectFriendActivity = async () => {
+        try {
+            const token = await AsyncStorage.getItem('token');
+            const user_id = jwtDecode(token).sub;
+
+            const config = {
+                headers: {
+                    'X-API-Key': apiKey,
+                    'Authorization': `Bearer ${token}`,
+                },
+            };
+
+            const response = await axios.post(
+                `${url}/friend_activity_dashboard`,
+                {id: user_id},
+                config
+            );
+
+            console.log("Friend Activity", response.data.activities)
+
+            if (response.data && response.data.activities) {
+                setFriendActivity(response.data.activities);
+            }
+
+        } catch (error) {
+            console.error('Error fetching friends:', error);
+        }
+    };
 
     /*const fetchNews = async () => {
         try {
@@ -128,6 +160,7 @@ const DashboardScreen = () => {
         setRefreshing(true);
 
         await collectUserInfo();
+        await collectFriendActivity();
 
         setRefreshing(false);
     };
@@ -488,9 +521,24 @@ const DashboardScreen = () => {
                             </View>
                         </Card>
                         <Card>
-                            <H8 style={{opacity: 0.5}}>Activity</H8>
-                            <H5>My Friends</H5>
-
+                            <H8 style={{opacity: 0.5}}>Friends</H8>
+                            <H5>Recent Activity</H5>
+                            {friendActivity.length > 0 ? (
+                                friendActivity.map((activity, index) => (
+                                    <View key={index} style={{paddingBottom: 10}}>
+                                        <H6>{activity.username}</H6>
+                                        <H7 style={{opacity: 0.5}}>{activity.activity}</H7>
+                                        <H7 style={{opacity: 0.3}}>
+                                            {activity.fuel_station && `Fueled up at: ${activity.fuel_station}`}
+                                        </H7>
+                                        <H7 style={{opacity: 0.3}}>
+                                            {new Date(activity.timestamp).toLocaleString()}
+                                        </H7>
+                                    </View>
+                                ))
+                            ) : (
+                                <H6 style={{paddingTop: 10, paddingBottom: 10}}>No friend activity yet!</H6>
+                            )}
 
                         </Card>
                         <Card>
