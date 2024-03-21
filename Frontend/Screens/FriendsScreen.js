@@ -166,11 +166,11 @@ const FriendsScreen = () => {
     };
 
     const openSearchModal = () => {
-        bottomSheetRef.current.expand(); // Open the sheet
+        bottomSheetRef.current.expand();
     };
 
     const closeSearchModal = () => {
-        bottomSheetRef.current.close(); // Close the sheet
+        bottomSheetRef.current.close();
     };
 
     const openFriendRequestsModal = () => {

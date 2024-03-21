@@ -3,10 +3,11 @@ import {
     View,
     StyleSheet,
     Platform,
+    Button,
     Linking,
     Image,
     Modal,
-    ScrollView
+    ScrollView, TouchableOpacity
 } from "react-native";
 import BottomSheet from '@gorhom/bottom-sheet';
 import * as Location from "expo-location";
@@ -79,6 +80,11 @@ const MapScreen = () => {
     const [showStationInfo, setShowStationInfo] = useState(true);
     const [showRouteInfo, setShowRouteInfo] = useState(false);
     const bottomSheetRef = useRef(null);
+
+    const [nearbyStations, setNearbyStations] = useState([]);
+    const [showNearbyStationsSheet, setShowNearbyStationsSheet] = useState(false);
+    const [sortOption, setSortOption] = useState('distance');
+    const [sortedStations, setSortedStations] = useState([]);
 
     const [refreshing, setRefreshing] = useState(false);
 
@@ -174,15 +180,25 @@ const MapScreen = () => {
             } catch (error) {
                 console.error("Error fetching user location:", error);
             }
-        }
+        };
 
-        //fetchUserInfo()
         fetchLocationAndPetrolStations();
+
+        const calculateSortedStations = () => {
+            if (sortOption === 'distance') {
+                setSortedStations([...nearbyStations].sort((a, b) => calculateDistance(a) - calculateDistance(b)));
+            } else if (sortOption === 'price') {
+                setSortedStations([...nearbyStations].sort((a, b) => a.prices.petrol_price - b.prices.petrol_price));
+            }
+        };
+
+        calculateSortedStations();
+
         return () => {
             clearInterval(refreshInterval);
             clearInterval(intervalId);
         };
-    }, []);
+    }, [nearbyStations, sortOption]);
 
     const manualRefresh = async () => {
         setRefreshing(true);
@@ -702,6 +718,71 @@ const MapScreen = () => {
         }
     };
 
+    const calculateDistance = (station) => {
+        return getDistanceBetweenLocations(location.coords, station.location);
+    };
+
+    const findNearbyStations = (userLocation) => {
+        const nearbyStations = [];
+
+        petrolStations.forEach(station => {
+            const stationLocation = {
+                latitude: station.location.latitude,
+                longitude: station.location.longitude
+            };
+
+            const distanceToStation = getDistanceBetweenLocations(userLocation, stationLocation);
+
+            if (distanceToStation <= 20 * 1000) { // Convert 50 kilometers to meters
+                nearbyStations.push(station);
+            }
+        });
+
+        return nearbyStations;
+    };
+
+    const handleNearbyStationsPress = () => {
+        setShowStationInfo(false);
+        const nearbyStations = findNearbyStations(location.coords);
+        setNearbyStations(nearbyStations);
+        console.log('Nearby stations:', nearbyStations);
+        setShowNearbyStationsSheet(true);
+    };
+
+    const handleNearbySelectedStation = (station) => {
+        setSelectedStation(station);
+        setShowNearbyStationsSheet(false);
+        setShowStationInfo(true);
+        setShowRouteInfo(false);
+    }
+
+    const renderNearbyStationsBottomSheet = () => {
+        if (!isWeb && showNearbyStationsSheet) {
+            return (
+                <BottomSheet snapPoints={['20%', '90%']} index={0}>
+                    <Container>
+                        <H4 style={{marginBottom: 10}}>Stations Near Me</H4>
+                        <View style={{flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10}}>
+                            <Button onPress={() => setSortOption('distance')} title="Sort by Distance"/>
+                            <Button onPress={() => setSortOption('price')} title="Sort by Price"/>
+                        </View>
+                        {sortedStations.map(station => (
+                            <TouchableOpacity
+                                key={station.id}
+                                style={{paddingVertical: 10}}
+                                onPress={() => handleNearbySelectedStation(station)}
+                            >
+                                <H6>{station.name}</H6>
+                            </TouchableOpacity>
+                        ))}
+                    </Container>
+                </BottomSheet>
+            );
+        } else {
+            return null;
+        }
+    };
+
     const renderJourneyBottomSheet = () => {
         if (!isWeb && journeyMode && isJourneyActive) {
             return (
@@ -755,6 +836,12 @@ const MapScreen = () => {
         {renderStationBottomSheet()}
         {renderRouteInfoBottomSheet()}
         {renderJourneyBottomSheet()}
+        {renderNearbyStationsBottomSheet()}
+        <TouchableOpacity
+            style={{position: 'absolute', top: 20, right: 20, zIndex: 1}}
+        >
+            <ButtonButton icon="user" color="#6BFF91" onPress={handleNearbyStationsPress}/>
+        </TouchableOpacity>
         {/*{renderUpcomingDirectionView()}*/}
         <Modal
             animationType="slide"
