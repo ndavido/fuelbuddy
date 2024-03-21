@@ -838,9 +838,9 @@ const MapScreen = () => {
         {renderJourneyBottomSheet()}
         {renderNearbyStationsBottomSheet()}
         <TouchableOpacity
-            style={{position: 'absolute', top: 20, right: 20, zIndex: 1}}
+            style={{position: 'absolute', top: 55, left: 20, zIndex: 0}}
         >
-            <ButtonButton icon="user" color="#6BFF91" onPress={handleNearbyStationsPress}/>
+            <ButtonButton icon="list" color="#6BFF91" onPress={handleNearbyStationsPress}/>
         </TouchableOpacity>
         {/*{renderUpcomingDirectionView()}*/}
         <Modal
