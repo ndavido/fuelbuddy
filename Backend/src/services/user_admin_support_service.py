@@ -41,11 +41,39 @@ def update_role():
         user_id = data["user_id"]
         role = data["role"]
 
-        user = Users.objects(id=user_id).first()
+        user = Users.objects(id=user_id).only(
+            'id', 'username', 'roles').first()
         user.roles.append(role)
         user.save()
 
         return jsonify({"message": "Role updated successfully"}), 200
+
+    except Exception as e:
+        return handle_api_error(e)
+
+
+@require_api_key
+@jwt_required()
+def remove_role():
+    try:
+        user_id = get_jwt_identity()
+
+        admin = Users.objects(id=user_id).first()
+        if "admin" not in admin.roles and "Developer" not in admin.roles:
+            return jsonify({"error": "Unauthorized access"}), 401
+
+        data = request.get_json()
+
+        user_id = data["user_id"]
+        role = data["role"]
+
+        user = Users.objects(id=user_id).only(
+            'id', 'username', 'roles').first()
+        if role in user.roles:
+            user.roles.remove(role)
+            user.save()
+
+        return jsonify({"message": "Role removed successfully"}), 200
 
     except Exception as e:
         return handle_api_error(e)
