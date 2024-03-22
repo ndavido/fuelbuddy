@@ -4,6 +4,7 @@ import base64
 import io
 import cv2
 import numpy as np
+from flask import jsonify
 
 
 def convert_image_to_base64(image_data):
@@ -35,4 +36,19 @@ def retrieve_image(file):
     file.save(in_memory_file)
     data = np.frombuffer(in_memory_file.getvalue(), dtype=np.uint8)
     image = cv2.imdecode(data, cv2.IMREAD_COLOR)
+    return image
+
+
+def upload_image(image):
+    if not image:
+        return jsonify({'error': 'No image data provided'}), 400
+
+    image_data_bytes = decode_base64_image(image)  # Decode from Base64
+
+    image = cv2.imdecode(np.frombuffer(
+        image_data_bytes, dtype=np.uint8), cv2.IMREAD_COLOR)
+
+    if image is None:
+        return jsonify({'error': 'Invalid or missing image data'}), 400
+
     return image
