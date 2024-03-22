@@ -10,6 +10,7 @@ import {jwtDecode} from "jwt-decode";
 import {H3, H5, H6} from "../styles/text";
 import {useCombinedContext} from "../CombinedContext";
 import axios from "axios";
+import {useNavigation} from "@react-navigation/native";
 
 const apiKey = process.env.REACT_NATIVE_API_KEY;
 const url = process.env.REACT_APP_BACKEND_URL;
@@ -21,6 +22,8 @@ const ScanScreen = () => {
     const [cameraModalVisible, setCameraModalVisible] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [jsonResponse, setJsonResponse] = useState(null);
+
+    const navigation = useNavigation();
 
     const cameraRef = useRef(null);
 
@@ -98,13 +101,19 @@ const ScanScreen = () => {
 
                 console.log('requestOptions:', requestOptions);
                 const backendResponse = await fetch(`${url}/ocr_reciept_image_upload`, requestOptions);
-                const responseData = await backendResponse.json();
 
-                console.log('Response:', responseData);
-                console.log('Extracted Info:', responseData.extracted_info);
-                setJsonResponse(responseData.extracted_info);
-                setImageUri(null);
-                console.log('Image (Base64):', responseData.receipt_image_base64);
+                if (!backendResponse.ok) {
+                    console.error('Error sending image to backend:', backendResponse);
+                    return;
+                } else {
+                    const responseData = await backendResponse.json();
+                    console.log('Response:', responseData);
+                    console.log('Extracted Info:', responseData.extracted_info);
+                    setJsonResponse(responseData.extracted_info);
+                    setImageUri(null);
+                    console.log('Image (Base64):', responseData.receipt_image_base64);
+                    navigation.navigate('BudgetReceipt', {receipt: responseData.extracted_info})
+                }
             }
         } catch (error) {
             console.error('Error sending image to backend:', error);
@@ -137,7 +146,8 @@ const ScanScreen = () => {
                             <>
                                 <H6 weight="400" style={{textAlign: 'center'}}>Developer Features</H6>
                                 <Button title="Pick Image" onPress={pickImage}/>
-                                <Button title="Clear JSON" onPress={clearJson}/>
+                                <Button title="Clear JSON" onPress={clearJson} disabled={!jsonResponse} />
+                                {jsonResponse && (<H5>JSON Response: {JSON.stringify(jsonResponse)}</H5>)}
                             </>}
                         {imageUri && <Image source={{uri: imageUri}} style={{
                             flex: 1,
@@ -145,7 +155,6 @@ const ScanScreen = () => {
                             height: null,
                             resizeMode: 'contain'
                         }}/>}
-                        {jsonResponse && (<H5>JSON Response: {JSON.stringify(jsonResponse)}</H5>)}
                     </Content>
                 </AccountContainer>
             </WrapperScroll>
