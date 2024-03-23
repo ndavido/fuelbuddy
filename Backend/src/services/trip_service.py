@@ -41,5 +41,8 @@ def save_trip():
 
         return jsonify({"message": "Trip saved successfully"}), 200
 
+    except Users.DoesNotExist:
+        return jsonify({"error": "User does not exist"}), 404
+
     except Exception as e:
-        return handle_api_error(e)
+        return jsonify({"error": "An unexpected error occurred", "details": str(e)}), 500

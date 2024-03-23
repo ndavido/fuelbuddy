@@ -9,6 +9,7 @@ from src.middleware.api_key_middleware import require_api_key
 from datetime import datetime
 from mongoengine.queryset.visitor import Q
 from src.utils.helper_utils import handle_api_error
+from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
 
 
 # ! This is the route for sending fuel stations info to Frontend
@@ -31,7 +32,7 @@ def get_fuel_stations():
                 'prices': {
                     'petrol_price': fuel_station.petrol_prices[-1].price if fuel_station.petrol_prices else None,
                     'petrol_updated_at': fuel_station.petrol_prices[-1].updated_at.strftime('%Y-%m-%d %H:%M:%S') if fuel_station.petrol_prices else None,
-                    'petrol_price_verified': fuel_station.petrol_prices[-1].price_verified if fuel_station.petrol_prices else None,
+                    'petrol_price_verified': fuel_station.petrol_prices[-1].price_verified if fuel_station.petrol_prices else None, 
                     'diesel_price': fuel_station.diesel_prices[-1].price if fuel_station.diesel_prices else None,
                     'diesel_updated_at': fuel_station.diesel_prices[-1].updated_at.strftime('%Y-%m-%d %H:%M:%S') if fuel_station.diesel_prices else None,
                     'diesel_price_verified': fuel_station.diesel_prices[-1].price_verified if fuel_station.diesel_prices else None,
@@ -50,8 +51,10 @@ def get_fuel_stations():
             result.append(station_data)
 
         return jsonify(result)
+    except (ExpiredSignatureError, InvalidTokenError) as e:
+        current_app.logger.error('JWT Token Error: %s', str(e))
+        return jsonify({'error': 'JWT Token Error'}), 401
     except Exception as e:
-        current_app.logger.error('An error occurred: %s', str(e))
         return handle_api_error(e)
 
 #! This is the route for storing fuel stations info from Frontend
@@ -98,36 +101,40 @@ def get_favorite_fuel_stations():
     try:
         user_id = get_jwt_identity()
 
-        if user_id:
-            user = Users.objects(id=user_id).first()
-            if user:
-                favorite_doc = FavoriteFuelStation.objects(
-                    user=user.id).first()
-                if favorite_doc:
-                    favorite_stations = favorite_doc.favorite_stations
+        user = Users.objects.get(id=user_id)
 
-                    fuel_stations = FuelStation.objects(
-                        id__in=[dbref.id for dbref in favorite_stations])
+        favorite_doc = FavoriteFuelStation.objects(user=user.id).first()
+        if favorite_doc:
+            favorite_stations = favorite_doc.favorite_stations
 
-                    station_list = [
-                        {
-                            "station_id": str(station.id),
-                            "name": station.name,
-                            "phone_number": station.phone_number,
-                            "location": {
-                                "latitude": station.latitude,
-                                "longitude": station.longitude,
-                            }
-                        } for station in fuel_stations
-                    ]
-                    return jsonify({"favorite_stations": station_list}), 200
-                else:
-                    return jsonify({"message": "No favorite fuel stations found for the user."}), 200
-            else:
-                return jsonify({"error": "User not found with the provided token."}), 404
+            fuel_stations = FuelStation.objects(id__in=[dbref.id for dbref in favorite_stations])
+
+            station_list = [
+                {
+                    "station_id": str(station.id),
+                    "name": station.name,
+                    "phone_number": station.phone_number,
+                    "location": {
+                        "latitude": station.latitude,
+                        "longitude": station.longitude,
+                    },
+                    "prices": {
+                        "petrol_price": station.petrol_prices[-1].price if station.petrol_prices else None,
+                        "petrol_updated_at": station.petrol_prices[-1].updated_at.strftime('%Y-%m-%d %H:%M:%S') if station.petrol_prices else None,
+                        "diesel_price": station.diesel_prices[-1].price if station.diesel_prices else None,
+                        "diesel_updated_at": station.diesel_prices[-1].updated_at.strftime('%Y-%m-%d %H:%M:%S') if station.diesel_prices else None
+                    },
+                } for station in fuel_stations
+            ]
+            return jsonify({"favorite_stations": station_list}), 200
         else:
-            return jsonify({"error": "Token not provided."}), 400
+            return jsonify({"message": "No favorite fuel stations found for the user."}), 200
 
+    except (ExpiredSignatureError, InvalidTokenError) as e:
+        current_app.logger.error('JWT Token Error: %s', str(e))
+        return jsonify({'error': 'JWT Token Error'}), 401
+    except DoesNotExist:
+        return jsonify({"error": "User not found with the provided token."}), 404
     except Exception as e:
         return handle_api_error(e)
 
@@ -159,7 +166,7 @@ def favorite_fuel_station():
 
             if not favorite_doc:
                 favorite_doc = FavoriteFuelStation(
-                    user=user, favorite_stations=[station], updated_at=datetime.utcnow())  # ! added updated_at field
+                    user=user, favorite_stations=[station])
                 favorite_doc.save()
 
                 # ? Marked as favorite station activity

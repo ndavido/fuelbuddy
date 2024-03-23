@@ -28,7 +28,7 @@ def create_user_vehicle():
         model = vehicle_data.get('model')
         year = vehicle_data.get('year')
 
-        # Additional fields (optional)
+        # Additional fields
         series = vehicle_data.get('series')
         trim = vehicle_data.get('trim')
         body_type = vehicle_data.get('body_type')
@@ -75,6 +75,14 @@ def get_vehicle():
             'make': vehicle.make,
             'model': vehicle.model,
             'year': vehicle.year,
+            'series': vehicle.series,
+            'trim': vehicle.trim,
+            'body_type': vehicle.body_type,
+            'engine_type': vehicle.engine_type,
+            'transmission': vehicle.transmission,
+            'fuel_tank_capacity_l': vehicle.fuel_tank_capacity,
+            'city_fuel_per_100km_l': vehicle.city_fuel_per_100km,
+            'co2_emissions_g_km': vehicle.co2_emissions
         }
 
         return jsonify(vehicle_dict), 200
@@ -83,6 +91,31 @@ def get_vehicle():
         return jsonify({'error': 'Vehicle not found'}), 404
     except Exception as e:
         return jsonify({'error': 'Failed to retrieve vehicle', 'details': str(e)}), 500
+
+# UPDATE
+# Update user vehicle information
+@require_api_key
+@jwt_required()
+def update_user_vehicle():
+    try:
+        current_user_id = get_jwt_identity()
+        vehicle_data = request.get_json()
+
+        user_vehicle = UserVehicle.objects.get(user_id=current_user_id)
+
+        # Update fields if provided in the request data
+        for key, value in vehicle_data.items():
+            if hasattr(user_vehicle, key):
+                setattr(user_vehicle, key, value)
+
+        user_vehicle.save()
+
+        return jsonify({'message': 'Vehicle information updated successfully'}), 200
+
+    except DoesNotExist:
+        return jsonify({'error': 'Vehicle not found'}), 404
+    except Exception as e:
+        return jsonify({'error': 'Failed to update vehicle information', 'details': str(e)}), 500
 
 # DELETE
 # Delete a vehicle

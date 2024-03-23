@@ -100,7 +100,7 @@ def edit_account():
         user.save()
         return jsonify({"message": "Account updated successfully"}), 200
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "An unexpected error occurred", "details": str(e)}), 500
 
 
 @require_api_key
@@ -126,3 +126,4 @@ def upload_profile_picture():
         return jsonify({"message": "Profile picture updated successfully"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
