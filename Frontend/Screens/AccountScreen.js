@@ -83,7 +83,7 @@ const AccountScreen = () => {
             }>
                 <TopInfo>
                     <View style={{zIndex: 1000, top: 30}}>
-                        <AccountImg/>
+                        <AccountImg />
                         <H4 tmargin="10px" style={{textAlign: 'center'}}>{userData.first_name}</H4>
                         <H6 weight="400"
                             style={{textAlign: 'center'}}>@{userData.username} {userData.roles && userData.roles.includes("Developer") &&
@@ -117,9 +117,9 @@ const AccountScreen = () => {
                     <ButtonButton pos="single" iconColor="#b8bec2" icon="cross" color="#FFFFFF" txtColor="black"
                                   txtMargin="15px" text="Log Out" onPress={handleLogout}/>
 
-                    <H8 tmargin='60px' bmargin='5px' width='100%' style={{textAlign: 'center', opacity: 0.5}}>Version
+                    <H8 tmargin='60px' color='#b8bec2' bmargin='5px' width='100%' style={{textAlign: 'center'}}>Version
                         Alpha</H8>
-                    <H8 bmargin='25px' width='100%' style={{textAlign: 'center', opacity: 0.5}}>Made with 💖 by Team
+                    <H8 bmargin='25px' color='#b8bec2' width='100%' style={{textAlign: 'center'}}>Made with ❤️ by Team
                         fuelbuddy</H8>
 
                 </AccountContainer>

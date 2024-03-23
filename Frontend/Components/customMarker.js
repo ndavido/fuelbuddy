@@ -7,7 +7,7 @@ const CustomMarker = ({ coordinate, onPress, petrolUpdatedAt, dieselUpdatedAt, i
 
   return (
     <Marker coordinate={coordinate} onPress={onPress} pinColor={customMarkerIcon.color}>
-      <Image source={customMarkerIcon.icon} style={{ width: isSelected ? 46 : 32, height: isSelected ? 46 : 32 }} />
+      <Image source={customMarkerIcon.icon} style={{ width: 40, height: 40 }} />
     </Marker>
   );
 };

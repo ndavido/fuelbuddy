@@ -8,6 +8,7 @@ from src.middleware.api_key_middleware import require_api_key
 from src.utils.helper_utils import handle_api_error
 from flask_jwt_extended import jwt_required, get_jwt_identity
 import random
+from bson import ObjectId
 
 
 @require_api_key
@@ -48,7 +49,8 @@ def list_friends():
 
         friends_list = [{
             'friend_id': str(friend_user.id),
-            'friend_name': friend_user.first_name
+            'friend_name': friend_user.first_name,
+            'friend_username': friend_user.username
         } for friend in friends for friend_user in [friend.user1, friend.user2] if friend_user.id != user.id]
 
         return jsonify({"friends": friends_list}), 200
@@ -231,13 +233,13 @@ def search_users():
 def view_friend_profile():
     try:
         user_id = get_jwt_identity()
-        friend_id = request.get_json('friend_id')
+        data = request.get_json()
+        friend_id = data['friend_id']
 
         # Verify if users are friends
-        friendship = Friends.__objects(
+        friendship = Friends.objects(
             ((Q(user1=user_id) & Q(user2=friend_id)) |
-             (Q(user1=friend_id) & Q(user2=user_id))) &
-            Q(status='accepted')
+             (Q(user1=friend_id) & Q(user2=user_id)))
         ).first()
 
         if not friendship:
@@ -296,15 +298,34 @@ def friend_activity_dashboard():
     try:
         user_id = get_jwt_identity()
 
-        friends = Friends.objects(Q(user1=user_id) | Q(user2=user_id))
+        print(user_id)
+
+        friends = Friends.objects(
+            Q(user1=ObjectId(user_id)) | Q(user2=ObjectId(user_id))).all()
+
+        print(friends)
+
+        friend_ids = set()
+        for friend in friends:
+            friend_ids.add(str(friend.user1.id))
+            friend_ids.add(str(friend.user2.id))
+
+        friend_ids.discard(user_id)
 
         activities = UserActivity.objects(
-            user__in=friends).order_by('-timestamp')
+            user__in=[ObjectId(friend_id) for friend_id in friend_ids]).order_by('-timestamp')
+
+        print(activities)
 
         activity_list = [{
             'username': activity.user.username,
             'activity': activity.details,
-            'fuel_station': activity.station if activity.station else None,
+            'fuel_station': {
+                'name': activity.station.name if activity.station else None,
+                'address': activity.station.address if activity.station else None,
+                'latitude': activity.station.latitude if activity.station else None,
+                'longitude': activity.station.longitude if activity.station else None
+            },
             'timestamp': activity.timestamp.isoformat(),
         } for activity in activities]
 

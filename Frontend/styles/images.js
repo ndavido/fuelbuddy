@@ -33,6 +33,7 @@ const AccountImgImg = styled.Image`
   width: 80px;
   height: 80px;
   margin: auto;
+  background-color: #6BFF91;
   border-radius: 40px;
 `;
 

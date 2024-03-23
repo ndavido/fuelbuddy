@@ -32,8 +32,10 @@ def get_fuel_stations():
                 'prices': {
                     'petrol_price': fuel_station.petrol_prices[-1].price if fuel_station.petrol_prices else None,
                     'petrol_updated_at': fuel_station.petrol_prices[-1].updated_at.strftime('%Y-%m-%d %H:%M:%S') if fuel_station.petrol_prices else None,
+                    'petrol_price_verified': fuel_station.petrol_prices[-1].price_verified if fuel_station.petrol_prices else None, 
                     'diesel_price': fuel_station.diesel_prices[-1].price if fuel_station.diesel_prices else None,
-                    'diesel_updated_at': fuel_station.diesel_prices[-1].updated_at.strftime('%Y-%m-%d %H:%M:%S') if fuel_station.diesel_prices else None
+                    'diesel_updated_at': fuel_station.diesel_prices[-1].updated_at.strftime('%Y-%m-%d %H:%M:%S') if fuel_station.diesel_prices else None,
+                    'diesel_price_verified': fuel_station.diesel_prices[-1].price_verified if fuel_station.diesel_prices else None,
                 },
                 'facilities': {
                     'car_wash': fuel_station.facilities.car_wash,
@@ -203,6 +205,8 @@ def store_fuel_prices():
     try:
         user = Users.objects(id=get_jwt_identity()).first()
         data = request.get_json()
+        print('user', user.username, user.roles, user.id, user.email)
+        print('data', data)
         fuel_prices_data = data.get('fuelPrices', [])
 
         for price_data in fuel_prices_data:
@@ -221,18 +225,23 @@ def store_fuel_prices():
             petrol_price = price_data.get('petrol_price')
             diesel_price = price_data.get('diesel_price')
 
+            price_verified = False
+
+            if set(user.roles) & {'admin', 'Developer', 'Station_Owner'}:
+                price_verified = True
+
             fuel_station.petrol_prices.append(PetrolPrices(
-                price=petrol_price, updated_at=datetime.utcnow()))
+                price=petrol_price, price_verified=price_verified, updated_at=datetime.utcnow()))
             fuel_station.diesel_prices.append(DieselPrices(
-                price=diesel_price, updated_at=datetime.utcnow()))
+                price=diesel_price, price_verified=price_verified, updated_at=datetime.utcnow()))
             fuel_station.save()
 
             new_price = FuelPrices(
                 station=fuel_station,
                 petrol_prices=[PetrolPrices(
-                    price=petrol_price, updated_at=datetime.utcnow())],
+                    price=petrol_price, price_verified=price_verified, updated_at=datetime.utcnow())],
                 diesel_prices=[DieselPrices(
-                    price=diesel_price, updated_at=datetime.utcnow())],
+                    price=diesel_price, price_verified=price_verified, updated_at=datetime.utcnow())],
                 updated_at=datetime.utcnow()
             )
             print('new_price', new_price)

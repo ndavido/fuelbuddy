@@ -24,9 +24,7 @@ const url = process.env.REACT_APP_BACKEND_URL
 const DashboardScreen = () => {
     const [userInfo, setUserInfo] = useState({});
     const [loading, setLoading] = useState(true);
-
-    const [newsData, setNewsData] = useState([]);
-    const [loadingNews, setLoadingNews] = useState(true);
+    const [friendActivity, setFriendActivity] = useState([]);
 
     const [refreshing, setRefreshing] = useState(false);
 
@@ -59,6 +57,8 @@ const DashboardScreen = () => {
         const fetchUserInfo = async () => {
             try {
                 await collectDashboardInfo();
+                await collectFriendActivity();
+
             } catch (error) {
                 console.error('Error fetching user account information:', error);
             }
@@ -67,69 +67,46 @@ const DashboardScreen = () => {
         fetchUserInfo();
     }, []);
 
-    /*const fetchNews = async () => {
+    const collectFriendActivity = async () => {
         try {
-            const apiKey = process.env.NEWSAPI_KEY;
-            const newsApiUrl = 'https://newsapi.org/v2/everything';
-            const carResponse = await axios.get(newsApiUrl, {
-                params: {
-                    apiKey,
-                    q: 'car fuel',
-                    language: 'en',
-                    sortBy: 'publishedAt',
-                    pageSize: 50,
+            const token = await AsyncStorage.getItem('token');
+            const user_id = jwtDecode(token).sub;
+
+            const config = {
+                headers: {
+                    'X-API-Key': apiKey,
+                    'Authorization': `Bearer ${token}`,
                 },
-            });
+            };
 
-            const petrolResponse = await axios.get(newsApiUrl, {
-                params: {
-                    apiKey,
-                    q: 'petrol',
-                    language: 'en',
-                    sortBy: 'publishedAt',
-                    pageSize: 50,
-                },
-            });
+            const response = await axios.post(
+                `${url}/friend_activity_dashboard`,
+                {id: user_id},
+                config
+            );
 
-            const dieselResponse = await axios.get(newsApiUrl, {
-                params: {
-                    apiKey,
-                    q: 'road',
-                    language: 'en',
-                    sortBy: 'publishedAt',
-                    pageSize: 50,
-                },
-            });
+            console.log("Friend Activity", response.data.activities)
 
-            const combinedNews = [
-                ...filterRemovedArticles(carResponse.data.articles),
-                ...filterRemovedArticles(petrolResponse.data.articles),
-                ...filterRemovedArticles(dieselResponse.data.articles),
-            ].filter(article => containsUKOrIreland(article));
+            if (response.data && response.data.activities) {
+                setFriendActivity(response.data.activities);
+            }
 
-            setNewsData(combinedNews);
         } catch (error) {
-            console.error('Error fetching news:', error);
-        } finally {
-            setLoadingNews(false);
+            console.error('Error fetching friends:', error);
         }
-    };*/
-
-    /*const filterRemovedArticles = (articles) => {
-        return articles.filter(article => !article.title.includes('[Removed]') && !article.description.includes('[Removed]'));
     };
-
-    const containsUKOrIreland = (article) => {
-        const content = `${article.title} ${article.description}`;
-        return content.toLowerCase().includes('uk ') || content.toLowerCase().includes('ireland');
-    };*/
 
     const onRefresh = async () => {
         setRefreshing(true);
 
         await collectUserInfo();
+        await collectFriendActivity();
 
         setRefreshing(false);
+    };
+
+    const silentRefresh = async () => {
+        await collectUserInfo();
     };
 
     // TODO How to Quickly reload info on the dashboard
@@ -281,7 +258,7 @@ const DashboardScreen = () => {
 
             if (response.data.message) {
                 console.log(response.data.message);
-                await onRefresh();
+                await silentRefresh();
             } else {
                 console.error('Failed to add deduction:', response.data.error);
             }
@@ -310,7 +287,7 @@ const DashboardScreen = () => {
             if (response.data.message) {
                 console.log(response.data.message);
                 updateUserFromBackend();
-                await onRefresh();
+                await silentRefresh();
             } else {
                 console.error('Failed to update weekly budget:', response.data.error);
             }
@@ -484,9 +461,21 @@ const DashboardScreen = () => {
                             </View>
                         </Card>
                         <Card>
-                            <H8 style={{opacity: 0.5}}>Activity</H8>
-                            <H5>My Friends</H5>
-
+                            <H8 style={{opacity: 0.5}}>Friends</H8>
+                            <H5>Recent Activity</H5>
+                            {friendActivity.length > 0 ? (
+                                friendActivity.map((activity, index) => (
+                                    <View key={index} style={{paddingBottom: 10}}>
+                                        <H6>{activity.username}</H6>
+                                        <H7 style={{opacity: 0.5}}>{activity.activity}</H7>
+                                        <H7 style={{opacity: 0.3}}>
+                                            {new Date(activity.timestamp).toLocaleString()}
+                                        </H7>
+                                    </View>
+                                ))
+                            ) : (
+                                <H6 style={{paddingTop: 10, paddingBottom: 10}}>No friend activity yet!</H6>
+                            )}
 
                         </Card>
                         <Card>
@@ -506,33 +495,6 @@ const DashboardScreen = () => {
                                 <H6 style={{opacity: 0.5}}>18Km/l Average</H6>
                             </View>
                         </Card>
-                        {/*<Card>
-                            <H8 style={{opacity: 0.5}}>News</H8>
-                            <H5>Trending Stories</H5>
-                            {loadingNews ? (
-                                <H4>Loading news...</H4>
-                            ) : (
-                                <View>
-                                    {newsData.map((article, index) => (
-                                        <View key={index}>
-                                            {article.urlToImage && (
-                                                <Image
-                                                    source={{uri: article.urlToImage}}
-                                                    style={{width: 200, height: 150, resizeMode: 'cover'}}
-                                                />
-                                            )}
-                                            <H5>{article.title}</H5>
-                                            <H6 style={{opacity: 0.5}}>{article.description}</H6>
-                                            <H7 style={{opacity: 0.3}}>{article.source?.name} - {new Date(article.publishedAt).toLocaleString('en-GB', {
-                                                timeZone: 'GMT',
-                                                dateStyle: 'short',
-                                                timeStyle: 'short'
-                                            })}</H7>
-                                        </View>
-                                    ))}
-                                </View>
-                            )}
-                        </Card>*/}
                     </CardOverlap>
                 </DashboardContainer>
                 <Modal

@@ -4,11 +4,11 @@ from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_tok
 from mongoengine import Q
 from src.middleware.api_key_middleware import require_api_key
 from src.utils.encryption_utils import aes_decrypt, aes_encrypt, encryption_key
+from src.utils.image_utils import upload_image
 from src.models.user import Users
 from src.models.friends import Friends, FriendRequest
 from src.models.budget import BudgetHistory, WeeklyBudgetHistory
 from src.models.fuel_station import FavoriteFuelStation
-
 
 
 from src.utils.helper_utils import handle_api_error
@@ -50,7 +50,8 @@ def delete_account():
             # Deleting Friends
             Friends.objects(Q(user1=user_info) | Q(user2=user_info)).delete()
             # Deleting Friend Requests
-            FriendRequest.objects(Q(sender=user_info) | Q(recipient=user_info)).delete()
+            FriendRequest.objects(Q(sender=user_info) |
+                                  Q(recipient=user_info)).delete()
             # Delete budget history
             BudgetHistory.objects(user=user_info).delete()
             # Delete weekly budget history
@@ -100,3 +101,29 @@ def edit_account():
         return jsonify({"message": "Account updated successfully"}), 200
     except Exception as e:
         return jsonify({"error": "An unexpected error occurred", "details": str(e)}), 500
+
+
+@require_api_key
+@jwt_required()
+def upload_profile_picture():
+    try:
+        user_id = get_jwt_identity()
+        user = Users.objects(id=user_id).first()
+
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+
+        data = request.get_json()
+
+        if 'profile_picture' not in data:
+            return jsonify({"error": "No profile picture provided"}), 400
+
+        profile_picture = upload_image(data['profile_picture'])
+
+        user.profile_picture = profile_picture
+
+        user.save()
+        return jsonify({"message": "Profile picture updated successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+

@@ -33,6 +33,8 @@ const apiKey = process.env.REACT_NATIVE_API_KEY;
 const url = process.env.REACT_APP_BACKEND_URL
 
 const FriendsScreen = () => {
+    const navigation = useNavigation();
+
     const [friends, setFriends] = useState([]);
     const [requestedFriends, setRequestedFriends] = useState([]);
     const [friendsRequested, setFriendsRequested] = useState([]);
@@ -166,15 +168,17 @@ const FriendsScreen = () => {
     };
 
     const openSearchModal = () => {
-        bottomSheetRef.current.expand(); // Open the sheet
+        bottomSheetRef.current.expand();
+        closeFriendRequestsModal();
     };
 
     const closeSearchModal = () => {
-        bottomSheetRef.current.close(); // Close the sheet
+        bottomSheetRef.current.close();
     };
 
     const openFriendRequestsModal = () => {
         setFriendRequestModalVisible(true);
+        closeSearchModal();
     };
 
     const closeFriendRequestsModal = () => {
@@ -348,7 +352,7 @@ const FriendsScreen = () => {
                 />
             }>
                 <AccountContainer style={{minHeight: 800}}>
-                        <ButtonContainer style={{position: 'absolute', marginTop: 15, marginLeft: 10, marginRight: 10}}>
+                    <ButtonContainer style={{position: 'absolute', marginTop: 15, marginLeft: 10, marginRight: 10}}>
                         <View style={{zIndex: 1, marginLeft: 0, marginRight: 'auto'}}>
                             <ButtonButton icon="bell" color='yellow' iconColor='black'
                                           onPress={openFriendRequestsModal}/>
@@ -362,63 +366,65 @@ const FriendsScreen = () => {
                             <ButtonButton text="Add friends" onPress={openSearchModal}/>
                         </View>
                     </ButtonContainer>
-                    <H2 tmargin='80px' lmargin='0px' bmargin='5px'>Friends</H2>
-                    <TextWrapper>
+                    <H2 tmargin='80px' lmargin='0px' bmargin='10px'>Friends</H2>
                         <View>
                             {friends.map(item => (
                                 <View style={styles.friendItem} key={item.friend_id}>
-                                    <H6 weight="400" style={{opacity: 0.5}}>{item.friend_name}</H6>
+                                    <TouchableOpacity
+                                        onPress={() => navigation.navigate('FriendsProfile', {friend: item})}
+                                    >
+                                        <H6 weight="400" style={{opacity: 0.5, paddingLeft: 15}}>{item.friend_username}</H6>
+                                    </TouchableOpacity>
                                 </View>
                             ))}
                         </View>
-                    </TextWrapper>
-                    <BottomSheet snapPoints={['50%', '99%']}
+                    <BottomSheet snapPoints={['50%', '90%']}
                                  enablePanDownToClose={true}
-                                 index = {-1}
+                                 index={-1}
                                  ref={bottomSheetRef}
                                  backgroundStyle={{
                                      backgroundColor: '#FFFFFF',
                                  }}>
                         <Container>
-                        <H5 tmargin="10px" bmargin="30px" style={{textAlign: 'center'}}>Add Friends</H5>
-                        <ButtonContainer style={{position: 'absolute', marginTop: 20, marginLeft: 20}}>
-                            <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
-                                <ButtonButton icon="cross" color="#eaedea" iconColor="#b8bec2"
-                                              onPress={closeSearchModal}/>
-                            </View>
-                        </ButtonContainer>
-                        <SearchBox
-                            placeholder="Search Friends"
-                            value={searchTerm}
-                            onChangeText={handleSearch}
-                        />
-                        {searchTerm && searchResults && (
-                            <>
-                                <H5 tmargin="40px" bmargin="10px">Results</H5>
-                                <View>
-                                    {searchResults.map(item => (
-                                        <View style={styles.friendItem} key={item.user_id}>
-                                            <H6 weight="400" bmargin='5px'
-                                                style={{opacity: 0.5}}>{item.username}</H6>
-                                            <View style={{
-                                                zIndex: 1,
-                                                marginLeft: 'auto',
-                                                flexDirection: "row"
-                                            }}>
-                                                {item.isPending || pendingRequests.includes(item.phone_number) ? (
-                                                    <ButtonButton text={"Pending"} color={"#FFD700"}
-                                                                  disabled={true}/>
-                                                ) : (
-                                                    <ButtonButton text={"Add"} color={"#6BFF91"}
-                                                                  onPress={() => handleMakeFriend(item.phone_number)}/>
-                                                )}
-                                            </View>
-                                        </View>
-                                    ))}
+                            <H5 tmargin="10px" bmargin="30px" style={{textAlign: 'center'}}>Add Friends</H5>
+                            <ButtonContainer style={{position: 'absolute', marginTop: 20, marginLeft: 20}}>
+                                <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
+                                    <ButtonButton icon="cross" color="#eaedea" iconColor="#b8bec2"
+                                                  onPress={closeSearchModal}/>
                                 </View>
-                            </>
-                        )}
-                            </Container>
+                            </ButtonContainer>
+                            <SearchBox
+                                placeholder="Search Friends"
+                                value={searchTerm}
+                                onChangeText={handleSearch}
+                            />
+                            {searchTerm && searchResults && (
+                                <>
+                                    <H5 tmargin="40px" bmargin="10px">Results</H5>
+                                    <View>
+                                        {searchResults.map(item => (
+                                            <View style={styles.friendItem} key={item.user_id}>
+                                                <H6 weight="400" bmargin='5px'
+                                                    style={{opacity: 0.5}}>{item.username}</H6>
+                                                <View style={{
+                                                    zIndex: 1,
+                                                    marginLeft: 'auto',
+                                                    flexDirection: "row"
+                                                }}>
+                                                    {item.isPending || pendingRequests.includes(item.phone_number) ? (
+                                                        <ButtonButton text={"Pending"} color={"#FFD700"}
+                                                                      disabled={true}/>
+                                                    ) : (
+                                                        <ButtonButton text={"Add"} color={"#6BFF91"}
+                                                                      onPress={() => handleMakeFriend(item.phone_number)}/>
+                                                    )}
+                                                </View>
+                                            </View>
+                                        ))}
+                                    </View>
+                                </>
+                            )}
+                        </Container>
                     </BottomSheet>
                 </AccountContainer>
             </WrapperScroll>
