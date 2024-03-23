@@ -198,6 +198,8 @@ def store_fuel_prices():
     try:
         user = Users.objects(id=get_jwt_identity()).first()
         data = request.get_json()
+        print('user', user.username, user.roles, user.id, user.email)
+        print('data', data)
         fuel_prices_data = data.get('fuelPrices', [])
 
         for price_data in fuel_prices_data:
@@ -218,7 +220,7 @@ def store_fuel_prices():
 
             price_verified = False
 
-            if user.roles is 'admin' or user.roles is 'Developer' or user.roles is 'Station_Owner':
+            if set(user.roles) & {'admin', 'Developer', 'Station_Owner'}:
                 price_verified = True
 
             fuel_station.petrol_prices.append(PetrolPrices(
