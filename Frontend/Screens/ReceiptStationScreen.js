@@ -64,6 +64,8 @@ const ReceiptStationScreen = () => {
                     <Container>
                         <H3 tmargin='20px' bmargin='20px'>Update Station Price</H3>
                         <>
+                            <H6>Fuel Station</H6>
+                            <TextContainer bgColor='grey'>STATION NAME/ADDRESS</TextContainer>
                             <H6 bmargin='5px'>Fuel Type</H6>
                             <InputTxt placeholder="Fuel Type" value={editedFuelType} onChangeText={setEditedFuelType}/>
                             <H6 bmargin='5px'>Fuel Amount</H6>

@@ -98,7 +98,7 @@ const AccountNavigator = () => {
     );
 };
 
-const FriendsNavigator = () => {
+const FriendNavigator = () => {
     return (
         <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName="Friends">
             <Stack.Screen name="Friends" component={FriendsScreen}/>
@@ -216,7 +216,7 @@ const AppNavigator = () => {
                             <Tab.Screen name="Dashboard" component={DashboardScreen}/>
                             <Tab.Screen name="Map" component={MapScreen}/>
                             <Tab.Screen name="Scan" component={ScanFlow}/>
-                            <Tab.Screen name="Friends" component={FriendsNavigator}/>
+                            <Tab.Screen name="Friends" component={FriendNavigator}/>
                             <Tab.Screen name="Account" component={AccountNavigator}/>
                         </Tab.Navigator>
                     ) : (

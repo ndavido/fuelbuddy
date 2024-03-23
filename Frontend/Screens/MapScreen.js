@@ -387,7 +387,6 @@ const MapScreen = () => {
         const distanceValue = parseFloat(distance.split(" ")[0]);
         const litersNeeded = distanceValue / kmPerLiter;
         const totalPrice = litersNeeded * petrolCostPerLiter;
-
         return totalPrice.toFixed(2);
     };
 
@@ -500,50 +499,6 @@ const MapScreen = () => {
             setLocation(newLocation);
             updateDirectionIndexBasedOnLocation(newLocation.coords);
         });
-    };
-
-    const handleJourney = async () => {
-        if (selectedStation && location) {
-            const origin = {
-                latitude: location.coords.latitude,
-                longitude: location.coords.longitude,
-            };
-
-            const destination = {
-                latitude: selectedStation.location.latitude,
-                longitude: selectedStation.location.longitude,
-            };
-
-            const directionsInfo = await getDirectionsInfo(origin, destination);
-
-            setJourneyMode(true);
-            setEstimatedDuration(directionsInfo.duration.text);
-            setEstimatedDistance(directionsInfo.distance.text);
-            setCurrentDirectionIndex(0);
-
-            setShowStationInfo(false);
-            setShowRouteInfo(false);
-            setIsJourneyActive(true);
-            setJourneyCoordinates(directionsInfo.steps.map(step => ({
-                latitude: step.end_location.lat,
-                longitude: step.end_location.lng,
-            })));
-
-            watchUserPosition();
-
-            mapRef.current?.animateCamera(
-                {
-                    center: {
-                        latitude: location.coords.latitude,
-                        longitude: location.coords.longitude,
-                    },
-                    altitude: 100,
-                    pitch: 45,
-                    heading: location.coords.heading,
-                },
-                {duration: 1000}
-            );
-        }
     };
 
     const renderMap = () => {
@@ -697,8 +652,7 @@ const MapScreen = () => {
                         <H6 style={{opacity: 0.7}}>Estimated Price: €{estimatedPrice} - 18km/l @ €1.77</H6>
                         <H6 style={{opacity: 0.7}}>(Based Off Your Selected Vehicle)</H6>
                         <ButtonContainer>
-                            <ButtonButton icon="arrow-with-circle-up" text="Start Journey"
-                                          onPress={handleJourney}/>
+                            <ButtonButton icon="arrow-with-circle-up" text="Start Journey" />
                             <ButtonButton style={{float: "left"}} icon="cross" text="Exit"
                                           onPress={handleCancelPress}/>
                         </ButtonContainer>
@@ -784,59 +738,10 @@ const MapScreen = () => {
         }
     };
 
-    const renderJourneyBottomSheet = () => {
-        if (!isWeb && journeyMode && isJourneyActive) {
-            return (
-                <>
-                    <ButtonContainer style={{position: 'absolute', bottom: 200, marginLeft: 'auto'}}>
-                        <ButtonButton icon="arrow-with-circle-up" onPress={handleCameraMove}/>
-                    </ButtonContainer>
-                    <BottomSheet snapPoints={['15%', '15%']} index={0} ref={bottomSheetRef}
-                                 handleIndicatorStyle={{display: "none"}}>
-                        <Container>
-                            <H4 style={{flexDirection: 'row'}}>Arriving
-                                at {estimatedTime ? estimatedTime.toLocaleTimeString([], {
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                }) : 'Loading...'}</H4>
-                            <H4>{estimatedDuration} ({estimatedDistance})</H4>
-
-                            <ButtonContainer style={{position: 'absolute', marginTop: 10, marginLeft: 10}}>
-                                <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
-                                    <ButtonButton icon="cross" onPress={handleCancelPress}/>
-                                </View>
-                            </ButtonContainer>
-                        </Container>
-                    </BottomSheet>
-                </>
-            );
-        } else {
-            return null;
-        }
-    };
-
-    /*const renderUpcomingDirectionView = () => {
-        if (!isWeb && journeyMode && isJourneyActive) {
-            const upcomingDirection = detailedSteps[currentDirectionIndex];
-
-            console.log("Upcoming Direction:", upcomingDirection);
-
-            return (
-                <View style={styles.upcomingDirectionContainer}>
-                    <H4>{upcomingDirection.html_instructions.replace(/<[^>]*>/g, "")}</H4>
-                    <H6 style={{opacity: 0.6}}>{upcomingDirection.distance.text}</H6>
-                </View>
-            );
-        } else {
-            return null;
-        }
-    };*/
-
     return (<View style={{flex: 1}}>
         {renderMap()}
         {renderStationBottomSheet()}
         {renderRouteInfoBottomSheet()}
-        {renderJourneyBottomSheet()}
         {renderNearbyStationsBottomSheet()}
         <TouchableOpacity
             style={{position: 'absolute', top: 55, left: 20, zIndex: 0}}

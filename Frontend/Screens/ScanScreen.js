@@ -103,15 +103,15 @@ const ScanScreen = () => {
                 const backendResponse = await fetch(`${url}/ocr_reciept_image_upload`, requestOptions);
 
                 if (!backendResponse.ok) {
-                    console.error('Error sending image to backend:', backendResponse);
+                    console.error('Error sending image to backend:', await backendResponse.text());
                     return;
                 } else {
                     const responseData = await backendResponse.json();
                     console.log('Response:', responseData);
                     console.log('Extracted Info:', responseData.extracted_info);
                     setJsonResponse(responseData.extracted_info);
-                    setImageUri(null);
                     console.log('Image (Base64):', responseData.receipt_image_base64);
+                    setImageUri(null);
                     navigation.navigate('BudgetReceipt', {receipt: responseData.extracted_info})
                 }
             }
@@ -128,7 +128,7 @@ const ScanScreen = () => {
 
     return (
         <Main>
-            <MainLogo/>
+            <MainLogo PageTxt="Receipt Scanner"/>
             <WrapperScroll>
                 <AccountContainer style={{minHeight: 800}}>
                     {isLoading && (
