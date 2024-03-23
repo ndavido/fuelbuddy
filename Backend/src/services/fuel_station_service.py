@@ -28,16 +28,13 @@ def get_fuel_stations():
                     'latitude': fuel_station.latitude,
                     'longitude': fuel_station.longitude
                 },
-                # handle null values and have -1 to ensure to get the latest price (may change this after frontend is done)
                 'prices': {
-                    # Adjust if needed for price type
                     'petrol_price': fuel_station.petrol_prices[-1].price if fuel_station.petrol_prices else None,
                     'petrol_updated_at': fuel_station.petrol_prices[-1].updated_at.strftime('%Y-%m-%d %H:%M:%S') if fuel_station.petrol_prices else None,
-                    'petrol_price_verified': fuel_station.petrol_prices[-1].price_verified if fuel_station.petrol_prices.price_verified else None,
-                    # Adjust if needed for price type
+                    'petrol_price_verified': fuel_station.petrol_prices[-1].price_verified if fuel_station.petrol_prices else None,
                     'diesel_price': fuel_station.diesel_prices[-1].price if fuel_station.diesel_prices else None,
                     'diesel_updated_at': fuel_station.diesel_prices[-1].updated_at.strftime('%Y-%m-%d %H:%M:%S') if fuel_station.diesel_prices else None,
-                    'diesel_price_verified': fuel_station.diesel_prices[-1].price_verified if fuel_station.diesel_prices.price_verified else None,
+                    'diesel_price_verified': fuel_station.diesel_prices[-1].price_verified if fuel_station.diesel_prices else None,
                 },
                 'facilities': {
                     'car_wash': fuel_station.facilities.car_wash,
