@@ -299,13 +299,25 @@ def friend_activity_dashboard():
 
         friends = Friends.objects(Q(user1=user_id) | Q(user2=user_id)).all()
 
+        friend_ids = set()
+        for friend in friends:
+            if friend.user1.id != user_id.id:
+                friend_ids.add(friend.user1.id)
+            if friend.user2.id != user_id.id:
+                friend_ids.add(friend.user2.id)
+
         activities = UserActivity.objects(
-            user__in=list(friends)).order_by('-timestamp')
+            user__in=list(friend_ids)).order_by('-timestamp')
 
         activity_list = [{
             'username': activity.user.username,
             'activity': activity.details,
-            'fuel_station': activity.station if activity.station else None,
+            'fuel_station': {
+                'name': activity.station.name,
+                'address': activity.station.address,
+                'latitude': activity.station.latitude,
+                'longitude': activity.station.longitude
+            } if activity.station else None,
             'timestamp': activity.timestamp.isoformat(),
         } for activity in activities]
 
