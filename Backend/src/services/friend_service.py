@@ -8,6 +8,7 @@ from src.middleware.api_key_middleware import require_api_key
 from src.utils.helper_utils import handle_api_error
 from flask_jwt_extended import jwt_required, get_jwt_identity
 import random
+from bson import ObjectId
 
 
 @require_api_key
@@ -297,27 +298,34 @@ def friend_activity_dashboard():
     try:
         user_id = get_jwt_identity()
 
-        friends = Friends.objects(Q(user1=user_id) | Q(user2=user_id)).all()
+        print(user_id)
+
+        friends = Friends.objects(
+            Q(user1=ObjectId(user_id)) | Q(user2=ObjectId(user_id))).all()
+
+        print(friends)
 
         friend_ids = set()
         for friend in friends:
-            if friend.user1.id != user_id.id:
-                friend_ids.add(friend.user1.id)
-            if friend.user2.id != user_id.id:
-                friend_ids.add(friend.user2.id)
+            friend_ids.add(str(friend.user1.id))
+            friend_ids.add(str(friend.user2.id))
+
+        friend_ids.discard(user_id)
 
         activities = UserActivity.objects(
-            user__in=list(friend_ids)).order_by('-timestamp')
+            user__in=[ObjectId(friend_id) for friend_id in friend_ids]).order_by('-timestamp')
+
+        print(activities)
 
         activity_list = [{
             'username': activity.user.username,
             'activity': activity.details,
             'fuel_station': {
-                'name': activity.station.name,
-                'address': activity.station.address,
-                'latitude': activity.station.latitude,
-                'longitude': activity.station.longitude
-            } if activity.station else None,
+                'name': activity.station.name if activity.station else None,
+                'address': activity.station.address if activity.station else None,
+                'latitude': activity.station.latitude if activity.station else None,
+                'longitude': activity.station.longitude if activity.station else None
+            },
             'timestamp': activity.timestamp.isoformat(),
         } for activity in activities]
 
