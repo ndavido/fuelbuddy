@@ -8,11 +8,13 @@ from .user import Users
 
 class PetrolPrices(EmbeddedDocument):
     price = FloatField(required=True)
+    price_verified = BooleanField(default=False)
     updated_at = DateTimeField(default=datetime.utcnow)
 
 
 class DieselPrices(EmbeddedDocument):
     price = FloatField(required=True)
+    price_verified = BooleanField(default=False)
     updated_at = DateTimeField(default=datetime.utcnow)
 
 
@@ -30,7 +32,7 @@ class Facilities(EmbeddedDocument):
     convenience_store = BooleanField(default=False)
     food = BooleanField(default=False)
 
-    
+
 # https://docs.mongoengine.org/apireference.html
 class RatingUpdate(EmbeddedDocument):
     rating = DecimalField(min_value=0, max_value=5, required=True)
