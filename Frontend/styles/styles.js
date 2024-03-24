@@ -72,6 +72,7 @@ export const TextContainer = styled.Text`
   height: auto;
   line-height: 18px;
   background-color: ${props => props.bcolor || '#F7F7F7'};
+  
   border-radius: 10px;
 `;
 
@@ -198,8 +199,15 @@ export const Card = styled.View`
   flex: 1;
   border-radius: 8px;
   padding: 10px;
-  
   margin: 10px;
+`;
+
+export const CardMini = styled.View`
+  background-color: #F7F7F7;
+  flex: 1;
+  border-radius: 8px;
+  padding: 10px;
+  margin-top: 10px;
 `;
 
 export const CardTitle = styled.Text`

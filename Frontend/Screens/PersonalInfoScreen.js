@@ -99,9 +99,9 @@ const AccountScreen = () => {
                     {editMode ? (
                         <>
                             <H6 bmargin='5px'>Username</H6>
-                            <TextContainer bgColor='grey'>@{userData.username}</TextContainer>
+                            <TextContainer bcolor="#a1a1a1">@{userData.username}</TextContainer>
                             <H6 bmargin='5px'>Phone Number</H6>
-                            <TextContainer bgColor='grey'>{userData.phone_number}</TextContainer>
+                            <TextContainer bcolor="#a1a1a1">{userData.phone_number}</TextContainer>
                             <H6 bmargin='5px'>First Name</H6>
                             <InputTxt bcolor='white' value={editedFirstName} onChangeText={setEditedFirstName}
                                       placeholder="First Name"/>
@@ -115,15 +115,15 @@ const AccountScreen = () => {
                     ) : (
                         <>
                             <H6 bmargin='5px'>Username</H6>
-                            <TextContainer>@{userData.username}</TextContainer>
+                            <TextContainer bcolor="#FFFFFF">@{userData.username}</TextContainer>
                             <H6 bmargin='5px'>Phone Number</H6>
-                            <TextContainer bgColor='grey'>{userData.phone_number}</TextContainer>
+                            <TextContainer bcolor="#FFFFFF">{userData.phone_number}</TextContainer>
                             <H6 bmargin='5px'>First Name</H6>
-                            <TextContainer bgColor='#FFFFFF'>{userData.first_name}</TextContainer>
+                            <TextContainer bcolor="#FFFFFF">{userData.first_name}</TextContainer>
                             <H6 bmargin='5px'>Surname</H6>
-                            <TextContainer bgColor='#FFFFFF'>{userData.surname}</TextContainer>
+                            <TextContainer bcolor="#FFFFFF">{userData.surname}</TextContainer>
                             <H6 bmargin='5px'>Email</H6>
-                            <TextContainer bgColor='#FFFFFF'>{userData.email}</TextContainer>
+                            <TextContainer bcolor="#FFFFFF">{userData.email}</TextContainer>
                         </>
                     )}
                     <H6 tmargin='10px' bmargin='10px'>{message}</H6>

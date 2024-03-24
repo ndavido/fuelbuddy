@@ -46,7 +46,7 @@ const ReceiptBudgetScreen = () => {
 
             const requestBody = {
                 id: userData.username,
-                deductions: receipt.total,
+                deductions: editedReceiptTotal,
             };
 
             const response = await axios.post(apiUrl, requestBody, {

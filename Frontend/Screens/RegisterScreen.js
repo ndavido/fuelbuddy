@@ -180,7 +180,7 @@ const RegisterScreen = () => {
                     <LRContainer>
                         <ButtonButton color="#F7F7F7" txtWidth="100%" width="50%"
                                   txtColor="black" text="Register"/>
-                        <ButtonButton accessibilityLabel="Login Button" color="#6bff91" txtWidth="100%" width="50%"
+                        <ButtonButton accessibilityLabel="Login Button" color="#6bff91" txtWidth="100%" width="50%" accessible={true}
                                   txtColor="white" text="Login" onPress={() => navigation.navigate('Login')}/>
                     </LRContainer>
                     <Container>
@@ -224,7 +224,7 @@ const RegisterScreen = () => {
                         <H6 tmargin='10px'>{message}</H6>
                     </Container>
                     <LRButtonDiv>
-                        <ButtonButton accessibilityLabel="Send Register Code" color="#6bff91" txtWidth="100%"
+                        <ButtonButton accessibilityLabel="Send Register Code" color="#6bff91" txtWidth="100%" accessible={true}
                                   txtColor="white" text="Send Register Code" onPress={handleRegister}/>
                     </LRButtonDiv>
                 </Content>

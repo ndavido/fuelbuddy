@@ -200,7 +200,7 @@ const AppNavigator = () => {
                                     } else if (route.name === 'Scan') {
                                         iconName = 'camera';
                                         iconSize = 26;
-                                    } else if (route.name === 'Friends') {
+                                    } else if (route.name === 'Buddies') {
                                         iconName = 'user-friends';
                                     } else if (route.name === 'Account') {
                                         iconName = 'user-astronaut';
@@ -216,7 +216,7 @@ const AppNavigator = () => {
                             <Tab.Screen name="Dashboard" component={DashboardScreen}/>
                             <Tab.Screen name="Map" component={MapScreen}/>
                             <Tab.Screen name="Scan" component={ScanFlow}/>
-                            <Tab.Screen name="Friends" component={FriendNavigator}/>
+                            <Tab.Screen name="Buddies" component={FriendNavigator}/>
                             <Tab.Screen name="Account" component={AccountNavigator}/>
                         </Tab.Navigator>
                     ) : (
