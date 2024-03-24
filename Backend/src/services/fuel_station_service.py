@@ -10,45 +10,67 @@ from datetime import datetime
 from mongoengine.queryset.visitor import Q
 from src.utils.helper_utils import handle_api_error
 from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
+from geopy.distance import geodesic
 
 
 # ! This is the route for sending fuel stations info to Frontend
+from flask import request, jsonify
+
+# ref: https://medium.com/@rahulmallah785671/geopy-library-in-python-how-to-calculate-distance-between-two-locations-with-precision-f29e95175f28
 @require_api_key
 @jwt_required()
 def get_fuel_stations():
     try:
+        data = request.json
+
+        user_latitude = data.get('user_latitude')
+        user_longitude = data.get('user_longitude')
+        radius = data.get('radius')
+
+        if user_latitude is None or user_longitude is None or radius is None:
+            return jsonify({'error': 'Missing required parameters: user_latitude, user_longitude, and radius'}), 400
+
+        user_latitude = float(user_latitude)
+        user_longitude = float(user_longitude)
+        radius = float(radius)
+
+        user_location = (user_latitude, user_longitude)
         fuel_stations = FuelStation.objects.all()
 
         result = []
         for fuel_station in fuel_stations:
-            station_data = {
-                'id': str(fuel_station.id),
-                'name': fuel_station.name,
-                'address': fuel_station.address,
-                'location': {
-                    'latitude': fuel_station.latitude,
-                    'longitude': fuel_station.longitude
-                },
-                'prices': {
-                    'petrol_price': fuel_station.petrol_prices[-1].price if fuel_station.petrol_prices else None,
-                    'petrol_updated_at': fuel_station.petrol_prices[-1].updated_at.strftime('%Y-%m-%d %H:%M:%S') if fuel_station.petrol_prices else None,
-                    'petrol_price_verified': fuel_station.petrol_prices[-1].price_verified if fuel_station.petrol_prices else None, 
-                    'diesel_price': fuel_station.diesel_prices[-1].price if fuel_station.diesel_prices else None,
-                    'diesel_updated_at': fuel_station.diesel_prices[-1].updated_at.strftime('%Y-%m-%d %H:%M:%S') if fuel_station.diesel_prices else None,
-                    'diesel_price_verified': fuel_station.diesel_prices[-1].price_verified if fuel_station.diesel_prices else None,
-                },
-                'facilities': {
-                    'car_wash': fuel_station.facilities.car_wash,
-                    'car_repair': fuel_station.facilities.car_repair,
-                    'car_service': fuel_station.facilities.car_service,
-                    'car_parking': fuel_station.facilities.car_parking,
-                    'atm': fuel_station.facilities.atm,
-                    'convenience_store': fuel_station.facilities.convenience_store,
-                    'food': fuel_station.facilities.food,
-                    'phone_number': fuel_station.phone_number
+            station_location = (fuel_station.latitude, fuel_station.longitude)
+            distance = geodesic(user_location, station_location).kilometers
+            if distance <= radius:
+                station_data = {
+                    'id': str(fuel_station.id),
+                    'name': fuel_station.name,
+                    'address': fuel_station.address,
+                    'location': {
+                        'latitude': fuel_station.latitude,
+                        'longitude': fuel_station.longitude
+                    },
+                    'distance_from_user': distance,
+                    'prices': {
+                        'petrol_price': fuel_station.petrol_prices[-1].price if fuel_station.petrol_prices else None,
+                        'petrol_updated_at': fuel_station.petrol_prices[-1].updated_at.strftime('%Y-%m-%d %H:%M:%S') if fuel_station.petrol_prices else None,
+                        'petrol_price_verified': fuel_station.petrol_prices[-1].price_verified if fuel_station.petrol_prices else None,
+                        'diesel_price': fuel_station.diesel_prices[-1].price if fuel_station.diesel_prices else None,
+                        'diesel_updated_at': fuel_station.diesel_prices[-1].updated_at.strftime('%Y-%m-%d %H:%M:%S') if fuel_station.diesel_prices else None,
+                        'diesel_price_verified': fuel_station.diesel_prices[-1].price_verified if fuel_station.diesel_prices else None,
+                    },
+                    'facilities': {
+                        'car_wash': fuel_station.facilities.car_wash,
+                        'car_repair': fuel_station.facilities.car_repair,
+                        'car_service': fuel_station.facilities.car_service,
+                        'car_parking': fuel_station.facilities.car_parking,
+                        'atm': fuel_station.facilities.atm,
+                        'convenience_store': fuel_station.facilities.convenience_store,
+                        'food': fuel_station.facilities.food,
+                        'phone_number': fuel_station.phone_number
+                    }
                 }
-            }
-            result.append(station_data)
+                result.append(station_data)
 
         return jsonify(result)
     except (ExpiredSignatureError, InvalidTokenError) as e:
@@ -56,6 +78,7 @@ def get_fuel_stations():
         return jsonify({'error': 'JWT Token Error'}), 401
     except Exception as e:
         return handle_api_error(e)
+
 
 #! This is the route for storing fuel stations info from Frontend
 
