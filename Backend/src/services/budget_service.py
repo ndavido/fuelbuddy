@@ -6,7 +6,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from src.middleware.api_key_middleware import require_api_key
 from src.models.user import Users
-from src.models.budget import BudgetHistory, WeeklyBudgetHistory, WeeklyBudget, Deduction
+from src.models.budget import BudgetHistory, WeeklyBudgetHistory, WeeklyBudget, Deduction, WeeklyBudgetWeeks, DeductionWeeks, WeekData
 from src.utils.helper_utils import handle_api_error
 from src.utils.nn_utils import load_saved_model, make_prediction
 from mongoengine.errors import DoesNotExist, ValidationError
@@ -14,7 +14,6 @@ from datetime import datetime, timedelta
 from sklearn.preprocessing import MinMaxScaler
 import pandas as pd
 import numpy as np
-
 
 @require_api_key
 @jwt_required()
@@ -80,24 +79,61 @@ def save_weekly_data():
         if budget_history is None:
             return jsonify({"error": "No budget history found for the last week"}), 404
 
-        weekly_budgets = [{"amount": float(weekly.amount)} for weekly in budget_history.weekly_budgets]
-        deductions = [{"amount": float(d.amount)} for d in budget_history.deductions]
-
-        print(deductions, 'deductions')
-        print(weekly_budgets, 'weekly_budget')
-
-        weekly_budget_history = WeeklyBudgetHistory(
+        weekly_budget_history = WeeklyBudgetHistory.objects(
             user=user_id,
-            weekly_budgets=weekly_budgets,
-            deductions=deductions,
-            change_date=datetime.utcnow()
-        )
+            change_date__gte=start_date,
+            change_date__lte=end_date
+        ).first()
+
+        if weekly_budget_history is None:
+            weekly_budget_history = WeeklyBudgetHistory(
+                user=user_id,
+                change_date=datetime.utcnow(),
+                weekly_budgets=[],
+                deductions=[]
+            )
+
+        # Update weekly budgets
+        weekly_budgets = []
+        for weekly in budget_history.weekly_budgets:
+            week_data = WeeklyBudgetWeeks(
+                week=[
+                    {
+                        "amount": weekly.amount,
+                        "updated_at": weekly.updated_at
+                    }
+                ]
+            )
+            weekly_budgets.append(week_data)
+
+        # Update deductions
+        for deduction in budget_history.deductions:
+            deduction_week = None
+            for existing_week in weekly_budget_history.deductions:
+                if existing_week.week[0].updated_at.date() == deduction.updated_at.date():
+                    deduction_week = existing_week
+                    break
+            if deduction_week is None:
+                deduction_week = DeductionWeeks(
+                    week=[WeekData(amount=deduction.amount, updated_at=deduction.updated_at)]
+                )
+                weekly_budget_history.deductions.append(deduction_week)
+            else:
+                # Append deduction to the existing week
+                deduction_week.week.append(WeekData(
+                    amount=deduction.amount,
+                    updated_at=deduction.updated_at
+                ))
+
+        weekly_budget_history.weekly_budgets = weekly_budgets
+
         weekly_budget_history.save()
 
         return jsonify({"message": "Weekly data saved successfully"})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 @require_api_key
 @jwt_required()
 def update_user_deduction():
