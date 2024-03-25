@@ -156,7 +156,21 @@ def get_deductions():
         return jsonify({"error": "User not found"}), 404
     except Exception as e:
         return handle_api_error(e)
-    
+
+# Budget Reset
+def reset_weekly_budgets():
+    users = Users.objects()
+
+    for user in users:
+        budget_history = BudgetHistory.objects(user=user).first()
+
+        if budget_history:
+            user.weekly_budget = budget_history.initial_weekly_budget
+            user.save()
+
+    print("Weekly budgets reset successfully.")
+    schedule.every().monday.at("00:00").do(reset_weekly_budgets)
+
 @require_api_key
 @jwt_required()
 def user_suggested_budget():

@@ -37,8 +37,8 @@ const AccountImgImg = styled.Image`
   border-radius: 40px;
 `;
 
-export const AccountImg = () => (
+export const AccountImg = ({ uri }) => (
   <AccountImgContainer>
-      <AccountImgImg source={require('../assets/testAccountImg.jpg') }/>
+    <AccountImgImg source={uri ? { uri } : require('../assets/testAccountImg.jpg')} />
   </AccountImgContainer>
 );

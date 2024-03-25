@@ -58,6 +58,7 @@ const DashboardScreen = () => {
         const fetchUserInfo = async () => {
             try {
                 await collectDashboardInfo();
+                //await collectSuggestedBudget();
 
             } catch (error) {
                 console.error('Error fetching user account information:', error);
@@ -66,6 +67,30 @@ const DashboardScreen = () => {
 
         fetchUserInfo();
     }, []);
+
+    const collectSuggestedBudget = async () => {
+        try {
+            const token = await AsyncStorage.getItem('token');
+
+            const config = {
+                headers: {
+                    'X-API-Key': apiKey,
+                    'Authorization': `Bearer ${token}`,
+                },
+            };
+
+            const response = await axios.post(
+                `${url}/user_suggested_budget`,
+                {username: "ndavido"},
+                config
+            );
+
+            console.error("Suggested Weekly Budget", response.data)
+
+        } catch (error) {
+            console.error('Error fetching Suggested Weekly Budget:', error);
+        }
+    };
 
     const collectFriendActivity = async () => {
         try {
@@ -92,7 +117,7 @@ const DashboardScreen = () => {
             }
 
         } catch (error) {
-            console.error('Error fetching friends:', error);
+            console.error('Error fetching friends activity:', error);
         }
     };
 
@@ -101,6 +126,7 @@ const DashboardScreen = () => {
 
         await collectUserInfo();
         await collectFriendActivity();
+        //await collectSuggestedBudget();
 
         setRefreshing(false);
     };
@@ -341,7 +367,7 @@ const DashboardScreen = () => {
                                     flex: 1,
                                     justifyContent: 'center',
                                     alignItems: 'center',
-                                    left: -20,
+                                    left: -15,
                                     marginTop: 5
                                 }}
                                       onLayout={({nativeEvent}) => setChartParentWidth(nativeEvent.layout.width)}>
@@ -349,20 +375,20 @@ const DashboardScreen = () => {
                                         opacity: 0.5,
                                         position: "absolute",
                                         top: 10,
-                                        left: 20
+                                        left: 15
                                     }}>€{cumulativeValue}</H3>
                                     <LineChart
                                         data={lineData}
                                         adjustToWidth={true}
                                         thickness={5}
                                         hideRules
-                                        disableScroll={true}
+                                        disableScroll={false}
                                         endSpacing={0}
                                         hideYAxisText
                                         xAxisColor={"transparent"}
                                         yAxisColor={"transparent"}
                                         xAxisLabelTexts={labels}
-                                        xAxisLabelTextStyle={{fontSize: 7, opacity: 0.5, left: -4, bottom: -5}}
+                                        xAxisLabelTextStyle={{fontSize: 7, opacity: 0.5, left: -5, bottom: -5}}
                                         height={100}
                                         isAnimated={true}
                                         width={chartParentWidth}
@@ -411,7 +437,7 @@ const DashboardScreen = () => {
                                         xAxisColor={"transparent"}
                                         yAxisColor={"transparent"}
                                         xAxisLabelTexts={barLabels}
-                                        xAxisLabelTextStyle={{fontSize: 7, opacity: 0.5, left: -4, bottom: -5}}
+                                        xAxisLabelTextStyle={{fontSize: 7, opacity: 0.5, left: -3, bottom: -5}}
                                         height={100}
                                         width={chartParentWidth}
                                         hideDataPoints={true}
@@ -425,9 +451,10 @@ const DashboardScreen = () => {
                             <ButtonContainer style={{position: 'absolute', marginTop: 10, marginLeft: 10}}>
                                 <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
                                     {userData.weekly_budget ? (
-                                        <ButtonButton icon='minus' color='#6BFF91' text='Deduct' onPress={handleAddDeductionPress}/>
+                                        <ButtonButton icon='minus' color='#6BFF91' text='Deduct' accessibilityLabel="Add Deduction Button" accessible={true}
+                                                      onPress={handleAddDeductionPress}/>
                                     ) : (
-                                        <ButtonButton icon='plus' text='Add' onPress={handleUpdateButtonPress}/>
+                                        <ButtonButton icon='plus' text='Add' accessibilityLabel="Add Budget Button" accessible={true} onPress={handleUpdateButtonPress}/>
                                     )}
                                 </View>
                             </ButtonContainer>
@@ -469,8 +496,9 @@ const DashboardScreen = () => {
                                             activityDate.getFullYear() === today.getFullYear();
                                         return (
                                             <CardMini key={index} style={{paddingBottom: 10}}>
-                                                <H6>New Deduction</H6>
-                                                <H6 width="100%" tmargin="10px" lmargin="10px" position="absolute" style={{textAlign: "right"}}>€{deduction.amount}</H6>
+                                                <H6 style={{paddingTop: 5}}>Deduction</H6>
+                                                <H6 width="100%" tmargin="15px" lmargin="10px" position="absolute"
+                                                    style={{textAlign: "right"}}>€{deduction.amount}</H6>
                                                 <H7 style={{opacity: 0.3, paddingBottom: 5}}>
                                                     {isToday ? 'Today · ' + activityDate.toLocaleTimeString() : activityDate.toLocaleString()}
                                                 </H7>
@@ -483,32 +511,6 @@ const DashboardScreen = () => {
                             </View>
                         </Card>
                         <Card>
-                            <H8 style={{opacity: 0.5}}>Friends</H8>
-                            <H5>Recent Activity</H5>
-                            <View style={{marginBottom: 10}}>
-                            {friendActivity.length > 0 ? (
-                                friendActivity.slice(0, 4).map((activity, index) => {
-                                    const activityDate = new Date(activity.timestamp);
-                                    const today = new Date();
-                                    const isToday = activityDate.getDate() === today.getDate() &&
-                                        activityDate.getMonth() === today.getMonth() &&
-                                        activityDate.getFullYear() === today.getFullYear();
-                                    return (
-                                        <CardMini key={index} style={{paddingBottom: 10}}>
-                                            <H6>@{activity.username}</H6>
-                                            <H7 style={{opacity: 0.5}}>{activity.activity}</H7>
-                                            <H7 style={{opacity: 0.3, paddingBottom: 5}}>
-                                                {isToday ? 'Today · ' + activityDate.toLocaleTimeString() : activityDate.toLocaleString()}
-                                            </H7>
-                                        </CardMini>
-                                    );
-                                })
-                            ) : (
-                                <H6 style={{paddingTop: 10, paddingBottom: 10}}>No friend activity yet!</H6>
-                            )}
-                            </View>
-                        </Card>
-                        <Card>
                             <H8 style={{opacity: 0.5}}>Vehicle</H8>
                             <H5>My Car</H5>
                             <View style={{
@@ -516,13 +518,39 @@ const DashboardScreen = () => {
                                 justifyContent: 'center',
                                 alignItems: 'center',
                                 zIndex: 0,
-                                top: -20,
+                                top: -10,
                             }}>
-                                <Image source={require('../assets/car.png')} style={{height: 200, width: 250}}/>
+                                <Image source={require('../assets/car.png')} style={{height: 150, width: 200}}/>
                             </View>
                             <View style={{top: -10}}>
                                 <H5>Volkswagen Polo</H5>
                                 <H6 style={{opacity: 0.5}}>18Km/l Average</H6>
+                            </View>
+                        </Card>
+                        <Card>
+                            <H8 style={{opacity: 0.5}}>Friends</H8>
+                            <H5>Recent Activity</H5>
+                            <View style={{marginBottom: 10}}>
+                                {friendActivity.length > 0 ? (
+                                    friendActivity.slice(0, 4).map((activity, index) => {
+                                        const activityDate = new Date(activity.timestamp);
+                                        const today = new Date();
+                                        const isToday = activityDate.getDate() === today.getDate() &&
+                                            activityDate.getMonth() === today.getMonth() &&
+                                            activityDate.getFullYear() === today.getFullYear();
+                                        return (
+                                            <CardMini key={index} style={{paddingBottom: 10}}>
+                                                <H6 style={{paddingTop: 5}}>@{activity.username}</H6>
+                                                <H7 style={{opacity: 0.5}}>{activity.activity}</H7>
+                                                <H7 style={{opacity: 0.3, paddingBottom: 5}}>
+                                                    {isToday ? 'Today · ' + activityDate.toLocaleTimeString() : activityDate.toLocaleString()}
+                                                </H7>
+                                            </CardMini>
+                                        );
+                                    })
+                                ) : (
+                                    <H6 style={{paddingTop: 10, paddingBottom: 10}}>No friend activity yet!</H6>
+                                )}
                             </View>
                         </Card>
                     </CardOverlap>
@@ -538,7 +566,7 @@ const DashboardScreen = () => {
                             <H5 tmargin="10px" bmargin="30px" style={{textAlign: 'center'}}>Add Budget</H5>
                             <ButtonContainer style={{position: 'absolute', marginTop: 20, marginLeft: 20}}>
                                 <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
-                                    <ButtonButton icon="cross" color="#eaedea" iconColor="#b8bec2"
+                                    <ButtonButton icon="cross" color="#eaedea" iconColor="#b8bec2" accessible={true} accessibilityLabel="Close Budget Model"
                                                   onPress={handleModalCancel}/>
                                 </View>
                             </ButtonContainer>
@@ -547,10 +575,11 @@ const DashboardScreen = () => {
                                 onChangeText={(text) => setNewWeeklyBudgetInput(text)}
                                 keyboardType="numeric"
                                 placeholder="Enter amount"
+                                accessibilityLabel="Add Budget Text"
                             />
                             <ButtonContainer style={{width: "auto", position: "relative"}}>
-                                <ButtonButton icon="plus" color="#6BFF91" text="Add Budget"
-                                              onPress={handleModalSubmit}/>
+                                <ButtonButton icon="plus" color="#6BFF91" text="Add Budget" accessibilityLabel="Add Budget Button 2" accessible={true}
+                                              onPress={handleModalSubmit} />
                             </ButtonContainer>
                         </ModalContent>
                     </View>
@@ -566,7 +595,7 @@ const DashboardScreen = () => {
                             <H5 tmargin="10px" bmargin="30px" style={{textAlign: 'center'}}>Add Deduction</H5>
                             <ButtonContainer style={{position: 'absolute', marginTop: 20, marginLeft: 20}}>
                                 <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
-                                    <ButtonButton icon="cross" color="#eaedea" iconColor="#b8bec2"
+                                    <ButtonButton icon="cross" color="#eaedea" iconColor="#b8bec2" accessible={true} accessibilityLabel="Close Deduction Model"
                                                   onPress={handleDeductionModalCancel}/>
                                 </View>
                             </ButtonContainer>
@@ -575,9 +604,10 @@ const DashboardScreen = () => {
                                 onChangeText={(text) => setNewDeductionInput(text)}
                                 keyboardType="numeric"
                                 placeholder="Enter deduction amount"
+                                accessibilityLabel="Add Deduction Text"
                             />
                             <ButtonContainer style={{width: "auto", position: "relative"}}>
-                                <ButtonButton icon="plus" color="#6BFF91" text="Add Deduction"
+                                <ButtonButton icon="plus" color="#6BFF91" text="Deduct" accessibilityLabel="Add Deduction Button 2" accessible={true}
                                               onPress={handleDeductionModalSubmit}/>
                             </ButtonContainer>
                         </ModalContent>
