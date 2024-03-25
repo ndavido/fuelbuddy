@@ -27,11 +27,17 @@ import ScanScreen from './Screens/ScanScreen';
 import FriendsScreen from './Screens/FriendsScreen';
 import AccountScreen from './Screens/AccountScreen';
 
+/* OCR */
+import BudgetReceipt from './Screens/ReceiptBudgetScreen'
+import StationReceipt from './Screens/ReceiptStationScreen'
+import ConfirmReceipt from './Screens/ReceiptConfirmScreen'
+
 /* Secondary Screens */
 import PersonalInfoScreen from './Screens/PersonalInfoScreen';
 import DeleteConfirmScreen from './Screens/DeleteConfirmScreen';
 import VehicleScreen from './Screens/VehicleScreen';
 import DeveloperScreen from './Screens/DeveloperScreen';
+import FProfileScreen from "./Screens/FriendsProfileScreen";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -87,11 +93,30 @@ const AccountNavigator = () => {
             <Stack.Screen name="PersonalInfo" component={PersonalInfoScreen}/>
             <Stack.Screen name="DeleteConfirm" component={DeleteConfirmScreen}/>
             <Stack.Screen name="Vehicle" component={VehicleScreen}/>
-            {/*<Stack.Screen name="Friends" component={FriendsScreen}/>*/}
             <Stack.Screen name="Developer" component={DeveloperScreen}/>
         </Stack.Navigator>
     );
 };
+
+const FriendNavigator = () => {
+    return (
+        <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName="Friends">
+            <Stack.Screen name="Friends" component={FriendsScreen}/>
+            <Stack.Screen name="FriendsProfile" component={FProfileScreen}/>
+        </Stack.Navigator>
+    );
+}
+
+const ScanFlow = () => {
+    return (
+        <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName="OCR">
+            <Stack.Screen name="OCR" component={ScanScreen}/>
+            <Stack.Screen name="BudgetReceipt" component={BudgetReceipt}/>
+            <Stack.Screen name="StationReceipt" component={StationReceipt}/>
+            <Stack.Screen name="ConfirmReceipt" component={ConfirmReceipt}/>
+        </Stack.Navigator>
+    )
+}
 
 function LoadingScreen({isVisible}) {
     const [progress, setProgress] = useState(0);
@@ -172,8 +197,9 @@ const AppNavigator = () => {
                                         iconName = 'chart-bar';
                                     } else if (route.name === 'Map') {
                                         iconName = 'map-marked-alt';
-                                    } else if (route.name === 'OCR') {
+                                    } else if (route.name === 'Scan') {
                                         iconName = 'camera';
+                                        iconSize = 26;
                                     } else if (route.name === 'Friends') {
                                         iconName = 'user-friends';
                                     } else if (route.name === 'Account') {
@@ -189,8 +215,8 @@ const AppNavigator = () => {
                         >
                             <Tab.Screen name="Dashboard" component={DashboardScreen}/>
                             <Tab.Screen name="Map" component={MapScreen}/>
-                            <Tab.Screen name="OCR" component={ScanScreen}/>
-                            <Tab.Screen name="Friends" component={FriendsScreen}/>
+                            <Tab.Screen name="Scan" component={ScanFlow}/>
+                            <Tab.Screen name="Friends" component={FriendNavigator}/>
                             <Tab.Screen name="Account" component={AccountNavigator}/>
                         </Tab.Navigator>
                     ) : (

@@ -180,7 +180,7 @@ export const DashboardContainer = styled.View`
   display: inline-block;
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
-  padding-bottom: 80px;
+  padding-bottom: 100px;
 `;
 
 export const CardOverlap = styled.View`
@@ -237,7 +237,7 @@ export const AddFriendButton = styled.Text`
 /* Account Screen */
 export const TopInfo = styled.View`
   position: relative;
-  height: 220px;
+  height: 200px;
   top: 10px;
   width: 100%;
 `;
@@ -245,7 +245,7 @@ export const TopInfo = styled.View`
 export const TopDesign = styled.View`
   position: absolute;
   background-color: #F7F7F7;
-  height: 150px;
+  height: 130px;
   bottom: 0px;
   width: 100%;
   border-top-left-radius: 20px;

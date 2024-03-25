@@ -3,7 +3,7 @@
 from flask import request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from mongoengine.errors import DoesNotExist
-from src.models import FuelStation, Location, PetrolPrices, DieselPrices, FuelPrices, Users, FavoriteFuelStation
+from src.models import FuelStation, Location, PetrolPrices, DieselPrices, FuelPrices, Users, FavoriteFuelStation, UserActivity
 from src.models import ChargingStation, EVPrices
 from src.middleware.api_key_middleware import require_api_key
 from datetime import datetime
@@ -28,14 +28,13 @@ def get_fuel_stations():
                     'latitude': fuel_station.latitude,
                     'longitude': fuel_station.longitude
                 },
-                # handle null values and have -1 to ensure to get the latest price (may change this after frontend is done)
                 'prices': {
-                    # Adjust if needed for price type
                     'petrol_price': fuel_station.petrol_prices[-1].price if fuel_station.petrol_prices else None,
                     'petrol_updated_at': fuel_station.petrol_prices[-1].updated_at.strftime('%Y-%m-%d %H:%M:%S') if fuel_station.petrol_prices else None,
-                    # Adjust if needed for price type
+                    'petrol_price_verified': fuel_station.petrol_prices[-1].price_verified if fuel_station.petrol_prices else None,
                     'diesel_price': fuel_station.diesel_prices[-1].price if fuel_station.diesel_prices else None,
-                    'diesel_updated_at': fuel_station.diesel_prices[-1].updated_at.strftime('%Y-%m-%d %H:%M:%S') if fuel_station.diesel_prices else None
+                    'diesel_updated_at': fuel_station.diesel_prices[-1].updated_at.strftime('%Y-%m-%d %H:%M:%S') if fuel_station.diesel_prices else None,
+                    'diesel_price_verified': fuel_station.diesel_prices[-1].price_verified if fuel_station.diesel_prices else None,
                 },
                 'facilities': {
                     'car_wash': fuel_station.facilities.car_wash,
@@ -160,13 +159,23 @@ def favorite_fuel_station():
 
             if not favorite_doc:
                 favorite_doc = FavoriteFuelStation(
-                    user=user, favorite_stations=[station])
+                    user=user, favorite_stations=[station], updated_at=datetime.utcnow())  # ! added updated_at field
                 favorite_doc.save()
+
+                # ? Marked as favorite station activity
+                UserActivity(user=user, activity_type="favorite_station",
+                             details=f"{user.username} marked {station.name} as a favorite.", station=station).save()
+
                 return jsonify({"message": f"Fuel station '{station.name}' has been added to favorites. user: '{user_id}'"}), 200
 
             elif station in favorite_doc.favorite_stations:
                 favorite_doc.favorite_stations.remove(station)
                 favorite_doc.save()
+
+                # ? UnMarked as favorite station activity
+                UserActivity(user=user, activity_type="favorite_station",
+                             details=f"{user.username} unmarked {station.name} as a favorite.", station=station).save()
+
                 return jsonify({"message": f"Fuel station '{station.name}' has been removed from favorites. user: '{user_id}'"}), 200
 
             else:
@@ -187,7 +196,10 @@ def favorite_fuel_station():
 @jwt_required()
 def store_fuel_prices():
     try:
+        user = Users.objects(id=get_jwt_identity()).first()
         data = request.get_json()
+        print('user', user.username, user.roles, user.id, user.email)
+        print('data', data)
         fuel_prices_data = data.get('fuelPrices', [])
 
         for price_data in fuel_prices_data:
@@ -206,22 +218,30 @@ def store_fuel_prices():
             petrol_price = price_data.get('petrol_price')
             diesel_price = price_data.get('diesel_price')
 
+            price_verified = False
+
+            if set(user.roles) & {'admin', 'Developer', 'Station_Owner'}:
+                price_verified = True
+
             fuel_station.petrol_prices.append(PetrolPrices(
-                price=petrol_price, updated_at=datetime.utcnow()))
+                price=petrol_price, price_verified=price_verified, updated_at=datetime.utcnow()))
             fuel_station.diesel_prices.append(DieselPrices(
-                price=diesel_price, updated_at=datetime.utcnow()))
+                price=diesel_price, price_verified=price_verified, updated_at=datetime.utcnow()))
             fuel_station.save()
 
             new_price = FuelPrices(
                 station=fuel_station,
                 petrol_prices=[PetrolPrices(
-                    price=petrol_price, updated_at=datetime.utcnow())],
+                    price=petrol_price, price_verified=price_verified, updated_at=datetime.utcnow())],
                 diesel_prices=[DieselPrices(
-                    price=diesel_price, updated_at=datetime.utcnow())],
+                    price=diesel_price, price_verified=price_verified, updated_at=datetime.utcnow())],
                 updated_at=datetime.utcnow()
             )
             print('new_price', new_price)
             new_price.save()
+
+            UserActivity(user=user, activity_type="fuel_price_update",
+                         details=f"{user.username} updated fuel price at {fuel_station.name}", station=fuel_station).save()
 
         return jsonify({"message": "Fuel prices stored successfully"})
     except DoesNotExist:
