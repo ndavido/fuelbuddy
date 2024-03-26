@@ -23,18 +23,18 @@ export const Logo = () => (
 );
 
 const AccountImgContainer = styled.View`
-  height: 80px;
+  height: 100px;
   width: 100%;
   position: relative;
 `;
 
 const AccountImgImg = styled.Image`
   flex: 1;
-  width: 80px;
-  height: 80px;
+  width: 100px;
+  height: 100px;
   margin: auto;
   background-color: #6BFF91;
-  border-radius: 40px;
+  border-radius: 50px;
 `;
 
 export const AccountImg = ({ uri }) => (

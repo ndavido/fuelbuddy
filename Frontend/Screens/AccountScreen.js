@@ -158,9 +158,9 @@ const AccountScreen = () => {
         }
     };
 
-    const handleFriends = async () => {
+    const handleUsersStation = async () => {
         try {
-            navigate.navigate('Friends');
+            navigate.navigate('UserStation');
 
         } catch (error) {
             console.error('Error Loading Friends:', error);
@@ -192,15 +192,15 @@ const AccountScreen = () => {
                     </Modal>
                 )}
                 <TopInfo>
-                    <View style={{zIndex: 1000, top: 30}}>
+                    <View style={{zIndex: 1000, top: 20}}>
                         {userData.profile_picture ? (
-                            <TouchableOpacity onPress={pickImage}>
-                                <AccountImg uri={`data:image/png;base64,${userData.profile_picture}`}/>
-                            </TouchableOpacity>
-                        ) : <AccountImg/>}
+                            <AccountImg uri={`data:image/png;base64,${userData.profile_picture}`}/>
+                        ) : (
+                            <AccountImg/>
+                        )}
                         <H4 tmargin="10px" style={{textAlign: 'center'}}>{userData.first_name}</H4>
                         <H6 weight="400"
-                            style={{textAlign: 'center'}}>@{userData.username} {userData.roles && userData.roles.includes("Developer") &&
+                            style={{textAlign: 'center', opacity: 0.5}}>@{userData.username} {userData.roles && userData.roles.includes("Developer") &&
                             <DeveloperTick>🧑‍💻</DeveloperTick>}</H6>
                     </View>
                     <TopDesign>
@@ -209,18 +209,16 @@ const AccountScreen = () => {
                 </TopInfo>
                 <AccountContainer>
                     <ButtonButton pos="top" series="fa5" iconColor="#b8bec2" icon="user-astronaut" color="#FFFFFF"
-                                  txtColor="black" txtMargin="15px" text="my Info" onPress={handleInfo}/>
+                                  txtColor="black" txtMargin="15px" text="my Account" onPress={handleInfo}/>
                     <ButtonButton pos="bottom" series="fa5" iconColor="#b8bec2" icon="car" color="#FFFFFF"
                                   txtColor="black" txtMargin="15px" text="my Vehicle" onPress={handleVehicle}/>
                     <ButtonButton pos="top" series="mci" iconColor="#b8bec2" icon="gas-station" color="#FFFFFF"
-                                  txtColor="black" txtMargin="15px" text="my Stations (NA)"/>
-                    <ButtonButton pos="middle" series="mci" iconColor="#b8bec2" icon="routes" color="#FFFFFF"
+                                  txtColor="black" txtMargin="15px" text="my Stations" onPress={handleUsersStation}/>
+                    <ButtonButton pos="bottom" series="mci" iconColor="#b8bec2" icon="routes" color="#FFFFFF"
                                   txtColor="black" txtMargin="15px" text="my Routes (NA)"/>
-                    <ButtonButton pos="bottom" series="fa5" iconColor="#b8bec2" icon="user-friends" color="#FFFFFF"
-                                  txtColor="black" txtMargin="15px" text="my Friends" onPress={handleFriends}/>
-                    <ButtonButton pos="single" series="fa" iconColor="#b8bec2" icon="support" color="#FFFFFF"
+                    <ButtonButton pos="top" series="fa" iconColor="#b8bec2" icon="support" color="#FFFFFF"
                                   txtColor="black" txtMargin="15px" text="Support (NA)"/>
-                    <ButtonButton pos="single" series="mci" iconColor="#b8bec2" icon="police-badge" color="#FFFFFF"
+                    <ButtonButton pos="bottom" series="mci" iconColor="#b8bec2" icon="police-badge" color="#FFFFFF"
                                   txtColor="black" txtMargin="15px" text="Privacy Policy (NA)"/>
 
                     {/*Display the Developer button only if the user is a developer*/}
@@ -247,7 +245,8 @@ const AccountScreen = () => {
                         <H3 tmargin='20px' bmargin='20px'>Confirm Profile Picture</H3>
                         <ButtonContainer style={{position: 'absolute', marginTop: 20, marginLeft: 20}}>
                             <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
-                                <ButtonButton icon="check" color="#6BFF91" iconColor="#FFFFFF" text="Confirm" accessible={true}
+                                <ButtonButton icon="check" color="#6BFF91" iconColor="#FFFFFF" text="Confirm"
+                                              accessible={true}
                                               accessibilityLabel="Confirm PP Button"
                                               onPress={uploadProfilePicture} disabled={!imageUri}/>
                             </View>

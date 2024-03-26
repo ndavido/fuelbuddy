@@ -24,7 +24,6 @@ import SetPreferencesScreen from "./Screens/SetPreferencesScreen";
 import DashboardScreen from './Screens/DashboardScreen';
 import MapScreen from './Screens/MapScreen';
 import ScanScreen from './Screens/ScanScreen';
-import FriendsScreen from './Screens/FriendsScreen';
 import AccountScreen from './Screens/AccountScreen';
 
 /* OCR */
@@ -32,12 +31,16 @@ import BudgetReceipt from './Screens/ReceiptBudgetScreen'
 import StationReceipt from './Screens/ReceiptStationScreen'
 import ConfirmReceipt from './Screens/ReceiptConfirmScreen'
 
+/* Friends */
+import FriendsScreen from './Screens/FriendsScreen';
+import FProfileScreen from "./Screens/FriendsProfileScreen";
+
 /* Secondary Screens */
 import PersonalInfoScreen from './Screens/PersonalInfoScreen';
 import DeleteConfirmScreen from './Screens/DeleteConfirmScreen';
 import VehicleScreen from './Screens/VehicleScreen';
 import DeveloperScreen from './Screens/DeveloperScreen';
-import FProfileScreen from "./Screens/FriendsProfileScreen";
+import UserStationScreen from "./Screens/UserStationScreen";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -94,6 +97,7 @@ const AccountNavigator = () => {
             <Stack.Screen name="DeleteConfirm" component={DeleteConfirmScreen}/>
             <Stack.Screen name="Vehicle" component={VehicleScreen}/>
             <Stack.Screen name="Developer" component={DeveloperScreen}/>
+            <Stack.Screen name="UserStation" component={UserStationScreen}/>
         </Stack.Navigator>
     );
 };
