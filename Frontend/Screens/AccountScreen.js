@@ -194,10 +194,12 @@ const AccountScreen = () => {
                 <TopInfo>
                     <View style={{zIndex: 1000, top: 20}}>
                         {userData.profile_picture ? (
-                            <AccountImg uri={`data:image/png;base64,${userData.profile_picture}`}/>
-                        ) : (
-                            <AccountImg/>
-                        )}
+                                <TouchableOpacity onPress={pickImage}>
+                                    <AccountImg uri={`data:image/png;base64,${userData.profile_picture}`}/>
+                                </TouchableOpacity>
+                            ) : <TouchableOpacity onPress={pickImage}>
+                                <AccountImg/>
+                            </TouchableOpacity>}
                         <H4 tmargin="10px" style={{textAlign: 'center'}}>{userData.first_name}</H4>
                         <H6 weight="400"
                             style={{textAlign: 'center', opacity: 0.5}}>@{userData.username} {userData.roles && userData.roles.includes("Developer") &&
