@@ -39,6 +39,6 @@ const AccountImgImg = styled.Image`
 
 export const AccountImg = ({ uri }) => (
   <AccountImgContainer>
-    <AccountImgImg source={uri ? { uri } : require('../assets/testAccountImg.jpg')} />
+    <AccountImgImg source={uri ? { uri } : require('../assets/defaultAcount.jpg')} />
   </AccountImgContainer>
 );
