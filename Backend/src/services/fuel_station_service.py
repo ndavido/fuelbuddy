@@ -21,8 +21,42 @@ from flask import request, jsonify
 @jwt_required()
 def get_fuel_stations():
     try:
-        data = request.json
+        if request.content_type != 'application/json':
+            fuel_stations = FuelStation.objects.all()
+            result = []
+            for fuel_station in fuel_stations:
+                station_data = {
+                    'id': str(fuel_station.id),
+                    'name': fuel_station.name,
+                    'address': fuel_station.address,
+                    'location': {
+                        'latitude': fuel_station.latitude,
+                        'longitude': fuel_station.longitude
+                    },
+                    'prices': {
+                        'petrol_price': fuel_station.petrol_prices[-1].price if fuel_station.petrol_prices else None,
+                        'petrol_updated_at': fuel_station.petrol_prices[-1].updated_at.strftime('%Y-%m-%d %H:%M:%S') if fuel_station.petrol_prices else None,
+                        'petrol_price_verified': fuel_station.petrol_prices[-1].price_verified if fuel_station.petrol_prices else None,
+                        'diesel_price': fuel_station.diesel_prices[-1].price if fuel_station.diesel_prices else None,
+                        'diesel_updated_at': fuel_station.diesel_prices[-1].updated_at.strftime('%Y-%m-%d %H:%M:%S') if fuel_station.diesel_prices else None,
+                        'diesel_price_verified': fuel_station.diesel_prices[-1].price_verified if fuel_station.diesel_prices else None,
+                    },
+                    'facilities': {
+                        'car_wash': fuel_station.facilities.car_wash,
+                        'car_repair': fuel_station.facilities.car_repair,
+                        'car_service': fuel_station.facilities.car_service,
+                        'car_parking': fuel_station.facilities.car_parking,
+                        'atm': fuel_station.facilities.atm,
+                        'convenience_store': fuel_station.facilities.convenience_store,
+                        'food': fuel_station.facilities.food,
+                        'phone_number': fuel_station.phone_number
+                    }
+                }
+                result.append(station_data)
 
+            return jsonify(result)
+
+        data = request.json
         user_latitude = data.get('user_latitude')
         user_longitude = data.get('user_longitude')
         radius = data.get('radius')
@@ -78,6 +112,8 @@ def get_fuel_stations():
         return jsonify({'error': 'JWT Token Error'}), 401
     except Exception as e:
         return handle_api_error(e)
+
+
 
 
 #! This is the route for storing fuel stations info from Frontend
