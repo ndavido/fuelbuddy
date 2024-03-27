@@ -41,7 +41,7 @@ const ReceiptStationScreen = () => {
 
     const handleSave = async () => {
         try {
-
+            navigation.navigate('ConfirmReceipt');
         } catch (error) {
             console.error('Error updating account:', error);
             setMessage("Error updating account");

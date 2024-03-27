@@ -12,7 +12,7 @@ import {
     WrapperScroll,
     DashboardContainer,
     TitleContainer,
-    CardOverlap, CardContainer, ButtonContainer, Card, ModalContent, InputTxt
+    CardOverlap, CardContainer, ButtonContainer, Card, ModalContent, InputTxt, CardMini
 } from '../styles/styles.js';
 import MainLogo from '../styles/mainLogo';
 import {H2, H3, H4, H5, H6, H7, H8} from "../styles/text";
@@ -43,6 +43,7 @@ const DashboardScreen = () => {
     const [pieData, setPieData] = useState([]);
 
     const [newDeductionInput, setNewDeductionInput] = useState('');
+    const [userDeductions, setUserDeductions] = useState([]);
 
     const [cumulativeValue, setCumulativeValue] = useState(0);
 
@@ -57,7 +58,6 @@ const DashboardScreen = () => {
         const fetchUserInfo = async () => {
             try {
                 await collectDashboardInfo();
-                await collectFriendActivity();
 
             } catch (error) {
                 console.error('Error fetching user account information:', error);
@@ -130,6 +130,7 @@ const DashboardScreen = () => {
 
     const collectDashboardInfo = async () => {
         try {
+            collectFriendActivity();
             const weeklyBudget = typeof userData.weekly_budget === 'number' ? userData.weekly_budget : 0;
             setWeeklyBudget(weeklyBudget);
             console.log('Weekly budget:', weeklyBudget);
@@ -147,6 +148,7 @@ const DashboardScreen = () => {
                     },
                 });
                 deductions = deductionsResponse.data.deductions || [];
+                setUserDeductions(deductions);
             } catch (error) {
                 if (error.response && error.response.status === 404) {
                     console.log("No deductions found for this user");
@@ -423,9 +425,9 @@ const DashboardScreen = () => {
                             <ButtonContainer style={{position: 'absolute', marginTop: 10, marginLeft: 10}}>
                                 <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
                                     {userData.weekly_budget ? (
-                                        <ButtonButton icon='plus' color='#6BFF91' onPress={handleAddDeductionPress}/>
+                                        <ButtonButton icon='minus' color='#6BFF91' text='Deduct' onPress={handleAddDeductionPress}/>
                                     ) : (
-                                        <ButtonButton icon='plus' text='add' onPress={handleUpdateButtonPress}/>
+                                        <ButtonButton icon='plus' text='Add' onPress={handleUpdateButtonPress}/>
                                     )}
                                 </View>
                             </ButtonContainer>
@@ -433,7 +435,7 @@ const DashboardScreen = () => {
                                 flex: 1,
                                 justifyContent: 'center',
                                 alignItems: 'center',
-                                top: -10,
+                                top: 10,
                                 zIndex: 0
                             }}
                                   onLayout={({nativeEvent}) => setBarParentWidth(nativeEvent.layout.width)}>
@@ -456,27 +458,55 @@ const DashboardScreen = () => {
                                     }}
                                 />
                             </View>
-                            <View>
+                            <View style={{marginBottom: 10, marginTop: 20}}>
                                 <H6>This Week</H6>
+                                {userDeductions.length > 0 ? (
+                                    [...userDeductions].reverse().slice(0, 2).map((deduction, index) => {
+                                        const activityDate = new Date(deduction.updated_at);
+                                        const today = new Date();
+                                        const isToday = activityDate.getDate() === today.getDate() &&
+                                            activityDate.getMonth() === today.getMonth() &&
+                                            activityDate.getFullYear() === today.getFullYear();
+                                        return (
+                                            <CardMini key={index} style={{paddingBottom: 10}}>
+                                                <H6>New Deduction</H6>
+                                                <H6 width="100%" tmargin="10px" lmargin="10px" position="absolute" style={{textAlign: "right"}}>€{deduction.amount}</H6>
+                                                <H7 style={{opacity: 0.3, paddingBottom: 5}}>
+                                                    {isToday ? 'Today · ' + activityDate.toLocaleTimeString() : activityDate.toLocaleString()}
+                                                </H7>
+                                            </CardMini>
+                                        );
+                                    })
+                                ) : (
+                                    <H6 style={{paddingTop: 10, paddingBottom: 10}}>No Budget activity yet!</H6>
+                                )}
                             </View>
                         </Card>
                         <Card>
                             <H8 style={{opacity: 0.5}}>Friends</H8>
                             <H5>Recent Activity</H5>
+                            <View style={{marginBottom: 10}}>
                             {friendActivity.length > 0 ? (
-                                friendActivity.map((activity, index) => (
-                                    <View key={index} style={{paddingBottom: 10}}>
-                                        <H6>{activity.username}</H6>
-                                        <H7 style={{opacity: 0.5}}>{activity.activity}</H7>
-                                        <H7 style={{opacity: 0.3}}>
-                                            {new Date(activity.timestamp).toLocaleString()}
-                                        </H7>
-                                    </View>
-                                ))
+                                friendActivity.slice(0, 4).map((activity, index) => {
+                                    const activityDate = new Date(activity.timestamp);
+                                    const today = new Date();
+                                    const isToday = activityDate.getDate() === today.getDate() &&
+                                        activityDate.getMonth() === today.getMonth() &&
+                                        activityDate.getFullYear() === today.getFullYear();
+                                    return (
+                                        <CardMini key={index} style={{paddingBottom: 10}}>
+                                            <H6>@{activity.username}</H6>
+                                            <H7 style={{opacity: 0.5}}>{activity.activity}</H7>
+                                            <H7 style={{opacity: 0.3, paddingBottom: 5}}>
+                                                {isToday ? 'Today · ' + activityDate.toLocaleTimeString() : activityDate.toLocaleString()}
+                                            </H7>
+                                        </CardMini>
+                                    );
+                                })
                             ) : (
                                 <H6 style={{paddingTop: 10, paddingBottom: 10}}>No friend activity yet!</H6>
                             )}
-
+                            </View>
                         </Card>
                         <Card>
                             <H8 style={{opacity: 0.5}}>Vehicle</H8>

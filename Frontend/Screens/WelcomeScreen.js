@@ -25,7 +25,7 @@ const WelcomeScreen = () => {
                         <H5 weight="400" width="100%" style={{opacity: 0.5, textAlign: 'center'}}>The Friend Your Tank Deserves.</H5>
                     </Txt>
                     <ButtonDiv>
-                        <ButtonButton accessibilityLabel="Welcome Button" color="#6bff91" txtWidth="100%"
+                        <ButtonButton accessibilityLabel="Welcome Button" color="#6bff91" txtWidth="100%" accessible={true}
                                   txtColor="white" text="Get Started" onPress={() => navigation.navigate('Register')}/>
                     </ButtonDiv>
                 </Content>

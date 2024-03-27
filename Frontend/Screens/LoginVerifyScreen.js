@@ -134,9 +134,9 @@ const LoginVerifyScreen = ({route}) => {
                         />
                     </Container>
                     <LRButtonDiv>
-                        <ButtonButton accessibilityLabel="Verify Code Button" color="#6bff91" txtWidth="100%"
+                        <ButtonButton accessibilityLabel="Verify Code Button" color="#6bff91" txtWidth="100%" accessible={true}
                                   txtColor="white" text="Verify" onPress={handleVerify}/>
-                        <ButtonButton accessibilityLabel="Resend Code Button" color="transparent" txtWidth="100%"
+                        <ButtonButton accessibilityLabel="Resend Code Button" color="transparent" txtWidth="100%" accessible={true}
                                   txtColor="black" text="Resend Code" onPress={handleResendCode}/>
                     </LRButtonDiv>
                 </Content>
