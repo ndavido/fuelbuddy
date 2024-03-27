@@ -298,12 +298,8 @@ def friend_activity_dashboard():
     try:
         user_id = get_jwt_identity()
 
-        print(user_id)
-
         friends = Friends.objects(
             Q(user1=ObjectId(user_id)) | Q(user2=ObjectId(user_id))).all()
-
-        print(friends)
 
         friend_ids = set()
         for friend in friends:
@@ -314,8 +310,6 @@ def friend_activity_dashboard():
 
         activities = UserActivity.objects(
             user__in=[ObjectId(friend_id) for friend_id in friend_ids]).order_by('-timestamp')
-
-        print(activities)
 
         activity_list = [{
             'username': activity.user.username,

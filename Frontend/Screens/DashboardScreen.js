@@ -110,8 +110,6 @@ const DashboardScreen = () => {
                 config
             );
 
-            console.log("Friend Activity", response.data.activities)
-
             if (response.data && response.data.activities) {
                 setFriendActivity(response.data.activities);
             }
@@ -125,7 +123,6 @@ const DashboardScreen = () => {
         setRefreshing(true);
 
         await collectUserInfo();
-        await collectFriendActivity();
         //await collectSuggestedBudget();
 
         setRefreshing(false);
@@ -159,12 +156,8 @@ const DashboardScreen = () => {
             collectFriendActivity();
             const weeklyBudget = typeof userData.weekly_budget === 'number' ? userData.weekly_budget : 0;
             setWeeklyBudget(weeklyBudget);
-            console.log('Weekly budget:', weeklyBudget);
 
             let deductions = [];
-
-            console.log("TOKEN ON DASHBOARD", token)
-
 
             try {
                 const deductionsResponse = await axios.post(`${url}/get_deductions`, {id: userData.username}, {
@@ -182,8 +175,6 @@ const DashboardScreen = () => {
                     console.error('Error fetching deductions:', error);
                 }
             }
-
-            console.log('Deductions:', deductions);
 
             let cumulativeValue = 0;
 
