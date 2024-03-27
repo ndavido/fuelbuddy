@@ -64,7 +64,7 @@ def create_user_vehicle():
 # Retrieve a vehicle from collection
 @require_api_key
 @jwt_required()
-def get_vehicle():
+def get_user_vehicle():
     try:
         current_user_id = get_jwt_identity()
 
@@ -121,7 +121,7 @@ def update_user_vehicle():
 # Delete a vehicle
 @require_api_key
 @jwt_required()
-def delete_vehicle():
+def delete_user_vehicle():
     try:
         current_user_id = get_jwt_identity()
 
