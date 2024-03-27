@@ -136,6 +136,7 @@ def delete_user_vehicle():
         return jsonify({'error': 'Failed to delete vehicle', 'details': str(e)}), 500
 
 # General Vehicle Routes for 'vehicles_data' collection
+
 @require_api_key
 @jwt_required()
 def get_vehicle_makes():
@@ -143,11 +144,12 @@ def get_vehicle_makes():
         makes = Vehicle.objects.distinct('make')
         return jsonify({'makes': makes}), 200
     except Exception as e:
-        return jsonify({'error': 'Failed to retrieve vehicle makes', 'details': str(e)}), 500
+        return jsonify({'error': 'Failed to retrieve all vehicle makes', 'details': str(e)}), 500
+
 
 @require_api_key
 @jwt_required()
-def get_models_for_make(make):
+def get_vehicle_models_for_makes(make):
     try:
         models = Vehicle.objects(make=make).distinct('models.model')
         return jsonify({'make': make, 'models': models}), 200
@@ -157,10 +159,11 @@ def get_models_for_make(make):
 # Route to get all years for the selected model
 @require_api_key
 @jwt_required()
-def get_years_for_model(model):
+def get_vehicle_years_for_model(model):
     try:
         trim_info_by_year = get_trim_info_by_year(model)
         return jsonify(trim_info_by_year), 200
     except Exception as e:
         return jsonify({'error': 'Failed to retrieve years for the model', 'details': str(e)}), 500
+
 
