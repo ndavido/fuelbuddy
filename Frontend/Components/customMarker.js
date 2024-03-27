@@ -21,24 +21,24 @@ const getMarkerIcon = (petrolUpdatedAt, dieselUpdatedAt, isFavorite, isSelected)
   const dieselDaysDifference = Math.floor((currentDate - dieselUpdateDate) / (1000 * 60 * 60 * 24));
 
   if (isSelected) {
-    return { icon: require('../assets/FBMapIcon-Selected.png'), color: 'blue' };
+    return { icon: require('../assets/stationIcons/FBMapIcon-Selected.png'), color: 'blue' };
   } else if (isFavorite) {
     if (isFavorite && petrolDaysDifference > 7 || dieselDaysDifference > 7)
-        return { icon: require('../assets/Fav-FBMapIcon-Grey.png'), color: 'grey' };
+        return { icon: require('../assets/stationIcons/Fav-FBMapIcon-Grey.png'), color: 'grey' };
         else if (isFavorite && petrolDaysDifference > 3 || dieselDaysDifference > 3)
-        return { icon: require('../assets/Fav-FBMapIcon-Red.png'), color: 'red' };
+        return { icon: require('../assets/stationIcons/Fav-FBMapIcon-Red.png'), color: 'red' };
         else if (isFavorite && petrolDaysDifference >= 1 || dieselDaysDifference >= 1)
-        return { icon: require('../assets/Fav-FBMapIcon-Orange.png'), color: 'orange' };
+        return { icon: require('../assets/stationIcons/Fav-FBMapIcon-Orange.png'), color: 'orange' };
         else
-    return { icon: require('../assets/Fav-FBMapIcon-Green.png'), color: 'purple' };
+    return { icon: require('../assets/stationIcons/Fav-FBMapIcon-Green.png'), color: 'purple' };
   } else if (petrolDaysDifference > 7 || dieselDaysDifference > 7) {
-    return { icon: require('../assets/FBMapIcon-Grey.png'), color: 'grey' };
+    return { icon: require('../assets/stationIcons/FBMapIcon-Grey.png'), color: 'grey' };
   } else if (petrolDaysDifference > 3 || dieselDaysDifference > 3) {
-    return { icon: require('../assets/FBMapIcon-Red.png'), color: 'red' };
+    return { icon: require('../assets/stationIcons/FBMapIcon-Red.png'), color: 'red' };
   } else if (petrolDaysDifference >= 1 || dieselDaysDifference >= 1) {
-    return { icon: require('../assets/FBMapIcon-Orange.png'), color: 'orange' };
+    return { icon: require('../assets/stationIcons/FBMapIcon-Orange.png'), color: 'orange' };
   } else {
-    return { icon: require('../assets/FBMapIcon-Green.png'), color: 'green' };
+    return { icon: require('../assets/stationIcons/FBMapIcon-Green.png'), color: 'green' };
   }
 };
 

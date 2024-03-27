@@ -18,7 +18,7 @@ const LogoImg = styled.Image`
 
 export const Logo = () => (
   <LogoContainer>
-    <LogoImg source={require('../assets/fuelbuddyLogo.png') }/>
+    <LogoImg source={require('../assets/fbLogos/fuelbuddyLogo.png') }/>
   </LogoContainer>
 );
 
