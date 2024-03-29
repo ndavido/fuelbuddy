@@ -180,7 +180,7 @@ const DashboardScreen = () => {
                 });
                 deductions = deductionsResponse.data.deductions || [];
                 await setUserDeductions(deductions);
-                console.log("Deductions", deductions);
+                console.log("Deductions", userDeductions);
             } catch (error) {
                 if (error.response && error.response.status === 404) {
                     console.log("No deductions found for this user");
@@ -189,7 +189,7 @@ const DashboardScreen = () => {
                 }
             }
 
-            const deductionsByDate = userDeductions.reduce((acc, deduction) => {
+            const deductionsByDate = deductions.reduce((acc, deduction) => {
                 const dateKey = new Date(deduction.updated_at).toDateString();
                 acc[dateKey] = (acc[dateKey] || 0) + parseFloat(deduction.amount);
                 return acc;
