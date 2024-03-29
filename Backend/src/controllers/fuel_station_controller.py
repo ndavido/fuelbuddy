@@ -6,7 +6,7 @@ fuel_station_blueprint = Blueprint('fuel_station', __name__)
 
 # GET fuel_stations
 fuel_station_blueprint.route(
-    '/fuel_stations', methods=['GET'])(get_fuel_stations)
+    '/fuel_stations', methods=['POST'])(get_fuel_stations)
 fuel_station_blueprint.route(
     '/get_favorite_fuel_stations', methods=['GET'])(get_favorite_fuel_stations)
 fuel_station_blueprint.route(

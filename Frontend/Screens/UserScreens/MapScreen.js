@@ -214,19 +214,25 @@ const MapScreen = () => {
 
     const fetchPetrolStations = async () => {
         try {
-            const config = {
+            const requestBody = {
+                user_longitude: location.coords.longitude,
+                user_latitude: location.coords.latitude,
+                radius: 50
+            };
+
+            const response = await axios.post(`${url}/fuel_stations`, requestBody, {
                 headers: {
-                    "X-API-Key": apiKey,
+                    'Content-Type': 'application/json',
+                    'X-API-Key': apiKey,
                     'Authorization': `Bearer ${token}`
                 },
-            };
-            const response = await fetch(`${url}/fuel_stations`, config);
-            const stations = await response.json();
+            });
+
+            console.log(response.data)
 
             // TODO Remove Dev Only
-            console.log("Stations: ", stations);
 
-            setPetrolStations(stations);
+            setPetrolStations(response.data)
 
         } catch (error) {
             console.error(error);
