@@ -4,11 +4,9 @@ from decimal import Decimal
 import schedule
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from src.middleware.api_key_middleware import require_api_key
-from src.models.user import Users
-from src.models.budget import BudgetHistory, WeeklyBudgetHistory, WeeklyBudget, Deduction, WeeklyBudgetWeeks, DeductionWeeks, WeekData
-from src.utils.helper_utils import handle_api_error
-from src.utils.nn_utils import load_saved_model, make_prediction
+from ..middleware import require_api_key
+from ..models import Users, BudgetHistory, WeeklyBudgetHistory, WeeklyBudget, Deduction, WeeklyBudgetWeeks, DeductionWeeks, WeekData
+from ..utils import handle_api_error, load_saved_model, make_prediction
 from mongoengine.errors import DoesNotExist, ValidationError
 from datetime import datetime, timedelta
 from sklearn.preprocessing import MinMaxScaler
@@ -16,6 +14,7 @@ import pandas as pd
 import numpy as np
 import json
 import requests
+
 
 @require_api_key
 @jwt_required()
@@ -62,6 +61,7 @@ def update_budget():
 
     except Exception as e:
         return handle_api_error(e)
+
 
 @require_api_key
 @jwt_required()
@@ -117,7 +117,8 @@ def save_weekly_data():
                     break
             if deduction_week is None:
                 deduction_week = DeductionWeeks(
-                    week=[WeekData(amount=deduction.amount, updated_at=deduction.updated_at)]
+                    week=[WeekData(amount=deduction.amount,
+                                   updated_at=deduction.updated_at)]
                 )
                 weekly_budget_history.deductions.append(deduction_week)
             else:
@@ -135,6 +136,7 @@ def save_weekly_data():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 @require_api_key
 @jwt_required()
@@ -171,6 +173,7 @@ def update_user_deduction():
     except Exception as e:
         return handle_api_error(e)
 
+
 @require_api_key
 @jwt_required()
 def get_deductions():
@@ -194,6 +197,8 @@ def get_deductions():
         return handle_api_error(e)
 
 # Budget Reset
+
+
 def reset_weekly_budgets():
     users = Users.objects()
 

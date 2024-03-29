@@ -2,7 +2,7 @@
 
 from flask import jsonify
 
-from src.models import Vehicle
+from ..models import Vehicle
 
 
 def radius_logic(coord1, coord2):
@@ -54,6 +54,7 @@ def handle_api_error(e):
         error_message = "Missing required data in the request."
     print(f"Error: {str(e)}")
     return jsonify({"error": error_message}), 500
+
 
 def get_trim_info_by_year(model):
     trim_info_by_year = {}

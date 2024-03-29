@@ -2,7 +2,7 @@
 
 from flask import Blueprint
 
-from src.services.user_admin_support_service import view_all_users, update_role, remove_role, send_support_ticket, view_support_tickets, reply_to_ticket, close_support_ticket, mark_ticket_as_solved
+from ..services import view_all_users, update_role, remove_role, send_support_ticket, view_support_tickets, reply_to_ticket, close_support_ticket, mark_ticket_as_solved
 
 user_admin_support_blueprint = Blueprint('user_admin_support', __name__)
 

@@ -3,9 +3,9 @@
 from flask import request, jsonify
 from mongoengine.errors import DoesNotExist
 from mongoengine.queryset.visitor import Q
-from src.models import Users, FriendRequest, Friends, Notification, FavoriteFuelStation, FuelStation, FuelPrices, UserActivity
-from src.middleware.api_key_middleware import require_api_key
-from src.utils.helper_utils import handle_api_error
+from ..models import Users, FriendRequest, Friends, Notification, FavoriteFuelStation, FuelStation, FuelPrices, UserActivity
+from ..middleware import require_api_key
+from ..utils import handle_api_error
 from flask_jwt_extended import jwt_required, get_jwt_identity
 import random
 from bson import ObjectId

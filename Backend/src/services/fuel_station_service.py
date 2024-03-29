@@ -3,12 +3,11 @@
 from flask import request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from mongoengine.errors import DoesNotExist
-from src.models import FuelStation, Location, PetrolPrices, DieselPrices, FuelPrices, Users, FavoriteFuelStation, UserActivity
-from src.models import ChargingStation, EVPrices
-from src.middleware.api_key_middleware import require_api_key
+from ..models import FuelStation, Location, PetrolPrices, DieselPrices, FuelPrices, Users, FavoriteFuelStation, UserActivity, ChargingStation, EVPrices
+from ..middleware import require_api_key
 from datetime import datetime
 from mongoengine.queryset.visitor import Q
-from src.utils.helper_utils import handle_api_error
+from ..utils import handle_api_error
 from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
 from geopy.distance import geodesic
 
@@ -17,6 +16,8 @@ from geopy.distance import geodesic
 from flask import request, jsonify
 
 # ref: https://medium.com/@rahulmallah785671/geopy-library-in-python-how-to-calculate-distance-between-two-locations-with-precision-f29e95175f28
+
+
 @require_api_key
 @jwt_required()
 def get_fuel_stations():
@@ -114,8 +115,6 @@ def get_fuel_stations():
         return handle_api_error(e)
 
 
-
-
 #! This is the route for storing fuel stations info from Frontend
 
 
@@ -166,7 +165,8 @@ def get_favorite_fuel_stations():
         if favorite_doc:
             favorite_stations = favorite_doc.favorite_stations
 
-            fuel_stations = FuelStation.objects(id__in=[dbref.id for dbref in favorite_stations])
+            fuel_stations = FuelStation.objects(
+                id__in=[dbref.id for dbref in favorite_stations])
 
             station_list = [
                 {

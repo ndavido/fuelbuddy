@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 
 from flask import Blueprint
-from src.services.auth_service import register, verify, login, login_verify
+from ..services import register, verify, login, login_verify
 
 auth_blueprint = Blueprint('auth', __name__)
 
