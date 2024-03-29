@@ -7,7 +7,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from src.middleware.api_key_middleware import require_api_key
 from src.models.user import Users
-from src.models.budget import BudgetHistory, WeeklyBudgetHistory, WeeklyBudget, Deduction, WeeklyBudgetWeeks, DeductionWeeks, WeekData
+from src.models.budget import BudgetHistory, Deduction, WeekData
 from src.utils.helper_utils import handle_api_error
 from src.utils.nn_utils import load_saved_model, make_prediction
 from mongoengine.errors import DoesNotExist, ValidationError
@@ -20,140 +20,54 @@ import numpy as np
 @jwt_required()
 def update_budget():
     try:
-        user_id = get_jwt_identity()  # Get user ID from JWT
-        data = request.get_json()
-
-        if 'weekly_budget' not in data and 'deductions' not in data:
-            return jsonify({"error": "Weekly budget or deductions not provided"}), 400
-
-        try:
-            user = Users.objects.get(id=user_id)
-
-            budget_history = BudgetHistory.objects(user=user).first()
-
-            if budget_history is None:
-                budget_history = BudgetHistory(user=user)
-
-            if 'weekly_budget' in data:
-                weekly_budget = float(data['weekly_budget'])
-                budget_history.weekly_budgets.append(
-                    WeeklyBudget(amount=weekly_budget))
-                user.weekly_budget = weekly_budget
-
-            if 'deductions' in data:
-                deductions = data['deductions']
-                if isinstance(deductions, list):
-                    budget_history.deductions.extend(
-                        [Deduction(amount=d) for d in deductions])
-                else:
-                    budget_history.deductions.append(
-                        Deduction(amount=deductions))
-
-            budget_history.change_date = datetime.now()
-
-            budget_history.save()
-            user.save()
-
-            return jsonify({"message": "Budget updated successfully"})
-
-        except KeyError as ke:
-            return jsonify({"error": f"Missing required field: {ke.args[0]}"}), 400
-
-    except Exception as e:
-        return handle_api_error(e)
-
-@require_api_key
-@jwt_required()
-def save_weekly_data():
-    try:
         user_id = get_jwt_identity()
+        data = request.get_json()
+        print('data', data)
 
-        end_date = datetime.utcnow()
-        start_date = end_date - timedelta(days=7)
+        if 'weekly_budget' not in data and 'date_of_week' not in data:
+            return jsonify({"error": "Weekly budget or date of week not provided"}), 400
 
-        budget_history = BudgetHistory.objects(
-            user=user_id,
-            change_date__gte=start_date,
-            change_date__lte=end_date
-        ).first()
+        user = Users.objects.get(id=user_id)
+        budget_history = BudgetHistory.objects(user=user).first()
 
         if budget_history is None:
-            return jsonify({"error": "No budget history found for the last week"}), 404
+            budget_history = BudgetHistory(user=user)
 
-        weekly_budget_history = WeeklyBudgetHistory.objects(
-            user=user_id,
-            change_date__gte=start_date,
-            change_date__lte=end_date
-        ).first()
+        current_date = datetime.now().date()
 
-        if weekly_budget_history is None:
-            weekly_budget_history = WeeklyBudgetHistory(
-                user=user_id,
-                change_date=datetime.utcnow(),
-                weekly_budgets=[],
-                deductions=[]
-            )
-
-        # Update weekly budgets
-        weekly_budgets = []
-        for weekly in budget_history.weekly_budgets:
-            week_data = WeeklyBudgetWeeks(
-                week=[
-                    {
-                        "amount": weekly.amount,
-                        "updated_at": weekly.updated_at
-                    }
-                ]
-            )
-            weekly_budgets.append(week_data)
-
-        # Update deductions
-        for deduction in budget_history.deductions:
-            deduction_week = None
-            for existing_week in weekly_budget_history.deductions:
-                if existing_week.week[0].updated_at.date() == deduction.updated_at.date():
-                    deduction_week = existing_week
-                    break
-            if deduction_week is None:
-                deduction_week = DeductionWeeks(
-                    week=[WeekData(amount=deduction.amount, updated_at=deduction.updated_at)]
-                )
-                weekly_budget_history.deductions.append(deduction_week)
-            else:
-                # Append deduction to the existing week
-                deduction_week.week.append(WeekData(
-                    amount=deduction.amount,
-                    updated_at=deduction.updated_at
-                ))
-
-        weekly_budget_history.weekly_budgets = weekly_budgets
-
-        weekly_budget_history.save()
-
-        return jsonify({"message": "Weekly data saved successfully"})
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-# Get weekly budgets
-@require_api_key
-@jwt_required()
-def get_weekly_budgets():
-    try:
-        user_id = get_jwt_identity()
-
-        weekly_budget_history = WeeklyBudgetHistory.objects(user=user_id).first()
-
-        if weekly_budget_history:
-            weekly_budgets = weekly_budget_history.to_mongo().to_dict()
-
-            return jsonify({"weekly_budgets": weekly_budgets["weekly_budgets"]}), 200
+        if 'date_of_week' in data:
+            date_of_week = datetime.strptime(data['date_of_week'], "%Y-%m-%d").date()
         else:
-            return jsonify({"error": "Weekly budget history not found"}), 404
+            date_of_week = current_date - timedelta(days=current_date.weekday())
 
+        if budget_history.weekly_budgets:
+            last_update_date = budget_history.change_date.date()
+            if (current_date - last_update_date).days >= 7:
+                new_week_data = WeekData(date_of_week=date_of_week, amount=float(data.get('weekly_budget', 0)))
+                budget_history.weekly_budgets.append(new_week_data)
+            else:
+                if 'weekly_budget' in data:
+                    budget_history.weekly_budgets[-1].amount = float(data['weekly_budget'])
+        else:
+            if 'weekly_budget' in data:
+                new_week_data = WeekData(date_of_week=date_of_week, amount=float(data['weekly_budget']))
+                budget_history.weekly_budgets.append(new_week_data)
+
+        # Update user's weekly budget field
+        if 'weekly_budget' in data:
+            user.weekly_budget = float(data['weekly_budget'])
+
+        budget_history.change_date = datetime.now()
+
+        budget_history.save()
+        user.save()
+
+        return jsonify({"message": "Budget updated successfully"})
+
+    except DoesNotExist:
+        return jsonify({"error": "User not found"}), 404
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
+        return handle_api_error(e)
 
 @require_api_key
 @jwt_required()
@@ -161,6 +75,7 @@ def update_user_deduction():
     try:
         user_id = get_jwt_identity()
         data = request.get_json()
+        print('data', data)
 
         if 'new_amount' not in data:
             return jsonify({"error": "New amount not provided"}), 400
@@ -173,20 +88,25 @@ def update_user_deduction():
         if budget_history is None:
             return jsonify({"error": "Budget history not found"}), 404
 
-        # checks if their was a deduction, gets the last deduction and updates the amount with the new subbed in amount
-        # if it cannot find a previous deduction it will return a 404
-        if budget_history.deductions:
-            last_deduction = budget_history.deductions[-1]
-            last_deduction.amount = new_amount
-            last_deduction.updated_at = datetime.now()
-            budget_history.save()
-
-            return jsonify({"message": "Deduction updated successfully"})
+        if budget_history.weekly_budgets:
+            latest_week_data = budget_history.weekly_budgets[-1]
         else:
-            return jsonify({"error": "No deductions found for the user"}), 404
+            return jsonify({"error": "No weekly budgets found for the user"}), 404
 
-    except (DoesNotExist, ValidationError) as e:
-        return jsonify({"error": str(e)}), 400
+        if latest_week_data.deductions:
+            last_deduction = latest_week_data.deductions[-1]
+            last_deduction.amount += new_amount
+            last_deduction.updated_at = datetime.now()
+        else:
+            new_deduction = Deduction(amount=new_amount, updated_at=datetime.now())
+            latest_week_data.deductions.append(new_deduction)
+
+        budget_history.save()
+
+        return jsonify({"message": "Deduction updated successfully"})
+
+    except DoesNotExist:
+        return jsonify({"error": "User not found"}), 404
     except Exception as e:
         return handle_api_error(e)
 
@@ -194,18 +114,46 @@ def update_user_deduction():
 @jwt_required()
 def get_deductions():
     try:
-        user_id = get_jwt_identity()  # Get user ID from JWT
-
+        user_id = get_jwt_identity()
         user = Users.objects.get(id=user_id)
         budget_history = BudgetHistory.objects(user=user).first()
 
         if budget_history is None:
             return jsonify({"error": "No budget history found for the user"}), 404
 
-        deductions = [{"amount": deduction.amount, "updated_at": deduction.updated_at.strftime(
-            "%Y-%m-%d %H:%M:%S") if deduction.updated_at else None} for deduction in budget_history.deductions]
+        deductions = []
+        for weekly_budget in budget_history.weekly_budgets:
+            for deduction in weekly_budget.deductions:
+                deductions.append({
+                    "amount": deduction.amount,
+                    "updated_at": deduction.updated_at.strftime("%Y-%m-%d %H:%M:%S") if deduction.updated_at else None
+                })
 
         return jsonify({"deductions": deductions})
+
+    except DoesNotExist:
+        return jsonify({"error": "User not found"}), 404
+    except Exception as e:
+        return handle_api_error(e)
+
+
+@require_api_key
+@jwt_required()
+def get_past_budgets():
+    try:
+        user_id = get_jwt_identity()
+        user = Users.objects.get(id=user_id)
+        budget_history = BudgetHistory.objects(user=user).order_by('-id').first()
+
+        if budget_history is None:
+            return jsonify({"error": "No budget history found for the user"}), 404
+
+        past_budgets = [{
+            "date_of_week": week.date_of_week.strftime("%b %d"),
+            "amount": week.amount
+        } for week in budget_history.weekly_budgets]
+
+        return jsonify({"past_budgets": past_budgets})
 
     except DoesNotExist:
         return jsonify({"error": "User not found"}), 404
@@ -275,4 +223,4 @@ def reset_weekly_budgets():
             user.save()
 
     print("Weekly budgets reset successfully.")
-schedule.every().monday.at("00:00").do(reset_weekly_budgets)
+    schedule.every().monday.at("00:00").do(reset_weekly_budgets)
