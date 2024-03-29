@@ -250,7 +250,6 @@ const DashboardScreen = () => {
                 }
             }
 
-
             if (typeof userData.weekly_budget !== 'number') {
                 const pieData = [
                     {value: 0, color: '#6BFF91'},
@@ -343,11 +342,10 @@ const DashboardScreen = () => {
     const addDeduction = async (newDeduction) => {
         try {
 
-            const apiUrl = `${url}/update_budget`;
+            const apiUrl = `${url}/update_user_deduction`;
 
             const requestBody = {
-                id: userData.username,
-                deductions: newDeduction,
+                new_amount: newDeduction,
             };
 
             const response = await axios.post(apiUrl, requestBody, {
@@ -374,7 +372,7 @@ const DashboardScreen = () => {
             const apiUrl = `${url}/update_budget`;
 
             const requestBody = {
-                username: userData.username,
+                date_of_week: getMondayLabel(0),
                 weekly_budget: newWeeklyBudget,
             };
 
