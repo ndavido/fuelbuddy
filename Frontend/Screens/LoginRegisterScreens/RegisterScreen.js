@@ -16,12 +16,12 @@ import {
     Wrapper,
     Container,
     LRContainer, LRButtonDiv
-} from "../styles/styles";
-import {Logo} from '../styles/images';
-import {H1, H2, H3, H4, H5, H6, Img, Txt} from '../styles/text.js';
-import Toast from '../Components/Toast.js';
+} from "../../styles/styles";
+import {Logo} from '../../styles/images';
+import {H1, H2, H3, H4, H5, H6, Img, Txt} from '../../styles/text.js';
+import Toast from '../../Components/Toast.js';
 import {forwardRef, useRef, useImperativeHandle} from 'react';
-import {ButtonButton} from "../styles/buttons";
+import {ButtonButton} from "../../styles/buttons";
 
 const url = process.env.REACT_APP_BACKEND_URL
 

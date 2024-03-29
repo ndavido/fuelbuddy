@@ -11,7 +11,7 @@ vehicle_blueprint.route('/vehicle_models/<make>', methods=['GET'])(get_vehicle_m
 vehicle_blueprint.route('/vehicle_years/<model>', methods=['GET'])(get_vehicle_years_for_model)
 
 # GET User Vehicle method
-vehicle_blueprint.route('/get_user_vehicle/', methods=['GET'])(get_user_vehicle)
+vehicle_blueprint.route('/get_user_vehicle', methods=['POST'])(get_user_vehicle)
 # POST User vehicle method
 vehicle_blueprint.route('/create_user_vehicle', methods=['POST'])(create_user_vehicle)
 # DELETE User vehicle method

@@ -18,27 +18,27 @@ const LogoImg = styled.Image`
 
 export const Logo = () => (
   <LogoContainer>
-    <LogoImg source={require('../assets/fuelbuddyLogo.png') }/>
+    <LogoImg source={require('../assets/fuelbuddyLogos/fuelbuddyLogo.png') }/>
   </LogoContainer>
 );
 
 const AccountImgContainer = styled.View`
-  height: 80px;
+  height: 100px;
   width: 100%;
   position: relative;
 `;
 
 const AccountImgImg = styled.Image`
   flex: 1;
-  width: 80px;
-  height: 80px;
+  width: 100px;
+  height: 100px;
   margin: auto;
   background-color: #6BFF91;
-  border-radius: 40px;
+  border-radius: 50px;
 `;
 
-export const AccountImg = () => (
+export const AccountImg = ({ uri }) => (
   <AccountImgContainer>
-      <AccountImgImg source={require('../assets/testAccountImg.jpg') }/>
+    <AccountImgImg source={uri ? { uri } : require('../assets/appAssets/defaultAcount.jpg')} />
   </AccountImgContainer>
 );

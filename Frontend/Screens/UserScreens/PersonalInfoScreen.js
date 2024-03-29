@@ -1,15 +1,16 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, Button, TextInput, RefreshControl} from 'react-native';
+import {View, Text, Button, TextInput, RefreshControl, TouchableOpacity} from 'react-native';
 import axios from 'axios';
 import {useNavigation} from '@react-navigation/native';
-import { useCombinedContext } from '../CombinedContext';
+import {useCombinedContext} from '../../CombinedContext';
 import * as Updates from 'expo-updates';
 
 // Styling
-import MainLogo from '../styles/mainLogo';
-import {H3, H4, H5, H6} from "../styles/text";
-import {AccountContainer, ButtonContainer, InputTxt, Main, TextContainer, WrapperScroll} from "../styles/styles";
-import {ButtonButton} from "../styles/buttons";
+import MainLogo from '../../styles/mainLogo';
+import {H3, H4, H5, H6} from "../../styles/text";
+import {AccountContainer, ButtonContainer, InputTxt, Main, TextContainer, WrapperScroll} from "../../styles/styles";
+import {ButtonButton} from "../../styles/buttons";
+import {AccountImg} from "../../styles/images";
 
 const url = process.env.REACT_APP_BACKEND_URL
 
@@ -22,7 +23,7 @@ const AccountScreen = () => {
     const [editedEmail, setEditedEmail] = useState('');
     const [message, setMessage] = useState('');
     const navigation = useNavigation();
-    const { token, userData, setUser, updateUserFromBackend } = useCombinedContext();
+    const {token, userData, setUser, updateUserFromBackend} = useCombinedContext();
 
     const handleEditToggle = () => {
         setEditMode(!editMode);
@@ -63,7 +64,7 @@ const AccountScreen = () => {
             const response = await axios.patch(`${url}/edit_account`, updatedUserData, config);
 
             if (response.data && response.data.message === 'Account updated successfully') {
-                setUser({ ...updatedUserData });
+                setUser({...updatedUserData});
                 setEditMode(false);
 
             } else {
@@ -114,14 +115,22 @@ const AccountScreen = () => {
                         </>
                     ) : (
                         <>
+                            {userData.profile_picture ? (
+                                <TouchableOpacity>
+                                    <AccountImg uri={`data:image/png;base64,${userData.profile_picture}`}/>
+                                </TouchableOpacity>
+                            ) : <TouchableOpacity>
+                                <AccountImg/>
+                            </TouchableOpacity>}
                             <H6 bmargin='5px'>Username</H6>
                             <TextContainer bcolor="#FFFFFF">@{userData.username}</TextContainer>
-                            <H6 bmargin='5px'>Phone Number</H6>
-                            <TextContainer bcolor="#FFFFFF">{userData.phone_number}</TextContainer>
                             <H6 bmargin='5px'>First Name</H6>
                             <TextContainer bcolor="#FFFFFF">{userData.first_name}</TextContainer>
                             <H6 bmargin='5px'>Surname</H6>
                             <TextContainer bcolor="#FFFFFF">{userData.surname}</TextContainer>
+
+                            <H6 bmargin='5px'>Phone Number</H6>
+                            <TextContainer bcolor="#FFFFFF">{userData.phone_number}</TextContainer>
                             <H6 bmargin='5px'>Email</H6>
                             <TextContainer bcolor="#FFFFFF">{userData.email}</TextContainer>
                         </>

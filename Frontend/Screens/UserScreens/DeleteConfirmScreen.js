@@ -3,7 +3,7 @@ import {View, Text, Button} from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {jwtDecode} from "jwt-decode";
-import {useCombinedContext} from "../CombinedContext";
+import {useCombinedContext} from "../../CombinedContext";
 
 // Styling
 import {
@@ -11,11 +11,11 @@ import {
     Content,
     Main,
     TextWrapper, Wrapper,
-} from '../styles/styles.js';
-import MainLogo from '../styles/mainLogo';
-import {H3, H4, H5, H6} from "../styles/text";
+} from '../../styles/styles.js';
+import MainLogo from '../../styles/mainLogo';
+import {H3, H4, H5, H6} from "../../styles/text";
 import {useNavigation} from "@react-navigation/native";
-import {ButtonButton} from "../styles/buttons";
+import {ButtonButton} from "../../styles/buttons";
 
 const url = process.env.REACT_APP_BACKEND_URL
 const apiKey = process.env.REACT_NATIVE_API_KEY;

@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import BottomSheet from '@gorhom/bottom-sheet';
 import * as Location from "expo-location";
-import {useCombinedContext} from "../CombinedContext";
+import {useCombinedContext} from "../../CombinedContext";
 
 const jsonBig = require('json-bigint');
 
@@ -26,21 +26,21 @@ if (!isWeb) {
 }
 
 // Styling
-import {H2, H3, H4, H5, H6, H7, H8} from "../styles/text";
-import {Container, ButtonContainer, CardContainer, Card, ModalContent, InputTxt} from "../styles/styles";
+import {H2, H3, H4, H5, H6, H7, H8} from "../../styles/text";
+import {Container, ButtonContainer, CardContainer, Card, ModalContent, InputTxt} from "../../styles/styles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {AnimatedGenericButton, AnimatedHeartButton, ButtonButton} from "../styles/buttons";
-import CustomMarker from "../Components/customMarker";
+import {AnimatedGenericButton, AnimatedHeartButton, ButtonButton} from "../../styles/buttons";
+import CustomMarker from "../../Components/customMarker";
 import axios from "axios";
 import {jwtDecode} from "jwt-decode";
 
 // Images
-import carWashIcon from '../assets/serviceIcons/fs_carwash.png';
-import foodIcon from '../assets/serviceIcons/fs_hot_food.png';
-import atmIcon from '../assets/serviceIcons/fs_atm.png';
-import parkingIcon from '../assets/serviceIcons/fs_parking.png';
-import serviceIcon from '../assets/serviceIcons/fs_service.png';
-import conStoreIcon from '../assets/serviceIcons/fs_con_store.png';
+import carWashIcon from '../../assets/serviceIcons/fs_carwash.png';
+import foodIcon from '../../assets/serviceIcons/fs_hot_food.png';
+import atmIcon from '../../assets/serviceIcons/fs_atm.png';
+import parkingIcon from '../../assets/serviceIcons/fs_parking.png';
+import serviceIcon from '../../assets/serviceIcons/fs_service.png';
+import conStoreIcon from '../../assets/serviceIcons/fs_con_store.png';
 
 
 const apiMapKey = process.env.REACT_NATIVE_GoogleMaps_API_KEY;
@@ -90,7 +90,7 @@ const MapScreen = () => {
 
     const [currentDirectionIndex, setCurrentDirectionIndex] = useState(0);
 
-    const snapPoints = useMemo(() => ['20%', '40%', '90%'], []);
+    const snapPoints = useMemo(() => ['20%', '40%', '85%'], []);
 
     const updateDirectionIndexBasedOnLocation = (userLocation) => {
         if (detailedSteps.length === 0) {
@@ -646,13 +646,13 @@ const MapScreen = () => {
     const renderRouteInfoBottomSheet = () => {
         if (!isWeb && showRouteInfo) {
             return (
-                <BottomSheet snapPoints={['20%', '90%']} index={0} ref={bottomSheetRef}>
+                <BottomSheet snapPoints={['20%', '85%']} index={0} ref={bottomSheetRef}>
                     <Container>
                         <H4 style={{flexDirection: 'row'}}>{estimatedDuration} ({estimatedDistance})</H4>
                         <H6 style={{opacity: 0.7}}>Estimated Price: €{estimatedPrice} - 18km/l @ €1.77</H6>
                         <H6 style={{opacity: 0.7}}>(Based Off Your Selected Vehicle)</H6>
                         <ButtonContainer>
-                            <ButtonButton icon="arrow-with-circle-up" text="Start Journey" />
+                            <ButtonButton icon="arrow-with-circle-up" text="Start Journey"/>
                             <ButtonButton style={{float: "left"}} icon="cross" text="Exit"
                                           onPress={handleCancelPress}/>
                         </ButtonContainer>
@@ -743,11 +743,18 @@ const MapScreen = () => {
         {renderStationBottomSheet()}
         {renderRouteInfoBottomSheet()}
         {renderNearbyStationsBottomSheet()}
-        <TouchableOpacity
-            style={{position: 'absolute', top: 55, left: 20, zIndex: 0}}
-        >
-            <ButtonButton icon="list" iconColor="#6BFF91" color="#FFFFFF" onPress={handleNearbyStationsPress}/>
-        </TouchableOpacity>
+        <View style={{position: 'absolute', top: 55, left: 10, zIndex: 0, display: 'flex', flexDirection: 'row'}}>
+
+            <TouchableOpacity style={{marginRight: 10}}>
+                <ButtonButton series="mci" icon="information" iconColor="#b8bec2" color="#F7F7F7"
+                              onPress={handleNearbyStationsPress}/>
+            </TouchableOpacity>
+            <TouchableOpacity>
+                <ButtonButton icon="list" iconColor="#b8bec2" color="#F7F7F7" onPress={handleNearbyStationsPress}/>
+            </TouchableOpacity>
+        </View>
+
+
         {/*{renderUpcomingDirectionView()}*/}
         <Modal
             animationType="slide"

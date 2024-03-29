@@ -4,11 +4,11 @@ import * as ImagePicker from 'expo-image-picker';
 import {Camera, CameraType} from 'expo-camera';
 import * as FileSystem from 'expo-file-system';
 
-import MainLogo from '../styles/mainLogo';
-import {AccountContainer, Content, InputTxt, Main, TextWrapper, Wrapper, WrapperScroll} from '../styles/styles';
+import MainLogo from '../../styles/mainLogo';
+import {AccountContainer, Content, InputTxt, Main, TextWrapper, Wrapper, WrapperScroll} from '../../styles/styles';
 import {jwtDecode} from "jwt-decode";
-import {H3, H5, H6} from "../styles/text";
-import {useCombinedContext} from "../CombinedContext";
+import {H3, H5, H6} from "../../styles/text";
+import {useCombinedContext} from "../../CombinedContext";
 import axios from "axios";
 import {useNavigation} from "@react-navigation/native";
 

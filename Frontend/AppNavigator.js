@@ -9,35 +9,38 @@ import * as Progress from 'react-native-progress';
 import {jwtDecode} from 'jwt-decode';
 
 /* Login & Reg */
-import WelcomeScreen from './Screens/WelcomeScreen';
-import LoginScreen from './Screens/LoginScreen';
-import LoginVerifyScreen from './Screens/LoginVerifyScreen';
-import RegisterScreen from './Screens/RegisterScreen';
-import RegisterVerifyScreen from './Screens/RegisterVerifyScreen';
+import WelcomeScreen from './Screens/LoginRegisterScreens/WelcomeScreen';
+import LoginScreen from './Screens/LoginRegisterScreens/LoginScreen';
+import LoginVerifyScreen from './Screens/LoginRegisterScreens/LoginVerifyScreen';
+import RegisterScreen from './Screens/LoginRegisterScreens/RegisterScreen';
+import RegisterVerifyScreen from './Screens/LoginRegisterScreens/RegisterVerifyScreen';
 
 /* Complete Reg */
-import CompleteProfileScreen from "./Screens/CompleteProfileScreen";
-import CompleteVehicleScreen from "./Screens/CompleteVehicleScreen";
-import SetPreferencesScreen from "./Screens/SetPreferencesScreen";
+import CompleteProfileScreen from "./Screens/RegistrationScreens/CompleteProfileScreen";
+import CompleteVehicleScreen from "./Screens/RegistrationScreens/CompleteVehicleScreen";
+import SetPreferencesScreen from "./Screens/RegistrationScreens/SetPreferencesScreen";
 
 /* Main Screens */
-import DashboardScreen from './Screens/DashboardScreen';
-import MapScreen from './Screens/MapScreen';
-import ScanScreen from './Screens/ScanScreen';
-import FriendsScreen from './Screens/FriendsScreen';
-import AccountScreen from './Screens/AccountScreen';
+import DashboardScreen from './Screens/UserScreens/DashboardScreen';
+import MapScreen from './Screens/UserScreens/MapScreen';
+import ScanScreen from './Screens/OCRScreens/ScanScreen';
+import AccountScreen from './Screens/UserScreens/AccountScreen';
 
 /* OCR */
-import BudgetReceipt from './Screens/ReceiptBudgetScreen'
-import StationReceipt from './Screens/ReceiptStationScreen'
-import ConfirmReceipt from './Screens/ReceiptConfirmScreen'
+import BudgetReceipt from './Screens/OCRScreens/ReceiptBudgetScreen'
+import StationReceipt from './Screens/OCRScreens/ReceiptStationScreen'
+import ConfirmReceipt from './Screens/OCRScreens/ReceiptConfirmScreen'
+
+/* Friends */
+import FriendsScreen from './Screens/FriendsScreens/FriendsScreen';
+import FProfileScreen from "./Screens/FriendsScreens/FriendsProfileScreen";
 
 /* Secondary Screens */
-import PersonalInfoScreen from './Screens/PersonalInfoScreen';
-import DeleteConfirmScreen from './Screens/DeleteConfirmScreen';
-import VehicleScreen from './Screens/VehicleScreen';
+import PersonalInfoScreen from './Screens/UserScreens/PersonalInfoScreen';
+import DeleteConfirmScreen from './Screens/UserScreens/DeleteConfirmScreen';
+import VehicleScreen from './Screens/UserScreens/VehicleScreen';
 import DeveloperScreen from './Screens/DeveloperScreen';
-import FProfileScreen from "./Screens/FriendsProfileScreen";
+import UserStationScreen from "./Screens/UserScreens/UserStationScreen";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -94,6 +97,7 @@ const AccountNavigator = () => {
             <Stack.Screen name="DeleteConfirm" component={DeleteConfirmScreen}/>
             <Stack.Screen name="Vehicle" component={VehicleScreen}/>
             <Stack.Screen name="Developer" component={DeveloperScreen}/>
+            <Stack.Screen name="UserStation" component={UserStationScreen}/>
         </Stack.Navigator>
     );
 };

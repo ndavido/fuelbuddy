@@ -116,7 +116,7 @@ def upload_profile_picture():
         if 'profile_picture' not in data:
             return jsonify({"error": "No profile picture provided"}), 400
 
-        profile_picture = upload_image(data['profile_picture'])
+        profile_picture = data['profile_picture']
 
         user.profile_picture = profile_picture
 

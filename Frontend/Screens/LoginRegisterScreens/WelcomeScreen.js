@@ -3,10 +3,10 @@ import {ImageBackground, Image, View, Text, Button, StyleSheet} from 'react-nati
 import {useNavigation} from '@react-navigation/native';
 
 //Styling
-import {WelcomeMain, ButtonDiv, Content, Wrapper, WelcomeImg} from "../styles/styles";
-import {Logo} from '../styles/images';
-import {H1, H2, H3, H4, H5, H6, Img, Txt} from '../styles/text.js';
-import {ButtonButton} from "../styles/buttons";
+import {WelcomeMain, ButtonDiv, Content, Wrapper, WelcomeImg} from "../../styles/styles";
+import {Logo} from '../../styles/images';
+import {H1, H2, H3, H4, H5, H6, Img, Txt} from '../../styles/text.js';
+import {ButtonButton} from "../../styles/buttons";
 
 const WelcomeScreen = () => {
     const navigation = useNavigation();
