@@ -9,11 +9,11 @@ import {
     AccountContainer, ButtonContainer,
     Content,
     Main, TextContainer, TextWrapper, Wrapper,
-} from '../styles/styles';
-import MainLogo from '../styles/mainLogo';
-import {H3, H4, H5, H6} from "../styles/text";
+} from '../../styles/styles';
+import MainLogo from '../../styles/mainLogo';
+import {H3, H4, H5, H6} from "../../styles/text";
 import {View} from "react-native";
-import {ButtonButton} from "../styles/buttons";
+import {ButtonButton} from "../../styles/buttons";
 
 const url = process.env.REACT_APP_BACKEND_URL
 const apiKey = process.env.REACT_NATIVE_API_KEY;

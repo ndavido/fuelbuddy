@@ -3,7 +3,7 @@ import {View, Text} from 'react-native';
 import styled from "styled-components/native";
 import {useNavigation} from '@react-navigation/native';
 import axios from 'axios';
-import Toast from '../Components/Toast.js';
+import Toast from '../../Components/Toast.js';
 import {forwardRef, useRef, useImperativeHandle} from 'react';
 
 //Styling
@@ -17,10 +17,10 @@ import {
     Wrapper,
     Container,
     LRContainer, LRButtonDiv
-} from "../styles/styles";
-import {Logo} from '../styles/images';
-import {H1, H2, H3, H4, H5, H6, Img, Txt} from '../styles/text.js';
-import {ButtonButton} from "../styles/buttons";
+} from "../../styles/styles";
+import {Logo} from '../../styles/images';
+import {H1, H2, H3, H4, H5, H6, Img, Txt} from '../../styles/text.js';
+import {ButtonButton} from "../../styles/buttons";
 
 const url = process.env.REACT_APP_BACKEND_URL
 

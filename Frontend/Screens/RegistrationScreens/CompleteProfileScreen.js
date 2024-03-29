@@ -1,11 +1,11 @@
 import React, {useState, useEffect} from 'react';
 import axios from 'axios';
 import {useNavigation} from '@react-navigation/native';
-import {useCombinedContext} from '../CombinedContext';
+import {useCombinedContext} from '../../CombinedContext';
 import * as Updates from 'expo-updates';
 
 // Styling
-import {H3, H4, H5, H6} from "../styles/text";
+import {H3, H4, H5, H6} from "../../styles/text";
 import {
     AccountContainer,
     ButtonContainer, Container, Content,
@@ -14,8 +14,8 @@ import {
     TextContainer,
     WelcomeMain,
     WrapperScroll
-} from "../styles/styles";
-import {ButtonButton} from "../styles/buttons";
+} from "../../styles/styles";
+import {ButtonButton} from "../../styles/buttons";
 
 const url = process.env.REACT_APP_BACKEND_URL
 

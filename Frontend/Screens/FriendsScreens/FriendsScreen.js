@@ -16,17 +16,17 @@ import {useNavigation} from '@react-navigation/native';
 import BottomSheet from '@gorhom/bottom-sheet';
 
 // Styling
-import MainLogo from '../styles/mainLogo';
+import MainLogo from '../../styles/mainLogo';
 import {
     ButtonContainer,
     Main, Container,
     WrapperScroll, AccountContainer,
     ModalContent, SearchBox, TextWrapper
-} from '../styles/styles';
+} from '../../styles/styles';
 import {jwtDecode} from "jwt-decode";
-import {H2, H3, H4, H5, H6} from "../styles/text";
-import {ButtonButton} from "../styles/buttons";
-import {useCombinedContext} from "../CombinedContext";
+import {H2, H3, H4, H5, H6} from "../../styles/text";
+import {ButtonButton} from "../../styles/buttons";
+import {useCombinedContext} from "../../CombinedContext";
 import {Ionicons} from '@expo/vector-icons';
 
 const apiKey = process.env.REACT_NATIVE_API_KEY;
