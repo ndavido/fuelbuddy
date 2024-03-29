@@ -22,7 +22,7 @@ const apiKey = process.env.REACT_NATIVE_API_KEY;
 const url = process.env.REACT_APP_BACKEND_URL
 
 const DashboardScreen = () => {
-    const [userInfo, setUserInfo] = useState({});
+    const [userVehicle, setUserVehicle] = useState({});
     const [loading, setLoading] = useState(true);
     const [friendActivity, setFriendActivity] = useState([]);
 
@@ -213,19 +213,42 @@ const DashboardScreen = () => {
                 const deductionValue = deductionsByDate[dateKey] || 0;
                 cumulativeValue = Math.max(0, cumulativeValue + deductionValue);
                 dailyData.push({date: dateKey, value: cumulativeValue});
-                console.log("Date:", dateKey, "Value:", cumulativeValue, "Deduction:", deductionValue)
             }
 
             await setLineData(dailyData);
             await setCumulativeValue(cumulativeValue);
             console.log(dailyData);
 
-            console.log("today:", today);
-            console.log("dayOfWeek:", dayOfWeek);
-            console.log("startDate:", startDate);
-            console.log("endDate:", endDate);
-
             console.log(weeklyBudget);
+
+            try {
+                const weeklyBudgetsResponse = await axios.post(`${url}/get_weekly_budgets`, {id: userData.username}, {
+                    headers: {
+                        'X-API-Key': apiKey,
+                        'Authorization': `Bearer ${token}`
+                    },
+                });
+                console.log("Weekly Budgets", weeklyBudgetsResponse.data);
+
+                const weeklyBudgets = weeklyBudgetsResponse.data.past_budgets || [];
+
+                const plottingData = barLabels.map((label) => {
+                    const matchingWeek = weeklyBudgets.find((week) => week.date_of_week === label);
+                    console.log("Matching Week", matchingWeek)
+                    return {
+                        value: matchingWeek ? parseFloat(matchingWeek.amount) : 0
+                    };
+                });
+
+                console.log("Plotting Data", plottingData)
+                setBarData(plottingData);
+            } catch (error) {
+                if (error.response && error.response.status === 404) {
+                    console.log("No Past Weekly Budgets found for this user");
+                } else {
+                    console.error('Error fetching Past Weekly Budgets:', error);
+                }
+            }
 
 
             if (typeof userData.weekly_budget !== 'number') {
@@ -242,17 +265,12 @@ const DashboardScreen = () => {
                 setPieData(pieData);
 
             } else {
-                if (cumulativeValue >= userData.weekly_budget) {
+                if (cumulativeValue > userData.weekly_budget) {
                     const pieData = [
                         {value: userData.weekly_budget, color: '#FF6B6B'},
                         {value: cumulativeValue - userData.weekly_budget, color: '#FF6B6B'}
                     ];
-                    const barData = [
-                        {value: 0},
-                        {value: 0},
-                        {value: userData.weekly_budget},
-                    ];
-                    setBarData(barData);
+
                     const modifiedPieData = [{value: 0}, ...pieData];
                     setPieData(modifiedPieData);
                 } else {
@@ -260,21 +278,46 @@ const DashboardScreen = () => {
                         {value: cumulativeValue, color: '#6BFF91'},
                         {value: userData.weekly_budget - cumulativeValue, color: '#F7F7F7'}
                     ];
-                    const barData = [
-                        {value: 0},
-                        {value: 0},
-                        {value: userData.weekly_budget},
-                    ];
-                    setBarData(barData);
+
                     const modifiedPieData = [{value: 0}, ...pieData];
                     setPieData(modifiedPieData);
                 }
             }
             collectFriendActivity();
+            collectVehicleInfo();
         } catch (error) {
             console.error('Error collecting dashboard information:', error);
         }
     };
+
+    const collectVehicleInfo = async () => {
+        try {
+                const jwt_user = await AsyncStorage.getItem('token');
+                const user_id = jwtDecode(jwt_user).sub;
+
+                const config = {
+                    headers: {
+                        'X-API-Key': apiKey,
+                        'Authorization': `Bearer ${jwt_user}`,
+                    },
+                };
+                const response = await axios.post(`${url}/get_user_vehicle`, {id: user_id}, config);
+
+                console.log(response.data)
+                if (response.data) {
+                    setUserVehicle(response.data);
+                    console.log(userVehicle);
+                }
+
+            } catch (error) {
+                if (error.response && error.response.status === 404) {
+                    console.log('No vehicle found');
+                    setUserVehicle(null);
+                } else {
+                    console.error('Error fetching User Vehicle:', error);
+                }
+            }
+    }
 
     const handleAddDeductionPress = () => {
         setIsDeductionModalVisible(true);
@@ -522,7 +565,7 @@ const DashboardScreen = () => {
                             <View style={{marginBottom: 10, marginTop: 20}}>
                                 <H6>This Week</H6>
                                 {userDeductions.length > 0 ? (
-                                    [...userDeductions].reverse().slice(0, 2).map((deduction, index) => {
+                                    [...userDeductions].reverse().slice(0, 3).map((deduction, index) => {
                                         const activityDate = new Date(deduction.updated_at);
                                         const today = new Date();
                                         const isToday = activityDate.getDate() === today.getDate() &&
@@ -547,6 +590,18 @@ const DashboardScreen = () => {
                         <Card>
                             <H8 style={{opacity: 0.5}}>Vehicle</H8>
                             <H5>My Car</H5>
+                            <ButtonContainer style={{position: 'absolute', marginTop: 10, marginLeft: 10}}>
+                                <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
+                                    {userData.weekly_budget ? (
+                                        <ButtonButton text='View'
+                                                      accessibilityLabel="Add Deduction Button" accessible={true}
+                                                      onPress={handleAddDeductionPress}/>
+                                    ) : (
+                                        <ButtonButton icon='plus' text='Add' accessibilityLabel="Add Budget Button"
+                                                      accessible={true} onPress={handleUpdateButtonPress}/>
+                                    )}
+                                </View>
+                            </ButtonContainer>
                             <View style={{
                                 flex: 1,
                                 justifyContent: 'center',
@@ -554,11 +609,12 @@ const DashboardScreen = () => {
                                 zIndex: 0,
                                 top: -10,
                             }}>
-                                <Image source={require('../../assets/appAssets/car.png')} style={{height: 150, width: 200}}/>
+                                <Image source={require('../../assets/appAssets/car.png')}
+                                       style={{height: 150, width: 200}}/>
                             </View>
                             <View style={{top: -10}}>
-                                <H5>Volkswagen Polo</H5>
-                                <H6 style={{opacity: 0.5}}>18Km/l Average</H6>
+                                <H5>{userVehicle.make} {userVehicle.model}</H5>
+                                <H6 style={{opacity: 0.5}}>{userVehicle.city_fuel_per_100km_l}l/100km · Average</H6>
                             </View>
                         </Card>
                         <Card>
