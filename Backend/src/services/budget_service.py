@@ -1,4 +1,5 @@
 #! /usr/bin/env python3
+import traceback
 from decimal import Decimal
 
 import schedule
@@ -133,6 +134,26 @@ def save_weekly_data():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+# Get weekly budgets
+@require_api_key
+@jwt_required()
+def get_weekly_budgets():
+    try:
+        user_id = get_jwt_identity()
+
+        weekly_budget_history = WeeklyBudgetHistory.objects(user=user_id).first()
+
+        if weekly_budget_history:
+            weekly_budgets = weekly_budget_history.to_mongo().to_dict()
+
+            return jsonify({"weekly_budgets": weekly_budgets["weekly_budgets"]}), 200
+        else:
+            return jsonify({"error": "Weekly budget history not found"}), 404
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 @require_api_key
 @jwt_required()
