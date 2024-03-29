@@ -554,7 +554,7 @@ const DashboardScreen = () => {
                                 zIndex: 0,
                                 top: -10,
                             }}>
-                                <Image source={require('../../assets/car.png')} style={{height: 150, width: 200}}/>
+                                <Image source={require('../../assets/appAssets/car.png')} style={{height: 150, width: 200}}/>
                             </View>
                             <View style={{top: -10}}>
                                 <H5>Volkswagen Polo</H5>

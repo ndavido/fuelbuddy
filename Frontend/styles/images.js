@@ -18,7 +18,7 @@ const LogoImg = styled.Image`
 
 export const Logo = () => (
   <LogoContainer>
-    <LogoImg source={require('../assets/fbLogos/fuelbuddyLogo.png') }/>
+    <LogoImg source={require('../assets/fuelbuddyLogos/fuelbuddyLogo.png') }/>
   </LogoContainer>
 );
 
@@ -39,6 +39,6 @@ const AccountImgImg = styled.Image`
 
 export const AccountImg = ({ uri }) => (
   <AccountImgContainer>
-    <AccountImgImg source={uri ? { uri } : require('../assets/defaultAcount.jpg')} />
+    <AccountImgImg source={uri ? { uri } : require('../assets/appAssets/defaultAcount.jpg')} />
   </AccountImgContainer>
 );
