@@ -9,8 +9,7 @@ from src.models.user import Users
 from src.models.friends import Friends, FriendRequest
 from src.models.budget import BudgetHistory, WeeklyBudgetHistory
 from src.models.fuel_station import FavoriteFuelStation
-
-
+from src.models.user_activity import UserActivity
 from src.utils.helper_utils import handle_api_error
 
 
@@ -58,7 +57,8 @@ def delete_account():
             WeeklyBudgetHistory.objects(user=user_info).delete()
             # Delete favorite fuel stations
             FavoriteFuelStation.objects(user=user_info).delete()
-
+            # Delete user activity
+            UserActivity.objects(user=user_info).delete()
             user_info.delete()
             return jsonify({"message": "Account deleted successfully!"}), 200
         else:
