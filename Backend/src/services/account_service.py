@@ -7,10 +7,9 @@ from src.utils.encryption_utils import aes_decrypt, aes_encrypt, encryption_key
 from src.utils.image_utils import upload_image
 from src.models.user import Users
 from src.models.friends import Friends, FriendRequest
-from src.models.budget import BudgetHistory, WeeklyBudgetHistory
+from src.models.budget import BudgetHistory
 from src.models.fuel_station import FavoriteFuelStation
-
-
+from src.models.user_activity import UserActivity
 from src.utils.helper_utils import handle_api_error
 
 
@@ -54,11 +53,10 @@ def delete_account():
                                   Q(recipient=user_info)).delete()
             # Delete budget history
             BudgetHistory.objects(user=user_info).delete()
-            # Delete weekly budget history
-            WeeklyBudgetHistory.objects(user=user_info).delete()
             # Delete favorite fuel stations
             FavoriteFuelStation.objects(user=user_info).delete()
-
+            # Delete user activity
+            UserActivity.objects(user=user_info).delete()
             user_info.delete()
             return jsonify({"message": "Account deleted successfully!"}), 200
         else:
