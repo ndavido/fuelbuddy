@@ -18,6 +18,7 @@ import numpy as np
 import json
 import requests
 
+
 @require_api_key
 @jwt_required()
 def update_budget():
@@ -71,13 +72,13 @@ def update_budget():
     except Exception as e:
         return handle_api_error(e)
 
+
 @require_api_key
 @jwt_required()
 def update_user_deduction():
     try:
         user_id = get_jwt_identity()
         data = request.get_json()
-        print('data', data)
 
         if 'new_amount' not in data:
             return jsonify({"error": "New amount not provided"}), 400
@@ -87,30 +88,31 @@ def update_user_deduction():
         user = Users.objects.get(id=user_id)
         budget_history = BudgetHistory.objects(user=user).first()
 
-        if budget_history is None:
-            return jsonify({"error": "Budget history not found"}), 404
+        current_date = datetime.now().date()
 
         if budget_history.weekly_budgets:
-            latest_week_data = budget_history.weekly_budgets[-1]
-        else:
-            return jsonify({"error": "No weekly budgets found for the user"}), 404
+            last_update_date = budget_history.change_date.date()
+            if (current_date - last_update_date).days >= 7:
+                new_week_data = WeekData(date_of_week=current_date, amount=0)
+                budget_history.weekly_budgets.append(new_week_data)
 
-        if latest_week_data.deductions:
-            last_deduction = latest_week_data.deductions[-1]
-            last_deduction.amount += new_amount
-            last_deduction.updated_at = datetime.now()
-        else:
-            new_deduction = Deduction(amount=new_amount, updated_at=datetime.now())
-            latest_week_data.deductions.append(new_deduction)
+        latest_week_data = budget_history.weekly_budgets[-1]
+
+        new_deduction = Deduction(amount=new_amount, updated_at=datetime.now())
+        latest_week_data.deductions.append(new_deduction)
+
+        budget_history.change_date = datetime.now()
 
         budget_history.save()
+        user.save()
 
-        return jsonify({"message": "Deduction updated successfully"})
+        return jsonify({"message": "Deduction added successfully"})
 
     except DoesNotExist:
         return jsonify({"error": "User not found"}), 404
     except Exception as e:
         return handle_api_error(e)
+
 
 @require_api_key
 @jwt_required()
@@ -166,7 +168,6 @@ def get_past_budgets():
 @require_api_key
 @jwt_required()
 def user_suggested_budget():
-
     # Define the model path and look_back period
     look_back = 10
     model_path = 'Backend/src/neural_network/Updated_user_model.h5'
@@ -200,7 +201,7 @@ def user_suggested_budget():
 
     # Get the last week's data
     last_weeks_data = [
-        budget_history.new_budget for budget_history in user_budget_history][:look_back]
+                          budget_history.new_budget for budget_history in user_budget_history][:look_back]
 
     # Make the prediction
     predicted_price = make_prediction(
@@ -212,6 +213,7 @@ def user_suggested_budget():
     print("Next Week's Predicted Price is: ", predicted_price)
     print("Adjusted Predicted Price to the nearest 10 is: ",
           adjusted_predicted_price)
+
 
 # Budget Reset
 def reset_weekly_budgets():
