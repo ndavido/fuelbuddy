@@ -18,6 +18,9 @@ app.secret_key = "production"  # os.random(24)
 api_key = API_KEY
 app.config['JWT_SECRET_KEY'] = JWT_SECRET_KEY
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=31)
+app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=31)
+app.config['JWT_COOKIE_SECURE'] = True
+app.config['JWT_COOKIE_CSRF_PROTECT'] = True
 
 app.register_blueprint(auth_blueprint)
 app.register_blueprint(account_blueprint)
@@ -28,7 +31,5 @@ app.register_blueprint(vehicle_blueprint)
 app.register_blueprint(ocr_blueprint)
 app.register_blueprint(user_admin_support_blueprint)
 
-
 configure_jwt(app)
-
 db_connect()
