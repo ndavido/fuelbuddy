@@ -2,9 +2,9 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_token
 from mongoengine import Q
-from src.middleware import require_api_key
-from src.utils import aes_decrypt, aes_encrypt, encryption_key, upload_image, handle_api_error
-from src.models import Users, Friends, FriendRequest, BudgetHistory, WeeklyBudgetHistory, FavoriteFuelStation, UserActivity
+from ..middleware import require_api_key
+from ..utils import aes_decrypt, aes_encrypt, encryption_key, upload_image, handle_api_error
+from ..models import Users, Friends, FriendRequest, BudgetHistory, FavoriteFuelStation, UserActivity
 
 
 @require_api_key
