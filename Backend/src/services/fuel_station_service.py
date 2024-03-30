@@ -7,7 +7,6 @@ from ..models import FuelStation, Location, PetrolPrices, DieselPrices, FuelPric
 from ..middleware import require_api_key
 from datetime import datetime
 from mongoengine.queryset.visitor import Q
-# from src.utils.helper_utils import handle_api_error, get_station_data
 from ..utils import handle_api_error, get_station_data
 from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
 # ! This is the route for sending fuel stations info to Frontend
@@ -19,6 +18,7 @@ from flask import request, jsonify
 # TODO: No radius but no user location = show all stations
 # TODO: Radius but no user location = show all stations
 # TODO: radius and user location = show stations in radius of user
+
 
 @require_api_key
 @jwt_required()
@@ -55,7 +55,8 @@ def get_fuel_stations():
                 radius = float(radius)
                 user_location = (user_latitude, user_longitude)
                 fuel_stations = FuelStation.objects.all()
-                result = [get_station_data(station, user_location, radius) for station in fuel_stations]
+                result = [get_station_data(
+                    station, user_location, radius) for station in fuel_stations]
                 result = [data for data in result if data]
                 return jsonify(result)
 
