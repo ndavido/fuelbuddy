@@ -2,15 +2,9 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_token
 from mongoengine import Q
-from src.middleware.api_key_middleware import require_api_key
-from src.utils.encryption_utils import aes_decrypt, aes_encrypt, encryption_key
-from src.utils.image_utils import upload_image
-from src.models.user import Users
-from src.models.friends import Friends, FriendRequest
-from src.models.budget import BudgetHistory
-from src.models.fuel_station import FavoriteFuelStation
-from src.models.user_activity import UserActivity
-from src.utils.helper_utils import handle_api_error
+from src.middleware import require_api_key
+from src.utils import aes_decrypt, aes_encrypt, encryption_key, upload_image, handle_api_error
+from src.models import Users, Friends, FriendRequest, BudgetHistory, WeeklyBudgetHistory, FavoriteFuelStation, UserActivity
 
 
 @require_api_key
@@ -124,4 +118,3 @@ def upload_profile_picture():
         return jsonify({"message": "Profile picture updated successfully"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-

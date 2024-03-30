@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 
 from flask import Blueprint
-from src.services.account_service import account, delete_account, edit_account, logout, upload_profile_picture
+from ..services import account, delete_account, edit_account, logout, upload_profile_picture
 
 account_blueprint = Blueprint('account', __name__)
 

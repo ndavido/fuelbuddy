@@ -3,13 +3,11 @@
 from flask import request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from mongoengine.errors import DoesNotExist
-from src.models import Vehicle
-from src.models.vehicle import UserVehicle
-from src.middleware.api_key_middleware import require_api_key
+from ..models import Vehicle, UserVehicle
+from ..middleware import require_api_key
 from datetime import datetime
 from mongoengine.queryset.visitor import Q
-from src.utils.helper_utils import get_trim_info_by_year
-
+from ..utils import get_trim_info_by_year
 
 
 # ref: https://docs.python.org/3/tutorial/datastructures.html
@@ -62,6 +60,8 @@ def create_user_vehicle():
 
 # READ
 # Retrieve a vehicle from collection
+
+
 @require_api_key
 @jwt_required()
 def get_user_vehicle():
@@ -94,6 +94,8 @@ def get_user_vehicle():
 
 # UPDATE
 # Update user vehicle information
+
+
 @require_api_key
 @jwt_required()
 def update_user_vehicle():
@@ -119,6 +121,8 @@ def update_user_vehicle():
 
 # DELETE
 # Delete a vehicle
+
+
 @require_api_key
 @jwt_required()
 def delete_user_vehicle():
@@ -136,6 +140,7 @@ def delete_user_vehicle():
         return jsonify({'error': 'Failed to delete vehicle', 'details': str(e)}), 500
 
 # General Vehicle Routes for 'vehicles_data' collection
+
 
 @require_api_key
 @jwt_required()
@@ -157,6 +162,8 @@ def get_vehicle_models_for_makes(make):
         return jsonify({'error': 'Failed to retrieve models for the make', 'details': str(e)}), 500
 
 # Route to get all years for the selected model
+
+
 @require_api_key
 @jwt_required()
 def get_vehicle_years_for_model(model):
@@ -165,5 +172,3 @@ def get_vehicle_years_for_model(model):
         return jsonify(trim_info_by_year), 200
     except Exception as e:
         return jsonify({'error': 'Failed to retrieve years for the model', 'details': str(e)}), 500
-
-

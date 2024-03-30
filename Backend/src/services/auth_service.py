@@ -2,15 +2,12 @@
 
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token
-from src.middleware.api_key_middleware import require_api_key
-from src.middleware.twilio_text_middleware import send_text_code
+from ..middleware import require_api_key, send_text_code
 import bcrypt
 import random
 from datetime import datetime, timedelta
-from src.utils.helper_utils import standardize_phone_number, handle_api_error
-from src.utils.validation_utils import validate_phone_number, validate_verification_code
-from src.utils.encryption_utils import aes_encrypt, encryption_key
-from src.models.user import Users
+from src.utils import standardize_phone_number, handle_api_error, validate_phone_number, validate_verification_code, aes_encrypt, encryption_key
+from src.models import Users
 from twilio.rest import Client
 new_user_session = {}
 

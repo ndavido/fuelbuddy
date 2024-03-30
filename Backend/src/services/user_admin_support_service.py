@@ -1,10 +1,9 @@
 #! /usr/bin/env python3
 
 from flask import request, jsonify
-from src.models import Users
-from src.models.user_admin_support import SupportTicket, Message
-from src.middleware.api_key_middleware import require_api_key
-from src.utils.helper_utils import handle_api_error
+from ..models import Users, SupportTicket, Message
+from ..middleware import require_api_key
+from ..utils import handle_api_error
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime
 

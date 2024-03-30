@@ -3,7 +3,7 @@
 from flask import jsonify
 from geopy.distance import geodesic
 
-from src.models import Vehicle
+from ..models import Vehicle
 
 
 def radius_logic(coord1, coord2):
@@ -56,6 +56,7 @@ def handle_api_error(e):
     print(f"Error: {str(e)}")
     return jsonify({"error": error_message}), 500
 
+
 def get_station_data(fuel_station, user_location=None, radius=None):
     station_data = {
         'id': str(fuel_station.id),
@@ -92,6 +93,7 @@ def get_station_data(fuel_station, user_location=None, radius=None):
         else:
             return None
     return station_data
+
 
 def get_trim_info_by_year(model):
     trim_info_by_year = {}
