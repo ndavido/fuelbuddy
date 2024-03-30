@@ -4,7 +4,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_tok
 from mongoengine import Q
 from src.middleware import require_api_key
 from src.utils import aes_decrypt, aes_encrypt, encryption_key, upload_image, handle_api_error
-from src.models import Users, Friends, FriendRequest, BudgetHistory, WeeklyBudgetHistory, FavoriteFuelStation
+from src.models import Users, Friends, FriendRequest, BudgetHistory, WeeklyBudgetHistory, FavoriteFuelStation, UserActivity
 
 
 @require_api_key
@@ -47,11 +47,10 @@ def delete_account():
                                   Q(recipient=user_info)).delete()
             # Delete budget history
             BudgetHistory.objects(user=user_info).delete()
-            # Delete weekly budget history
-            WeeklyBudgetHistory.objects(user=user_info).delete()
             # Delete favorite fuel stations
             FavoriteFuelStation.objects(user=user_info).delete()
-
+            # Delete user activity
+            UserActivity.objects(user=user_info).delete()
             user_info.delete()
             return jsonify({"message": "Account deleted successfully!"}), 200
         else:

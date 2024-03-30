@@ -1,9 +1,9 @@
 import React, {useState, useRef} from 'react';
 import {View, Text, TextInput, Button} from 'react-native';
 import axios from 'axios';
-import { useCombinedContext } from "../CombinedContext";
+import { useCombinedContext } from "../../CombinedContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import Toast from '../Components/Toast.js';
+import Toast from '../../Components/Toast.js';
 import {forwardRef, useImperativeHandle} from 'react';
 
 //Styling
@@ -17,10 +17,10 @@ import {
     Wrapper,
     Container,
     LRContainer, LRButtonDiv
-} from "../styles/styles";
-import {Logo} from '../styles/images';
-import {H1, H2, H3, H4, H5, H6, Img, Txt} from '../styles/text.js';
-import {ButtonButton} from "../styles/buttons";
+} from "../../styles/styles";
+import {Logo} from '../../styles/images';
+import {H1, H2, H3, H4, H5, H6, Img, Txt} from '../../styles/text.js';
+import {ButtonButton} from "../../styles/buttons";
 
 const url = process.env.REACT_APP_BACKEND_URL
 

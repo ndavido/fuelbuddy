@@ -2,15 +2,15 @@ import React, {useState, useEffect} from 'react';
 import {View, Text, Button, TextInput, RefreshControl, TouchableOpacity} from 'react-native';
 import axios from 'axios';
 import {useNavigation} from '@react-navigation/native';
-import {useCombinedContext} from '../CombinedContext';
+import {useCombinedContext} from '../../CombinedContext';
 import * as Updates from 'expo-updates';
 
 // Styling
-import MainLogo from '../styles/mainLogo';
-import {H3, H4, H5, H6} from "../styles/text";
-import {AccountContainer, ButtonContainer, InputTxt, Main, TextContainer, WrapperScroll} from "../styles/styles";
-import {ButtonButton} from "../styles/buttons";
-import {AccountImg} from "../styles/images";
+import MainLogo from '../../styles/mainLogo';
+import {H3, H4, H5, H6} from "../../styles/text";
+import {AccountContainer, ButtonContainer, InputTxt, Main, TextContainer, WrapperScroll} from "../../styles/styles";
+import {ButtonButton} from "../../styles/buttons";
+import {AccountImg} from "../../styles/images";
 
 const url = process.env.REACT_APP_BACKEND_URL
 

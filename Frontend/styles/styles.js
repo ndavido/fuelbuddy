@@ -117,7 +117,7 @@ const LogoImg = styled.Image`
 
 export const WelcomeImg = () => (
     <LogoContainer>
-        <LogoImg source={require('../assets/welcome.png')}/>
+        <LogoImg source={require('../assets/appAssets/welcome.png')}/>
     </LogoContainer>
 );
 

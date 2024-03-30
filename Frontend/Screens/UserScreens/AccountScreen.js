@@ -15,7 +15,7 @@ import axios from 'axios';
 import {PanGestureHandler, GestureHandlerRootView, State} from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BottomSheet from '@gorhom/bottom-sheet';
-import {useCombinedContext} from "../CombinedContext";
+import {useCombinedContext} from "../../CombinedContext";
 import * as ImagePicker from "expo-image-picker";
 import {Camera} from "expo-camera";
 import {jwtDecode} from "jwt-decode";
@@ -24,11 +24,11 @@ import {jwtDecode} from "jwt-decode";
 import {
     AccountContainer,
     Main, TopDesign, TopInfo, WrapperScroll, DeveloperTick, Container, ButtonContainer, SearchBox, Content
-} from '../styles/styles.js';
-import {H1, H2, H3, H4, H5, H6, H8} from '../styles/text.js';
-import MainLogo from '../styles/mainLogo';
-import {AccountImg} from '../styles/images';
-import {ButtonButton} from "../styles/buttons";
+} from '../../styles/styles.js';
+import {H1, H2, H3, H4, H5, H6, H8} from '../../styles/text.js';
+import MainLogo from '../../styles/mainLogo';
+import {AccountImg} from '../../styles/images';
+import {ButtonButton} from "../../styles/buttons";
 
 const apiKey = process.env.REACT_NATIVE_API_KEY;
 const url = process.env.REACT_APP_BACKEND_URL;

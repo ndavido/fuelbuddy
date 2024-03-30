@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 from flask import jsonify
+from geopy.distance import geodesic
 
 from ..models import Vehicle
 
@@ -54,6 +55,44 @@ def handle_api_error(e):
         error_message = "Missing required data in the request."
     print(f"Error: {str(e)}")
     return jsonify({"error": error_message}), 500
+
+
+def get_station_data(fuel_station, user_location=None, radius=None):
+    station_data = {
+        'id': str(fuel_station.id),
+        'name': fuel_station.name,
+        'address': fuel_station.address,
+        'location': {
+            'latitude': fuel_station.latitude,
+            'longitude': fuel_station.longitude
+        },
+        'prices': {
+            'petrol_price': fuel_station.petrol_prices[-1].price if fuel_station.petrol_prices else None,
+            'petrol_updated_at': fuel_station.petrol_prices[-1].updated_at.strftime('%Y-%m-%d %H:%M:%S') if fuel_station.petrol_prices else None,
+            'petrol_price_verified': fuel_station.petrol_prices[-1].price_verified if fuel_station.petrol_prices else None,
+            'diesel_price': fuel_station.diesel_prices[-1].price if fuel_station.diesel_prices else None,
+            'diesel_updated_at': fuel_station.diesel_prices[-1].updated_at.strftime('%Y-%m-%d %H:%M:%S') if fuel_station.diesel_prices else None,
+            'diesel_price_verified': fuel_station.diesel_prices[-1].price_verified if fuel_station.diesel_prices else None,
+        },
+        'facilities': {
+            'car_wash': fuel_station.facilities.car_wash,
+            'car_repair': fuel_station.facilities.car_repair,
+            'car_service': fuel_station.facilities.car_service,
+            'car_parking': fuel_station.facilities.car_parking,
+            'atm': fuel_station.facilities.atm,
+            'convenience_store': fuel_station.facilities.convenience_store,
+            'food': fuel_station.facilities.food,
+            'phone_number': fuel_station.phone_number
+        }
+    }
+    if user_location and radius:
+        station_location = (fuel_station.latitude, fuel_station.longitude)
+        distance = geodesic(user_location, station_location).kilometers
+        if distance <= radius:
+            station_data['distance_from_user'] = distance
+        else:
+            return None
+    return station_data
 
 
 def get_trim_info_by_year(model):
