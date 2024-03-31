@@ -17,11 +17,13 @@ import {
 import MainLogo from '../../styles/mainLogo';
 import {H2, H3, H4, H5, H6, H7, H8} from "../../styles/text";
 import {ButtonButton} from "../../styles/buttons";
+import {useNavigation} from "@react-navigation/native";
 
 const apiKey = process.env.REACT_NATIVE_API_KEY;
 const url = process.env.REACT_APP_BACKEND_URL
 
 const DashboardScreen = () => {
+    const navigate = useNavigation();
     const [userVehicle, setUserVehicle] = useState({});
     const [loading, setLoading] = useState(true);
     const [friendActivity, setFriendActivity] = useState([]);
@@ -44,6 +46,8 @@ const DashboardScreen = () => {
 
     const [newDeductionInput, setNewDeductionInput] = useState('');
     const [userDeductions, setUserDeductions] = useState([]);
+    const [startOfWeek, setStartOfWeek] = useState(new Date());
+    const [endOfWeek, setEndOfWeek] = useState(new Date());
 
     const [cumulativeValue, setCumulativeValue] = useState(0);
 
@@ -58,13 +62,23 @@ const DashboardScreen = () => {
         return `${month} ${day}`;
     };
 
+    const getWeekLabel = (offset) => {
+        const today = new Date();
+        const firstDayOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay() + 1);
+        const targetDate = new Date(firstDayOfWeek.setDate(firstDayOfWeek.getDate() + (offset * 7)));
+        const year = targetDate.getFullYear();
+        const month = String(targetDate.getMonth() + 1).padStart(2, '0');
+        const day = String(targetDate.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
     const barLabels = [
         getMondayLabel(-2),
         getMondayLabel(-1),
         getMondayLabel(0),
     ];
 
-    const {token, userData, updateUserFromBackend, logout} = useCombinedContext();
+    const {token, userData, updateUserFromBackend} = useCombinedContext();
 
 
     useEffect(() => {
@@ -203,7 +217,7 @@ const DashboardScreen = () => {
 
             const endDate = new Date(startDate);
             endDate.setDate(endDate.getDate() + 6);
-            endDate.setHours(0, 0, 0, 0)
+            endDate.setHours(23, 59, 59, 999)
 
             let cumulativeValue = 0;
             const dailyData = [];
@@ -220,6 +234,23 @@ const DashboardScreen = () => {
             console.log(dailyData);
 
             console.log(weeklyBudget);
+
+            console.log("Start Date", startDate)
+            setStartOfWeek(startDate);
+            console.log("End Date", endDate)
+            setEndOfWeek(endDate);
+
+            const filteredDeductions = deductions.filter(deduction => {
+                const deductionDate = new Date(deduction.updated_at);
+                return deductionDate >= startOfWeek && deductionDate <= endOfWeek;
+            });
+
+            if (filteredDeductions.length === 0) {
+                console.log("No deductions found for this week");
+            }
+
+            await setUserDeductions(filteredDeductions);
+            console.log("Deductions", userDeductions);
 
             try {
                 const weeklyBudgetsResponse = await axios.post(`${url}/get_weekly_budgets`, {id: userData.username}, {
@@ -291,31 +322,31 @@ const DashboardScreen = () => {
 
     const collectVehicleInfo = async () => {
         try {
-                const jwt_user = await AsyncStorage.getItem('token');
-                const user_id = jwtDecode(jwt_user).sub;
+            const jwt_user = await AsyncStorage.getItem('token');
+            const user_id = jwtDecode(jwt_user).sub;
 
-                const config = {
-                    headers: {
-                        'X-API-Key': apiKey,
-                        'Authorization': `Bearer ${jwt_user}`,
-                    },
-                };
-                const response = await axios.post(`${url}/get_user_vehicle`, {id: user_id}, config);
+            const config = {
+                headers: {
+                    'X-API-Key': apiKey,
+                    'Authorization': `Bearer ${jwt_user}`,
+                },
+            };
+            const response = await axios.post(`${url}/get_user_vehicle`, {id: user_id}, config);
 
-                console.log(response.data)
-                if (response.data) {
-                    setUserVehicle(response.data);
-                    console.log(userVehicle);
-                }
-
-            } catch (error) {
-                if (error.response && error.response.status === 404) {
-                    console.log('No vehicle found');
-                    setUserVehicle(null);
-                } else {
-                    console.error('Error fetching User Vehicle:', error);
-                }
+            console.log(response.data)
+            if (response.data) {
+                setUserVehicle(response.data);
+                console.log(userVehicle);
             }
+
+        } catch (error) {
+            if (error.response && error.response.status === 404) {
+                console.log('No vehicle found');
+                setUserVehicle(null);
+            } else {
+                console.error('Error fetching User Vehicle:', error);
+            }
+        }
     }
 
     const handleAddDeductionPress = () => {
@@ -372,7 +403,7 @@ const DashboardScreen = () => {
             const apiUrl = `${url}/update_budget`;
 
             const requestBody = {
-                date_of_week: getMondayLabel(0),
+                date_of_week: startOfWeek.toISOString().split('T')[0],
                 weekly_budget: newWeeklyBudget,
             };
 
@@ -415,6 +446,15 @@ const DashboardScreen = () => {
     const handleModalCancel = () => {
         setIsModalVisible(false);
         setNewWeeklyBudgetInput('');
+    };
+
+    const handleVehicle = async () => {
+        try {
+            navigate.navigate('Account', { screen: 'Vehicle' });
+
+        } catch (error) {
+            console.error('Error Loading Vehicle Information:', error);
+        }
     };
 
     return (
@@ -581,39 +621,49 @@ const DashboardScreen = () => {
                                         );
                                     })
                                 ) : (
-                                    <H6 style={{paddingTop: 10, paddingBottom: 10}}>No Budget activity yet!</H6>
+                                    <H6 style={{paddingTop: 10, paddingBottom: 10}}>No Budget activity for this
+                                        week!</H6>
                                 )}
                             </View>
                         </Card>
                         <Card>
-                            <H8 style={{opacity: 0.5}}>Vehicle</H8>
-                            <H5>My Car</H5>
-                            <ButtonContainer style={{position: 'absolute', marginTop: 10, marginLeft: 10}}>
-                                <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
-                                    {userData.weekly_budget ? (
-                                        <ButtonButton text='View'
-                                                      accessibilityLabel="Add Deduction Button" accessible={true}
-                                                      onPress={handleAddDeductionPress}/>
-                                    ) : (
-                                        <ButtonButton icon='plus' text='Add' accessibilityLabel="Add Budget Button"
-                                                      accessible={true} onPress={handleUpdateButtonPress}/>
-                                    )}
-                                </View>
-                            </ButtonContainer>
-                            <View style={{
-                                flex: 1,
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                zIndex: 0,
-                                top: -10,
-                            }}>
-                                <Image source={require('../../assets/appAssets/car.png')}
-                                       style={{height: 150, width: 200}}/>
+                        <H8 style={{opacity: 0.5}}>Vehicle</H8>
+                        <H5>My Car</H5>
+                        <ButtonContainer style={{position: 'absolute', marginTop: 10, marginLeft: 10}}>
+                            <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
+                                {userVehicle ? (
+                                    <ButtonButton text='View'
+                                                  accessibilityLabel="Add Deduction Button" accessible={true}
+                                                  onPress={handleVehicle}/>
+                                ) : (
+                                    <ButtonButton icon='plus' text='Add' accessibilityLabel="Add Budget Button"
+                                                  accessible={true} onPress={handleVehicle}/>
+                                )}
                             </View>
-                            <View style={{top: -10}}>
-                                <H5>{userVehicle.make} {userVehicle.model}</H5>
-                                <H6 style={{opacity: 0.5}}>{userVehicle.city_fuel_per_100km_l}l/100km · Average</H6>
-                            </View>
+                        </ButtonContainer>
+                        <>
+                            {userVehicle ? (
+                                <>
+                                    <View style={{
+                                        flex: 1,
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        zIndex: 0,
+                                        top: -10,
+                                    }}>
+                                        <Image source={require('../../assets/appAssets/car.png')}
+                                               style={{height: 150, width: 200}}/>
+                                    </View>
+                                    <View style={{top: -10}}>
+                                        <H5>{userVehicle.make} {userVehicle.model}</H5>
+                                        <H6 style={{opacity: 0.5}}>100km/{userVehicle.city_fuel_per_100km_l}l ·
+                                            Average</H6>
+                                    </View>
+                                </>
+                            ) : (
+                                <H6 style={{paddingTop: 10, paddingBottom: 10}}>No Vehicle Set!</H6>
+                            )}
+                        </>
                         </Card>
                         <Card>
                             <H8 style={{opacity: 0.5}}>Friends</H8>
