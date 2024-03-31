@@ -41,17 +41,20 @@ def update_budget():
             date_of_week = current_date - timedelta(days=current_date.weekday())
 
         if budget_history.weekly_budgets:
-            last_update_date = budget_history.change_date.date()
-            if (current_date - last_update_date).days >= 7:
+            last_week = budget_history.weekly_budgets[-1].date_of_week
+            if (current_date - last_week).days >= 7:
                 new_week_data = WeekData(date_of_week=date_of_week, amount=float(data.get('weekly_budget', 0)))
                 budget_history.weekly_budgets.append(new_week_data)
             else:
                 if 'weekly_budget' in data:
-                    budget_history.weekly_budgets[-1].amount = float(data['weekly_budget'])
+                    if last_week == date_of_week:
+                        budget_history.weekly_budgets[-1].amount = float(data['weekly_budget'])
+                    else:
+                        new_week_data = WeekData(date_of_week=date_of_week, amount=float(data['weekly_budget']))
+                        budget_history.weekly_budgets.append(new_week_data)
         else:
-            if 'weekly_budget' in data:
-                new_week_data = WeekData(date_of_week=date_of_week, amount=float(data['weekly_budget']))
-                budget_history.weekly_budgets.append(new_week_data)
+            new_week_data = WeekData(date_of_week=date_of_week, amount=float(data['weekly_budget']))
+            budget_history.weekly_budgets.append(new_week_data)
 
         # Update user's weekly budget field
         if 'weekly_budget' in data:
