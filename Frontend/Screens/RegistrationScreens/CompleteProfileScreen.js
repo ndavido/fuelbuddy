@@ -3,7 +3,18 @@ import axios from 'axios';
 import {useNavigation} from '@react-navigation/native';
 import {useCombinedContext} from '../../CombinedContext';
 import * as Updates from 'expo-updates';
-
+import {
+    View,
+    Text,
+    TextInput,
+    FlatList,
+    TouchableOpacity,
+    Button,
+    StyleSheet,
+    Modal,
+    RefreshControl
+} from 'react-native';
+import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 // Styling
 import {H3, H4, H5, H6} from "../../styles/text";
 import {
@@ -27,6 +38,48 @@ const CompleteProfileScreen = () => {
     const [message, setMessage] = useState('');
     const navigation = useNavigation();
     const {token, userData, setUser, updateUserFromBackend} = useCombinedContext();
+    const [profilePicture, setProfilePicture] = useState(null);
+    const selectProfilePicture = () => {
+        launchImageLibrary({ mediaType: 'photo' }, (response) => {
+            if (!response.didCancel) {
+                setProfilePicture(response);
+            }
+        });
+    };
+    const uploadProfilePicture = async () => {
+        try {
+            if (!profilePicture) {
+                Alert.alert('Error', 'Please select a profile picture');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('profile_picture', {
+                uri: profilePicture.uri,
+                name: 'profile.jpg',
+                type: 'image/jpeg',
+            });
+
+            const apiKey = process.env.REACT_NATIVE_API_KEY;
+            const url = process.env.REACT_APP_BACKEND_URL;
+            const config = {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'X-API-Key': apiKey,
+                    'Authorization': `Bearer ${token}`,
+                },
+            };
+
+            const response = await axios.post(`${url}/upload_profile_picture`, formData, config);
+
+            Alert.alert('Success', response.data.message);
+        } catch (error) {
+            console.error('Error uploading profile picture:', error);
+            Alert.alert('Error', 'Failed to upload profile picture. Please try again.');
+        }
+    };
+
+    
 
     async function reloadApp() {
         await Updates.reloadAsync();
@@ -34,6 +87,7 @@ const CompleteProfileScreen = () => {
         /*TODO Remove DEV ONLY!!*/
         console.log("Reloaded")
     }
+
 
     const handleSave = async () => {
         try {
@@ -86,6 +140,15 @@ const CompleteProfileScreen = () => {
                 <Content>
                     <Container>
                         <H3 tmargin='20px' bmargin='20px'>Complete Registration</H3>
+                        <View style={{ alignItems: 'center', marginBottom: 20 }}>
+                            <TouchableOpacity onPress={selectProfilePicture}>
+                                {profilePicture ? (
+                                    <Image source={{ uri: profilePicture.uri }} style={{ width: 200, height: 200 }} />
+                                ) : (
+                                    <Text>Select Profile Picture</Text>
+                                )}
+                            </TouchableOpacity>
+                        </View>
                         <>
                             <H6 bmargin='5px'>Username</H6>
                             <TextContainer bgColor='grey'>@{userData.username}</TextContainer>
