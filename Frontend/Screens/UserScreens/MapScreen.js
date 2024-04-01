@@ -702,7 +702,7 @@ const MapScreen = () => {
         return nearbyStations;
     };
 
-    const handleNearbyStationsPress = () => {
+    const renderOptionsPress = () => {
         setShowStationInfo(false);
         const nearbyStations = findNearbyStations(location.coords);
         setNearbyStations(nearbyStations);
@@ -717,7 +717,7 @@ const MapScreen = () => {
         setShowRouteInfo(false);
     }
 
-    const renderNearbyStationsBottomSheet = () => {
+    const renderOptionsBottomSheet = () => {
         if (!isWeb && showNearbyStationsSheet) {
             return (
                 <BottomSheet snapPoints={['20%', '85%']} index={0}>
@@ -748,20 +748,19 @@ const MapScreen = () => {
         {renderMap()}
         {renderStationBottomSheet()}
         {renderRouteInfoBottomSheet()}
-        {renderNearbyStationsBottomSheet()}
+        {renderOptionsBottomSheet()}
         <View style={{position: 'absolute', top: 55, left: 10, zIndex: 0, display: 'flex', flexDirection: 'row'}}>
 
             <TouchableOpacity style={{marginRight: 10}}>
                 <ButtonButton series="mci" icon="information" iconColor="#b8bec2" color="#F7F7F7"
-                              onPress={handleNearbyStationsPress}/>
+                              onPress={renderOptionsPress}/>
             </TouchableOpacity>
             <TouchableOpacity>
-                <ButtonButton icon="list" iconColor="#b8bec2" color="#F7F7F7" onPress={handleNearbyStationsPress}/>
+                <ButtonButton icon="list" iconColor="#b8bec2" color="#F7F7F7" onPress={renderOptionsPress}/>
             </TouchableOpacity>
         </View>
 
 
-        {/*{renderUpcomingDirectionView()}*/}
         <Modal
             animationType="slide"
             transparent={true}
@@ -780,12 +779,14 @@ const MapScreen = () => {
                     <InputTxt
                         placeholder="New Petrol Price"
                         keyboardType="numeric"
+                        placeholderTextColor="#000000"
                         value={newPetrolPrice}
                         onChangeText={(text) => setNewPetrolPrice(text)}
                     />
                     <InputTxt
                         placeholder="New Diesel Price"
                         keyboardType="numeric"
+                        placeholderTextColor="#000000"
                         value={newDieselPrice}
                         onChangeText={(text) => setNewDieselPrice(text)}
                     />
