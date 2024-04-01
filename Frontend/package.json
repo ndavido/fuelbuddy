@@ -66,6 +66,7 @@
     "react-native-web": "~0.19.6",
     "react-native-web-maps": "^0.3.0",
     "react-native-webview": "13.6.4",
+    "react-native-wheel-scrollview-picker": "^2.0.4",
     "styled-components": "^5.1.1"
   },
   "devDependencies": {

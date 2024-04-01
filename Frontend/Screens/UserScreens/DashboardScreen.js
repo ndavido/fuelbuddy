@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {View, Image, Text, RefreshControl, Button, TextInput, Modal, StyleSheet} from 'react-native';
+import ScrollPicker from "react-native-wheel-scrollview-picker";
 import {BarChart, LineChart, PieChart} from "react-native-gifted-charts"
 import {jwtDecode} from "jwt-decode";
 import {useCombinedContext} from "../../CombinedContext";
@@ -12,12 +13,13 @@ import {
     WrapperScroll,
     DashboardContainer,
     TitleContainer,
-    CardOverlap, CardContainer, ButtonContainer, Card, ModalContent, InputTxt, CardMini
+    CardOverlap, CardContainer, ButtonContainer, Card, ModalContent, InputTxt, CardMini, Container
 } from '../../styles/styles.js';
 import MainLogo from '../../styles/mainLogo';
 import {H2, H3, H4, H5, H6, H7, H8} from "../../styles/text";
 import {ButtonButton} from "../../styles/buttons";
 import {useNavigation} from "@react-navigation/native";
+
 
 const apiKey = process.env.REACT_NATIVE_API_KEY;
 const url = process.env.REACT_APP_BACKEND_URL
@@ -37,6 +39,7 @@ const DashboardScreen = () => {
     const [newWeeklyBudgetInput, setNewWeeklyBudgetInput] = useState('');
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isDeductionModalVisible, setIsDeductionModalVisible] = useState(false);
+    const [selectedDeduction, setSelectedDeduction] = useState(0);
 
     const [weeklyBudget, setWeeklyBudget] = useState(false);
 
@@ -44,7 +47,6 @@ const DashboardScreen = () => {
     const [barData, setBarData] = useState([]);
     const [pieData, setPieData] = useState([]);
 
-    const [newDeductionInput, setNewDeductionInput] = useState('');
     const [userDeductions, setUserDeductions] = useState([]);
     const [startOfWeek, setStartOfWeek] = useState(new Date());
     const [endOfWeek, setEndOfWeek] = useState(new Date());
@@ -53,23 +55,15 @@ const DashboardScreen = () => {
 
     const labels = ["Mon", "", "Wed", "", "Fri", "", "Sun"];
 
+    const deductionValues = Array.from({length: 500}, (_, i) => (i + 1).toString());
+
     const getMondayLabel = (offset) => {
         const today = new Date();
         const firstDayOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay() + 1);
         const targetDate = new Date(firstDayOfWeek.setDate(firstDayOfWeek.getDate() + (offset * 7)));
         const month = targetDate.toLocaleString('default', {month: 'short'});
-        const day = targetDate.getDate();
+        const day = targetDate.getDate().toString().padStart(2, '0');
         return `${month} ${day}`;
-    };
-
-    const getWeekLabel = (offset) => {
-        const today = new Date();
-        const firstDayOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay() + 1);
-        const targetDate = new Date(firstDayOfWeek.setDate(firstDayOfWeek.getDate() + (offset * 7)));
-        const year = targetDate.getFullYear();
-        const month = String(targetDate.getMonth() + 1).padStart(2, '0');
-        const day = String(targetDate.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
     };
 
     const barLabels = [
@@ -78,7 +72,7 @@ const DashboardScreen = () => {
         getMondayLabel(0),
     ];
 
-    const {token, userData, updateUserFromBackend} = useCombinedContext();
+    const {token, userData, updateUserFromBackend, setUser} = useCombinedContext();
 
 
     useEffect(() => {
@@ -210,10 +204,18 @@ const DashboardScreen = () => {
             }, {});
 
             const today = new Date();
+            const firstDayOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay() + 1);
+            const targetDate = new Date(firstDayOfWeek.setDate(firstDayOfWeek.getDate() + (0 * 7)));
+            const year = targetDate.getFullYear();
+            const month = (targetDate.getMonth() + 1).toString().padStart(2, '0');
+            const day = targetDate.getDate().toString().padStart(2, '0');
+            const startOfWeek = `${year}-${month}-${day}`;
+
+            console.log("Start of Week Label", startOfWeek)
+
             let dayOfWeek = today.getDay() - 1;
             if (dayOfWeek === -1) dayOfWeek = 6;
-            const startDate = new Date(today.setDate(today.getDate() - dayOfWeek));
-            startDate.setHours(0, 0, 0, 0);
+            const startDate = new Date(startOfWeek);
 
             const endDate = new Date(startDate);
             endDate.setDate(endDate.getDate() + 6);
@@ -242,7 +244,8 @@ const DashboardScreen = () => {
 
             const filteredDeductions = deductions.filter(deduction => {
                 const deductionDate = new Date(deduction.updated_at);
-                return deductionDate >= startOfWeek && deductionDate <= endOfWeek;
+                const WeekStart = new Date(startDate);
+                return deductionDate >= WeekStart && deductionDate <= endOfWeek;
             });
 
             if (filteredDeductions.length === 0) {
@@ -286,13 +289,9 @@ const DashboardScreen = () => {
                     {value: 0, color: '#6BFF91'},
                     {value: 1, color: '#F7F7F7'}
                 ];
-                const barData = [
-                    {value: 0},
-                    {value: 0},
-                    {value: 0},
-                ];
-                setBarData(barData);
-                setPieData(pieData);
+
+                const modifiedPieData = [{value: 0}, ...pieData];
+                setPieData(modifiedPieData);
 
             } else {
                 if (cumulativeValue > userData.weekly_budget) {
@@ -354,20 +353,21 @@ const DashboardScreen = () => {
     };
 
     const handleDeductionModalSubmit = () => {
-        if (!newDeductionInput.trim()) {
-            console.error('Please enter a valid deduction amount');
+        const deductionAmount = selectedDeduction;
+        if (deductionAmount < 1 || deductionAmount > 500) {
+            console.error('Please select a deduction amount between 1 and 500');
             return;
         }
 
-        addDeduction(parseFloat(newDeductionInput));
+        addDeduction(deductionAmount);
 
+        setSelectedDeduction(0)
         setIsDeductionModalVisible(false);
-        setNewDeductionInput('');
     };
 
     const handleDeductionModalCancel = () => {
         setIsDeductionModalVisible(false);
-        setNewDeductionInput('');
+        setSelectedDeduction(0)
     };
 
     const addDeduction = async (newDeduction) => {
@@ -415,9 +415,14 @@ const DashboardScreen = () => {
                 },
             });
 
+            const updatedUserData = {
+                ...userData,
+                weekly_budget: newWeeklyBudget,
+            }
+
             if (response.data.message) {
+                setUser({...updatedUserData});
                 console.log(response.data.message);
-                updateUserFromBackend();
                 await silentRefresh();
             } else {
                 console.error('Failed to update weekly budget:', response.data.error);
@@ -432,25 +437,27 @@ const DashboardScreen = () => {
     };
 
     const handleModalSubmit = () => {
-        if (!newWeeklyBudgetInput.trim()) {
-            console.error('Please enter a valid weekly budget');
+        const deductionAmount = selectedDeduction;
+        if (deductionAmount < 1 || deductionAmount > 500) {
+            console.error('Please select a deduction amount between 1 and 500');
             return;
         }
 
-        updateWeeklyBudget(parseFloat(newWeeklyBudgetInput));
+        updateWeeklyBudget(deductionAmount);
 
+        setSelectedDeduction(0)
         setIsModalVisible(false);
-        setNewWeeklyBudgetInput('');
+
     };
 
     const handleModalCancel = () => {
         setIsModalVisible(false);
-        setNewWeeklyBudgetInput('');
+        setSelectedDeduction(0)
     };
 
     const handleVehicle = async () => {
         try {
-            navigate.navigate('Account', { screen: 'Vehicle' });
+            navigate.navigate('Account', {screen: 'Vehicle'});
 
         } catch (error) {
             console.error('Error Loading Vehicle Information:', error);
@@ -594,7 +601,7 @@ const DashboardScreen = () => {
                                                 alignItems: 'center',
                                             }}>
                                                 <H8 style={{opacity: 0.5}}>Spent</H8>
-                                                <Text><H5>€</H5><H2>{cumulativeValue}/</H2><H5>€</H5><H2>{userData.weekly_budget}</H2></Text>
+                                                <Text><H5>€</H5><H2>{cumulativeValue}/</H2><H5>€</H5><H2>{userData.weekly_budget > 0 ? userData.weekly_budget : 0}</H2></Text>
                                             </View>
                                         );
                                     }}
@@ -627,43 +634,43 @@ const DashboardScreen = () => {
                             </View>
                         </Card>
                         <Card>
-                        <H8 style={{opacity: 0.5}}>Vehicle</H8>
-                        <H5>My Car</H5>
-                        <ButtonContainer style={{position: 'absolute', marginTop: 10, marginLeft: 10}}>
-                            <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
+                            <H8 style={{opacity: 0.5}}>Vehicle</H8>
+                            <H5>My Car</H5>
+                            <ButtonContainer style={{position: 'absolute', marginTop: 10, marginLeft: 10}}>
+                                <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
+                                    {userVehicle ? (
+                                        <ButtonButton text='View'
+                                                      accessibilityLabel="Add Deduction Button" accessible={true}
+                                                      onPress={handleVehicle}/>
+                                    ) : (
+                                        <ButtonButton icon='plus' text='Add' accessibilityLabel="Add Budget Button"
+                                                      accessible={true} onPress={handleVehicle}/>
+                                    )}
+                                </View>
+                            </ButtonContainer>
+                            <>
                                 {userVehicle ? (
-                                    <ButtonButton text='View'
-                                                  accessibilityLabel="Add Deduction Button" accessible={true}
-                                                  onPress={handleVehicle}/>
+                                    <>
+                                        <View style={{
+                                            flex: 1,
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            zIndex: 0,
+                                            top: -10,
+                                        }}>
+                                            <Image source={require('../../assets/appAssets/car.png')}
+                                                   style={{height: 150, width: 200}}/>
+                                        </View>
+                                        <View style={{top: -10}}>
+                                            <H5>{userVehicle.make} {userVehicle.model}</H5>
+                                            <H6 style={{opacity: 0.5}}>100km/{userVehicle.city_fuel_per_100km_l}l ·
+                                                Average</H6>
+                                        </View>
+                                    </>
                                 ) : (
-                                    <ButtonButton icon='plus' text='Add' accessibilityLabel="Add Budget Button"
-                                                  accessible={true} onPress={handleVehicle}/>
+                                    <H6 style={{paddingTop: 10, paddingBottom: 10}}>No Vehicle Set!</H6>
                                 )}
-                            </View>
-                        </ButtonContainer>
-                        <>
-                            {userVehicle ? (
-                                <>
-                                    <View style={{
-                                        flex: 1,
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        zIndex: 0,
-                                        top: -10,
-                                    }}>
-                                        <Image source={require('../../assets/appAssets/car.png')}
-                                               style={{height: 150, width: 200}}/>
-                                    </View>
-                                    <View style={{top: -10}}>
-                                        <H5>{userVehicle.make} {userVehicle.model}</H5>
-                                        <H6 style={{opacity: 0.5}}>100km/{userVehicle.city_fuel_per_100km_l}l ·
-                                            Average</H6>
-                                    </View>
-                                </>
-                            ) : (
-                                <H6 style={{paddingTop: 10, paddingBottom: 10}}>No Vehicle Set!</H6>
-                            )}
-                        </>
+                            </>
                         </Card>
                         <Card>
                             <H8 style={{opacity: 0.5}}>Friends</H8>
@@ -709,17 +716,32 @@ const DashboardScreen = () => {
                                                   onPress={handleModalCancel}/>
                                 </View>
                             </ButtonContainer>
-                            <InputTxt
-                                value={newWeeklyBudgetInput}
-                                onChangeText={(text) => setNewWeeklyBudgetInput(text)}
-                                keyboardType="numeric"
-                                placeholder="Enter amount"
-                                accessibilityLabel="Add Budget Text"
-                            />
+                            <Container style={{height: 160, width: 200}}>
+                                <ScrollPicker
+                                    dataSource={deductionValues}
+                                    onValueChange={(data, selectedIndex) => {
+                                      setSelectedDeduction(selectedIndex + 1)
+                                    }}
+                                    itemTextStyle={{fontFamily: 'Poppins_500Medium'}}
+                                    wrapperHeight={120}
+                                    wrapperWidth={200}
+                                    wrapperBackground={'#FFFFFF'}
+                                    itemHeight={40}
+                                    highlightColor={'#d8d8d8'}
+                                    highlightBorderWidth={2}
+                                    activeItemColor={'#222121'}
+                                    itemColor={'#B4B4B4'}
+                                />
+                            </Container>
                             <ButtonContainer style={{width: "auto", position: "relative"}}>
-                                <ButtonButton icon="plus" color="#6BFF91" text="Add Budget"
-                                              accessibilityLabel="Add Budget Button 2" accessible={true}
-                                              onPress={handleModalSubmit}/>
+                                <ButtonButton
+                                    color="#6BFF91"
+                                    txtWidth="100%"
+                                    text="Add Budget"
+                                    accessibilityLabel="Add Budget Button 2"
+                                    accessible={true}
+                                    onPress={handleModalSubmit}
+                                />
                             </ButtonContainer>
                         </ModalContent>
                     </View>
@@ -732,7 +754,7 @@ const DashboardScreen = () => {
                 >
                     <View style={styles.modalContainer}>
                         <ModalContent>
-                            <H5 tmargin="10px" bmargin="30px" style={{textAlign: 'center'}}>Add Deduction</H5>
+                            <H5 tmargin="10px" bmargin="30px" style={{textAlign: 'center'}}>Deduct From Budget</H5>
                             <ButtonContainer style={{position: 'absolute', marginTop: 20, marginLeft: 20}}>
                                 <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
                                     <ButtonButton icon="cross" color="#eaedea" iconColor="#b8bec2" accessible={true}
@@ -740,17 +762,31 @@ const DashboardScreen = () => {
                                                   onPress={handleDeductionModalCancel}/>
                                 </View>
                             </ButtonContainer>
-                            <InputTxt
-                                value={newDeductionInput}
-                                onChangeText={(text) => setNewDeductionInput(text)}
-                                keyboardType="numeric"
-                                placeholder="Enter deduction amount"
-                                accessibilityLabel="Add Deduction Text"
-                            />
+                            <Container style={{height: 160, width: 200}}>
+                                <ScrollPicker
+                                    dataSource={deductionValues}
+                                    onValueChange={(data, selectedIndex) => {
+                                      setSelectedDeduction(selectedIndex + 1)
+                                    }}
+                                    wrapperHeight={120}
+                                    wrapperWidth={200}
+                                    wrapperBackground={'#FFFFFF'}
+                                    itemHeight={40}
+                                    highlightColor={'#d8d8d8'}
+                                    highlightBorderWidth={2}
+                                    activeItemColor={'#222121'}
+                                    itemColor={'#B4B4B4'}
+                                />
+                            </Container>
                             <ButtonContainer style={{width: "auto", position: "relative"}}>
-                                <ButtonButton icon="plus" color="#6BFF91" text="Deduct"
-                                              accessibilityLabel="Add Deduction Button 2" accessible={true}
-                                              onPress={handleDeductionModalSubmit}/>
+                                <ButtonButton
+                                    color="#6BFF91"
+                                    txtWidth="100%"
+                                    text="Deduct"
+                                    accessibilityLabel="Add Deduction Button 2"
+                                    accessible={true}
+                                    onPress={() => handleDeductionModalSubmit()}
+                                />
                             </ButtonContainer>
                         </ModalContent>
                     </View>
