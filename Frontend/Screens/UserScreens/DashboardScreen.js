@@ -703,7 +703,6 @@ const DashboardScreen = () => {
                 <Modal
                     visible={isModalVisible}
                     onRequestClose={() => setIsModalVisible(false)}
-                    animationType="slide"
                     transparent={true}
                 >
                     <View style={styles.modalContainer}>
@@ -749,7 +748,6 @@ const DashboardScreen = () => {
                 <Modal
                     visible={isDeductionModalVisible}
                     onRequestClose={() => setIsDeductionModalVisible(false)}
-                    animationType="slide"
                     transparent={true}
                 >
                     <View style={styles.modalContainer}>
@@ -801,6 +799,7 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.3)',
     },
 });
 
