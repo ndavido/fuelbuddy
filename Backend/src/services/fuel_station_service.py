@@ -3,7 +3,8 @@
 from flask import request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from mongoengine.errors import DoesNotExist
-from ..models import FuelStation, Location, PetrolPrices, DieselPrices, FuelPrices, Users, FavoriteFuelStation, UserActivity, ChargingStation, EVPrices
+from ..models import FuelStation, Location, PetrolPrices, DieselPrices, FuelPrices, Users, FavoriteFuelStation, \
+    UserActivity, ChargingStation, EVPrices
 from ..middleware import require_api_key
 from datetime import datetime
 from mongoengine.queryset.visitor import Q
@@ -11,6 +12,7 @@ from ..utils import handle_api_error, get_station_data
 from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
 # ! This is the route for sending fuel stations info to Frontend
 from flask import request, jsonify
+
 
 # ref: https://medium.com/@rahulmallah785671/geopy-library-in-python-how-to-calculate-distance-between-two-locations-with-precision-f29e95175f28
 
@@ -71,7 +73,7 @@ def get_fuel_stations():
         return handle_api_error(e)
 
 
-#! This is the route for storing fuel stations info from Frontend
+# ! This is the route for storing fuel stations info from Frontend
 
 
 @require_api_key
@@ -101,6 +103,7 @@ def store_fuel_stations():
         return jsonify({"message": "Fuel station stored successfully"})
     except Exception as e:
         return handle_api_error(e)
+
 
 # ? individually finds favorite fuel stations for a user
 # ? got the username sent from response body, then find the user object, searched FavoriteFuelStation collection for the user object
@@ -135,9 +138,11 @@ def get_favorite_fuel_stations():
                     },
                     "prices": {
                         "petrol_price": station.petrol_prices[-1].price if station.petrol_prices else None,
-                        "petrol_updated_at": station.petrol_prices[-1].updated_at.strftime('%Y-%m-%d %H:%M:%S') if station.petrol_prices else None,
+                        "petrol_updated_at": station.petrol_prices[-1].updated_at.strftime(
+                            '%Y-%m-%d %H:%M:%S') if station.petrol_prices else None,
                         "diesel_price": station.diesel_prices[-1].price if station.diesel_prices else None,
-                        "diesel_updated_at": station.diesel_prices[-1].updated_at.strftime('%Y-%m-%d %H:%M:%S') if station.diesel_prices else None
+                        "diesel_updated_at": station.diesel_prices[-1].updated_at.strftime(
+                            '%Y-%m-%d %H:%M:%S') if station.diesel_prices else None
                     },
                 } for station in fuel_stations
             ]
@@ -154,7 +159,7 @@ def get_favorite_fuel_stations():
         return handle_api_error(e)
 
 
-#! this route is for managing favorite fuel station (add/remove)
+# ! this route is for managing favorite fuel station (add/remove)
 @require_api_key
 @jwt_required()
 def favorite_fuel_station():
@@ -188,7 +193,8 @@ def favorite_fuel_station():
                 UserActivity(user=user, activity_type="favorite_station",
                              details=f"{user.username} marked {station.name} as a favorite.", station=station).save()
 
-                return jsonify({"message": f"Fuel station '{station.name}' has been added to favorites. user: '{user_id}'"}), 200
+                return jsonify(
+                    {"message": f"Fuel station '{station.name}' has been added to favorites. user: '{user_id}'"}), 200
 
             elif station in favorite_doc.favorite_stations:
                 favorite_doc.favorite_stations.remove(station)
@@ -198,12 +204,14 @@ def favorite_fuel_station():
                 UserActivity(user=user, activity_type="favorite_station",
                              details=f"{user.username} unmarked {station.name} as a favorite.", station=station).save()
 
-                return jsonify({"message": f"Fuel station '{station.name}' has been removed from favorites. user: '{user_id}'"}), 200
+                return jsonify({
+                                   "message": f"Fuel station '{station.name}' has been removed from favorites. user: '{user_id}'"}), 200
 
             else:
                 favorite_doc.favorite_stations.append(station)
                 favorite_doc.save()
-                return jsonify({"message": f"Fuel station '{station.name}' has been added to favorites. user: '{user_id}'"}), 200
+                return jsonify(
+                    {"message": f"Fuel station '{station.name}' has been added to favorites. user: '{user_id}'"}), 200
 
         else:
             return jsonify({"error": "User or fuel station not found."}), 404
@@ -211,9 +219,47 @@ def favorite_fuel_station():
     except Exception as e:
         return handle_api_error(e)
 
+
+# ! this route is for getting the past fuel prices of a selected station
+@require_api_key
+@jwt_required()
+def get_past_petrol_prices():
+    try:
+        data = request.get_json()
+        station_id = data.get('station_id')
+
+        station = FuelStation.objects(id=station_id).first()
+
+        if not station:
+            return jsonify({"error": "Fuel station not found."}), 404
+
+        fuel_prices = FuelPrices.objects(station=station)
+        if fuel_prices:
+            prices_data = []
+            for fuel_price in fuel_prices:
+                prices_data.append({
+                    "station_id": str(fuel_price.station.id),
+                    "petrol_prices": [{
+                        "price": petrol.price,
+                        "price_verified": petrol.price_verified,
+                        "updated_at": petrol.updated_at
+                    } for petrol in fuel_price.petrol_prices],
+                    "diesel_prices": [{
+                        "price": diesel.price,
+                        "price_verified": diesel.price_verified,
+                        "updated_at": diesel.updated_at
+                    } for diesel in fuel_price.diesel_prices],
+                    "updated_at": fuel_price.updated_at
+                })
+            return jsonify(prices_data), 200
+        else:
+            return jsonify({"error": "No fuel prices found for this station."}), 404
+
+    except Exception as e:
+        return handle_api_error(e)
+
+
 # ! This is the route for storing petrol fuel prices info from Frontend
-
-
 @require_api_key
 @jwt_required()
 def store_fuel_prices():
@@ -263,7 +309,8 @@ def store_fuel_prices():
             new_price.save()
 
             UserActivity(user=user, activity_type="fuel_price_update",
-                         details=f"{user.username} updated fuel price at {fuel_station.name}", station=fuel_station).save()
+                         details=f"{user.username} updated fuel price at {fuel_station.name}",
+                         station=fuel_station).save()
 
         return jsonify({"message": "Fuel prices stored successfully"})
     except DoesNotExist:
