@@ -2,7 +2,7 @@
     <b>Collaborative Project</b>
 </h1>
 <p align="center">
-  <img src="https://github.com/ndavido/fuelbuddy/raw/main/Frontend/assets/fuelbuddyLogos/fuelbuddyLogo.png" alt="fuelbuddy Logo">
+  <img src="https://github.com/ndavido/fuelbuddy/raw/main/Frontend/assets/fuelbuddy_media/fuelbuddy_advert_to_gif.gif" alt="fuelbuddy gif">
 </p>
 
 ## **Application Overview**
