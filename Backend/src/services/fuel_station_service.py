@@ -4,7 +4,7 @@ from flask import request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from mongoengine.errors import DoesNotExist
 from ..models import FuelStation, Location, PetrolPrices, DieselPrices, FuelPrices, Users, FavoriteFuelStation, \
-    UserActivity, ChargingStation, EVPrices
+    UserActivity, ChargingStation, EVPrices, RatingUpdate
 from ..middleware import require_api_key
 from datetime import datetime
 from mongoengine.queryset.visitor import Q
@@ -257,7 +257,31 @@ def get_past_petrol_prices():
 
     except Exception as e:
         return handle_api_error(e)
+@require_api_key
+@jwt_required()
+def add_rating_to_fuel_station():
+    try:
+        data = request.get_json()
+        station_id = data.get('station_id')
+        rating_value = data.get('rating')
 
+        if not station_id:
+            return jsonify({"error": "Station ID is required."}), 400
+        if not rating_value or not 0 <= rating_value <= 5:
+            return jsonify({"error": "Invalid rating value. It should be between 0 and 5."}), 400
+
+        station = FuelStation.objects(id=station_id).first()
+        if not station:
+            return jsonify({"error": "Fuel station not found."}), 404
+
+        rating_update = RatingUpdate(rating=rating_value, updated_at=datetime.utcnow())
+
+        station.update(push__ratings=rating_update)
+
+        return jsonify({"message": "Rating added successfully."}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # ! This is the route for storing petrol fuel prices info from Frontend
 @require_api_key
