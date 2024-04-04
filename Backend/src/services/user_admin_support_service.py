@@ -141,6 +141,7 @@ def reply_to_ticket():
             ticket.last_updated = datetime.utcnow()
             ticket.save()
         else:
+            ticket = SupportTicket.objects(id=ticket_id).first()
             ticket.messages.append(Message(sender="user", content=message))
             ticket.last_updated = datetime.utcnow()
             ticket.save()
@@ -189,4 +190,5 @@ def mark_ticket_as_solved():
         return jsonify({"message": "Ticket marked as solved"}), 200
 
     except Exception as e:
+        print("Error occurred:", e)
         return handle_api_error(e)

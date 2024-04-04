@@ -24,9 +24,9 @@ class SupportTicket(Document):
     last_updated = DateTimeField(default=datetime.utcnow)
 
     meta = {
+        'collection': 'support_ticket',
         'indexes': [
-            'user',
-            'is_open',
-            {'fields': ['-last_updated'], 'background': True}
+            {'fields': ['-last_updated']}
         ]
     }
+# , 'background': True
