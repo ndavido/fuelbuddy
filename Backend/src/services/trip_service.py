@@ -45,4 +45,4 @@ def save_trip():
         return jsonify({"error": "User does not exist"}), 404
 
     except Exception as e:
-        return jsonify({"error": "An unexpected error occurred", "details": str(e)}), 500
+        handle_api_error(e)

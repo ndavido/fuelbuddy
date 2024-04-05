@@ -12,7 +12,8 @@ from ..models import Users, Friends, FriendRequest, BudgetHistory, FavoriteFuelS
 def account():
     try:
         user_id = get_jwt_identity()
-        user_info = Users.objects(id=user_id).first()
+        user_info = Users.objects(id=user_id).exclude('verification_code',
+                                                      'verified', 'verification_code_sent_at', 'updated_at', 'reg_full', 'profile_picture').first()
 
         if user_info:
             user_info_dict = user_info.to_mongo().to_dict()
@@ -20,16 +21,26 @@ def account():
                 user_info_dict['phone_number'], encryption_key)
             user_info_dict['phone_number'] = decrypted_phone
 
-            excluded_fields = ['_id', 'verification_code',
-                               'verified', 'verification_code_sent_at', 'updated_at']
-            for field in excluded_fields:
-                user_info_dict.pop(field, None)
-
             return jsonify({"message": "User found", "user": user_info_dict}), 200
         else:
             return jsonify({"error": "User not found"}), 404
     except Exception as e:
-        return jsonify({"error": f"Error fetching user account information: {str(e)}"}), 500
+        handle_api_error(e)
+
+
+@require_api_key
+@jwt_required()
+def load_profile_picture():
+    try:
+        user_id = get_jwt_identity()
+        user_info = Users.objects(id=user_id).only('profile_picture').first()
+
+        if user_info:
+            return jsonify({"profile_picture": user_info.profile_picture}), 200
+        else:
+            return jsonify({"error": "User not found"}), 404
+    except Exception as e:
+        handle_api_error(e)
 
 
 @require_api_key
@@ -56,7 +67,7 @@ def delete_account():
         else:
             return jsonify({"error": "User not found"}), 404
     except Exception as e:
-        return jsonify({"error": f"An error occurred while deleting the account: {str(e)}"}), 500
+        handle_api_error(e)
 
 
 @require_api_key
@@ -92,7 +103,7 @@ def edit_account():
         user.save()
         return jsonify({"message": "Account updated successfully"}), 200
     except Exception as e:
-        return jsonify({"error": "An unexpected error occurred", "details": str(e)}), 500
+        handle_api_error(e)
 
 
 @require_api_key
@@ -117,4 +128,4 @@ def upload_profile_picture():
         user.save()
         return jsonify({"message": "Profile picture updated successfully"}), 200
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        handle_api_error(e)

@@ -36,24 +36,30 @@ def update_budget():
         current_date = datetime.now().date()
 
         if 'date_of_week' in data:
-            date_of_week = datetime.strptime(data['date_of_week'], "%Y-%m-%d").date()
+            date_of_week = datetime.strptime(
+                data['date_of_week'], "%Y-%m-%d").date()
         else:
-            date_of_week = current_date - timedelta(days=current_date.weekday())
+            date_of_week = current_date - \
+                timedelta(days=current_date.weekday())
 
         if budget_history.weekly_budgets:
             last_week = budget_history.weekly_budgets[-1].date_of_week
             if (current_date - last_week).days >= 7:
-                new_week_data = WeekData(date_of_week=date_of_week, amount=float(data.get('weekly_budget', 0)))
+                new_week_data = WeekData(
+                    date_of_week=date_of_week, amount=float(data.get('weekly_budget', 0)))
                 budget_history.weekly_budgets.append(new_week_data)
             else:
                 if 'weekly_budget' in data:
                     if last_week == date_of_week:
-                        budget_history.weekly_budgets[-1].amount = float(data['weekly_budget'])
+                        budget_history.weekly_budgets[-1].amount = float(
+                            data['weekly_budget'])
                     else:
-                        new_week_data = WeekData(date_of_week=date_of_week, amount=float(data['weekly_budget']))
+                        new_week_data = WeekData(
+                            date_of_week=date_of_week, amount=float(data['weekly_budget']))
                         budget_history.weekly_budgets.append(new_week_data)
         else:
-            new_week_data = WeekData(date_of_week=date_of_week, amount=float(data['weekly_budget']))
+            new_week_data = WeekData(
+                date_of_week=date_of_week, amount=float(data['weekly_budget']))
             budget_history.weekly_budgets.append(new_week_data)
 
         # Update user's weekly budget field
@@ -70,7 +76,7 @@ def update_budget():
     except DoesNotExist:
         return jsonify({"error": "User not found"}), 404
     except Exception as e:
-        return handle_api_error(e)
+        handle_api_error(e)
 
 
 @require_api_key
@@ -111,8 +117,7 @@ def update_user_deduction():
     except DoesNotExist:
         return jsonify({"error": "User not found"}), 404
     except Exception as e:
-        return handle_api_error(e)
-
+        handle_api_error(e)
 
 
 @require_api_key
@@ -139,7 +144,7 @@ def get_deductions():
     except DoesNotExist:
         return jsonify({"error": "User not found"}), 404
     except Exception as e:
-        return handle_api_error(e)
+        handle_api_error(e)
 
 
 @require_api_key
@@ -148,7 +153,8 @@ def get_past_budgets():
     try:
         user_id = get_jwt_identity()
         user = Users.objects.get(id=user_id)
-        budget_history = BudgetHistory.objects(user=user).order_by('-id').first()
+        budget_history = BudgetHistory.objects(
+            user=user).order_by('-id').first()
 
         if budget_history is None:
             return jsonify({"error": "No budget history found for the user"}), 404
@@ -163,7 +169,7 @@ def get_past_budgets():
     except DoesNotExist:
         return jsonify({"error": "User not found"}), 404
     except Exception as e:
-        return handle_api_error(e)
+        handle_api_error(e)
 
 
 @require_api_key
@@ -202,7 +208,7 @@ def user_suggested_budget():
 
     # Get the last week's data
     last_weeks_data = [
-                          budget_history.new_budget for budget_history in user_budget_history][:look_back]
+        budget_history.new_budget for budget_history in user_budget_history][:look_back]
 
     # Make the prediction
     predicted_price = make_prediction(

@@ -55,7 +55,7 @@ def register():
         return jsonify({"message": "Verification code sent successfully!"})
 
     except Exception as e:
-        return handle_api_error(e)
+        handle_api_error(e)
 
 
 @require_api_key
@@ -91,7 +91,7 @@ def verify():
         else:
             return jsonify({"error": "Verification failed"}), 401
     except Exception as e:
-        return handle_api_error(e)
+        handle_api_error(e)
 
 
 @require_api_key
@@ -130,7 +130,7 @@ def login():
             return jsonify({"error": "User not registered"}), 404
 
     except Exception as e:
-        return handle_api_error(e)
+        handle_api_error(e)
 
 
 @require_api_key
@@ -172,4 +172,4 @@ def login_verify():
             return jsonify({"error": "Login code expired or not found"}), 400
 
     except Exception as e:
-        return handle_api_error(e)
+        handle_api_error(e)
