@@ -13,13 +13,14 @@ def account():
     try:
         user_id = get_jwt_identity()
         user_info = Users.objects(id=user_id).exclude('verification_code',
-                                                      'verified', 'verification_code_sent_at', 'updated_at', 'reg_full', 'profile_picture').first()
+                                                      'verified', 'verification_code_sent_at', 'updated_at', 'profile_picture').first()
 
         if user_info:
             user_info_dict = user_info.to_mongo().to_dict()
             decrypted_phone = aes_decrypt(
                 user_info_dict['phone_number'], encryption_key)
             user_info_dict['phone_number'] = decrypted_phone
+            user_info_dict['_id'] = str(user_info_dict['_id'])
 
             return jsonify({"message": "User found", "user": user_info_dict}), 200
         else:
