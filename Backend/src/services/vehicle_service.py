@@ -7,7 +7,7 @@ from ..models import Vehicle, UserVehicle
 from ..middleware import require_api_key
 from datetime import datetime
 from mongoengine.queryset.visitor import Q
-from ..utils import get_trim_info_by_year
+from ..utils import get_trim_info_by_year, handle_api_error
 
 
 # ref: https://docs.python.org/3/tutorial/datastructures.html
@@ -56,7 +56,7 @@ def create_user_vehicle():
         return jsonify({'message': 'Vehicle added to user successfully'}), 200
 
     except Exception as e:
-        return jsonify({'error': 'Failed to add vehicle to user', 'details': str(e)}), 500
+        handle_api_error(e)
 
 # READ
 # Retrieve a vehicle from collection
@@ -90,7 +90,7 @@ def get_user_vehicle():
     except DoesNotExist:
         return jsonify({'error': 'Vehicle not found'}), 404
     except Exception as e:
-        return jsonify({'error': 'Failed to retrieve vehicle', 'details': str(e)}), 500
+        handle_api_error(e)
 
 # UPDATE
 # Update user vehicle information
@@ -117,7 +117,7 @@ def update_user_vehicle():
     except DoesNotExist:
         return jsonify({'error': 'Vehicle not found'}), 404
     except Exception as e:
-        return jsonify({'error': 'Failed to update vehicle information', 'details': str(e)}), 500
+        handle_api_error(e)
 
 # DELETE
 # Delete a vehicle
@@ -137,7 +137,7 @@ def delete_user_vehicle():
     except DoesNotExist:
         return jsonify({'error': 'Vehicle not found'}), 404
     except Exception as e:
-        return jsonify({'error': 'Failed to delete vehicle', 'details': str(e)}), 500
+        handle_api_error(e)
 
 # General Vehicle Routes for 'vehicles_data' collection
 
@@ -149,7 +149,7 @@ def get_vehicle_makes():
         makes = Vehicle.objects.distinct('make')
         return jsonify({'makes': makes}), 200
     except Exception as e:
-        return jsonify({'error': 'Failed to retrieve all vehicle makes', 'details': str(e)}), 500
+        handle_api_error(e)
 
 
 @require_api_key
@@ -159,7 +159,7 @@ def get_vehicle_models_for_makes(make):
         models = Vehicle.objects(make=make).distinct('models.model')
         return jsonify({'make': make, 'models': models}), 200
     except Exception as e:
-        return jsonify({'error': 'Failed to retrieve models for the make', 'details': str(e)}), 500
+        handle_api_error(e)
 
 # Route to get all years for the selected model
 
@@ -171,4 +171,4 @@ def get_vehicle_years_for_model(model):
         trim_info_by_year = get_trim_info_by_year(model)
         return jsonify(trim_info_by_year), 200
     except Exception as e:
-        return jsonify({'error': 'Failed to retrieve years for the model', 'details': str(e)}), 500
+        handle_api_error(e)

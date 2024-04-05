@@ -35,7 +35,7 @@ def send_friend_request():
     except DoesNotExist:
         return jsonify({"error": "User not found"}), 404
     except Exception as e:
-        return handle_api_error(e)
+        handle_api_error(e)
 
 
 @require_api_key
@@ -56,7 +56,7 @@ def list_friends():
         return jsonify({"friends": friends_list}), 200
 
     except Exception as e:
-        return handle_api_error(e)
+        handle_api_error(e)
 
 
 @require_api_key
@@ -79,7 +79,7 @@ def received_friend_requests():
         return jsonify({"received_requests": received_requests_list}), 200
 
     except Exception as e:
-        return handle_api_error(e)
+        handle_api_error(e)
 
 
 @require_api_key
@@ -102,7 +102,7 @@ def sent_friend_requests():
         return jsonify({"sent_requests": sent_requests_list}), 200
 
     except Exception as e:
-        return handle_api_error(e)
+        handle_api_error(e)
 
 
 @require_api_key
@@ -148,7 +148,7 @@ def respond_friend_request():
     except DoesNotExist:
         return jsonify({"error": "Friend request not found"}), 404
     except Exception as e:
-        return handle_api_error(e)
+        handle_api_error(e)
 
 
 @require_api_key
@@ -175,7 +175,7 @@ def cancel_friend_request():
     except DoesNotExist:
         return jsonify({"error": "Friend request not found"}), 404
     except Exception as e:
-        return handle_api_error(e)
+        handle_api_error(e)
 
 
 @require_api_key
@@ -200,7 +200,7 @@ def remove_friend():
     except DoesNotExist:
         return jsonify({"error": "User not found"}), 404
     except Exception as e:
-        return handle_api_error(e)
+        handle_api_error(e)
 
 
 @require_api_key
@@ -225,7 +225,7 @@ def search_users():
         return jsonify({"users": users_list}), 200
 
     except Exception as e:
-        return handle_api_error(e)
+        handle_api_error(e)
 
 
 @require_api_key
@@ -289,7 +289,7 @@ def view_friend_profile():
     except DoesNotExist:
         return jsonify({"error": "User not found"}), 404
     except Exception as e:
-        return handle_api_error(e)
+        handle_api_error(e)
 
 
 @require_api_key
@@ -326,4 +326,4 @@ def friend_activity_dashboard():
         return jsonify({"activities": activity_list}), 200
 
     except Exception as e:
-        return handle_api_error(e)
+        handle_api_error(e)

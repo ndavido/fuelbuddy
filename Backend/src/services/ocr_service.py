@@ -3,7 +3,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from ..middleware import require_api_key
-from ..utils import extract_receipt_info_single, allowed_file, ocr_cleanup, convert_image_to_base64, decode_base64_image
+from ..utils import extract_receipt_info_single, allowed_file, ocr_cleanup, convert_image_to_base64, decode_base64_image, handle_api_error
 from ..models import ReceiptOcr, Users
 import cv2
 import numpy as np
@@ -41,7 +41,7 @@ def upload_receipt():
         })
 
     except Exception as e:
-        return jsonify({'error': 'Failed to process image', 'details': str(e)}), 500
+        handle_api_error(e)
 
 
 @require_api_key
@@ -66,4 +66,4 @@ def save_receipt():
         return jsonify({'message': 'Receipt saved successfully'}), 200
 
     except Exception as e:
-        return jsonify({'error': 'Failed to save receipt', 'details': str(e)}), 500
+        handle_api_error(e)

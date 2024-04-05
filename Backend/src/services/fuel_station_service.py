@@ -70,7 +70,7 @@ def get_fuel_stations():
         current_app.logger.error('JWT Token Error: %s', str(e))
         return jsonify({'error': 'JWT Token Error'}), 401
     except Exception as e:
-        return handle_api_error(e)
+        handle_api_error(e)
 
 
 # ! This is the route for storing fuel stations info from Frontend
@@ -102,7 +102,7 @@ def store_fuel_stations():
 
         return jsonify({"message": "Fuel station stored successfully"})
     except Exception as e:
-        return handle_api_error(e)
+        handle_api_error(e)
 
 
 # ? individually finds favorite fuel stations for a user
@@ -156,7 +156,7 @@ def get_favorite_fuel_stations():
     except DoesNotExist:
         return jsonify({"error": "User not found with the provided token."}), 404
     except Exception as e:
-        return handle_api_error(e)
+        handle_api_error(e)
 
 
 # ! this route is for managing favorite fuel station (add/remove)
@@ -205,7 +205,7 @@ def favorite_fuel_station():
                              details=f"{user.username} unmarked {station.name} as a favorite.", station=station).save()
 
                 return jsonify({
-                                   "message": f"Fuel station '{station.name}' has been removed from favorites. user: '{user_id}'"}), 200
+                    "message": f"Fuel station '{station.name}' has been removed from favorites. user: '{user_id}'"}), 200
 
             else:
                 favorite_doc.favorite_stations.append(station)
@@ -217,7 +217,7 @@ def favorite_fuel_station():
             return jsonify({"error": "User or fuel station not found."}), 404
 
     except Exception as e:
-        return handle_api_error(e)
+        handle_api_error(e)
 
 
 # ! this route is for getting the past fuel prices of a selected station
@@ -257,6 +257,8 @@ def get_past_petrol_prices():
 
     except Exception as e:
         return handle_api_error(e)
+
+
 @require_api_key
 @jwt_required()
 def add_rating_to_fuel_station():
@@ -274,7 +276,8 @@ def add_rating_to_fuel_station():
         if not station:
             return jsonify({"error": "Fuel station not found."}), 404
 
-        rating_update = RatingUpdate(rating=rating_value, updated_at=datetime.utcnow())
+        rating_update = RatingUpdate(
+            rating=rating_value, updated_at=datetime.utcnow())
 
         station.update(push__ratings=rating_update)
 
@@ -284,6 +287,8 @@ def add_rating_to_fuel_station():
         return jsonify({"error": str(e)}), 500
 
 # ! This is the route for storing petrol fuel prices info from Frontend
+
+
 @require_api_key
 @jwt_required()
 def store_fuel_prices():
@@ -340,7 +345,7 @@ def store_fuel_prices():
     except DoesNotExist:
         return jsonify({"error": "Fuel station not found"}), 404
     except Exception as e:
-        return handle_api_error(e)
+        handle_api_error(e)
 
 
 # ! This is the route for storing EV charging prices info from Frontend
@@ -378,7 +383,7 @@ def store_ev_prices():
 
         return jsonify({"message": "EV charging prices stored successfully"})
     except Exception as e:
-        return handle_api_error(e)
+        handle_api_error(e)
 
 
 # ! This is the route for searching fuel stations
@@ -400,4 +405,4 @@ def search_fuel_stations():
 
         return jsonify(result)
     except Exception as e:
-        return handle_api_error(e)
+        handle_api_error(e)

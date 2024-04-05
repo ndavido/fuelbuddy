@@ -24,7 +24,7 @@ def view_all_users():
         return jsonify(users_json), 200
 
     except Exception as e:
-        return handle_api_error(e)
+        handle_api_error(e)
 
 
 @require_api_key
@@ -50,7 +50,7 @@ def update_role():
         return jsonify({"message": "Role updated successfully"}), 200
 
     except Exception as e:
-        return handle_api_error(e)
+        handle_api_error(e)
 
 
 @require_api_key
@@ -77,7 +77,7 @@ def remove_role():
         return jsonify({"message": "Role removed successfully"}), 200
 
     except Exception as e:
-        return handle_api_error(e)
+        handle_api_error(e)
 
 
 @require_api_key
@@ -96,7 +96,7 @@ def send_support_ticket():
         return jsonify({"message": "Support ticket sent successfully"}), 200
 
     except Exception as e:
-        return handle_api_error(e)
+        handle_api_error(e)
 
 
 @require_api_key
@@ -123,7 +123,7 @@ def view_support_tickets():
         return jsonify({"tickets": tickets_data}), 200
 
     except Exception as e:
-        return handle_api_error(e)
+        handle_api_error(e)
 
 
 @require_api_key
@@ -149,7 +149,7 @@ def reply_to_ticket():
         return jsonify({"message": "Reply sent successfully"}), 200
 
     except Exception as e:
-        return handle_api_error(e)
+        handle_api_error(e)
 
 #! Function for Admins ONLY!!!
 
@@ -173,7 +173,7 @@ def close_support_ticket():
         return jsonify({"message": "Ticket closed successfully"}), 200
 
     except Exception as e:
-        return handle_api_error(e)
+        handle_api_error(e)
 
 
 @require_api_key
@@ -190,5 +190,4 @@ def mark_ticket_as_solved():
         return jsonify({"message": "Ticket marked as solved"}), 200
 
     except Exception as e:
-        print("Error occurred:", e)
-        return handle_api_error(e)
+        handle_api_error(e)

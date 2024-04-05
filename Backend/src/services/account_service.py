@@ -29,7 +29,7 @@ def account():
         else:
             return jsonify({"error": "User not found"}), 404
     except Exception as e:
-        return jsonify({"error": f"Error fetching user account information: {str(e)}"}), 500
+        handle_api_error(e)
 
 
 @require_api_key
@@ -56,7 +56,7 @@ def delete_account():
         else:
             return jsonify({"error": "User not found"}), 404
     except Exception as e:
-        return jsonify({"error": f"An error occurred while deleting the account: {str(e)}"}), 500
+        handle_api_error(e)
 
 
 @require_api_key
@@ -92,7 +92,7 @@ def edit_account():
         user.save()
         return jsonify({"message": "Account updated successfully"}), 200
     except Exception as e:
-        return jsonify({"error": "An unexpected error occurred", "details": str(e)}), 500
+        handle_api_error(e)
 
 
 @require_api_key
@@ -117,4 +117,4 @@ def upload_profile_picture():
         user.save()
         return jsonify({"message": "Profile picture updated successfully"}), 200
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        handle_api_error(e)

@@ -54,7 +54,7 @@ def handle_api_error(e):
     elif isinstance(e, KeyError):
         error_message = "Missing required data in the request."
     print(f"Error: {str(e)}")
-    return jsonify({"error": error_message}), 500
+    return jsonify({"error": {error_message, str(e)}}), 500
 
 
 def get_station_data(fuel_station, user_location=None, radius=None):
