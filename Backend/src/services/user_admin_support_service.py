@@ -135,13 +135,12 @@ def reply_to_ticket():
     message = data["message"]
     try:
         user = Users.objects(id=user_id).first()
+        ticket = SupportTicket.objects(id=ticket_id).first()
         if "admin" in user.roles or "Developer" in user.roles:
-            ticket = SupportTicket.objects(id=ticket_id).first()
             ticket.messages.append(Message(sender="admin", content=message))
             ticket.last_updated = datetime.utcnow()
             ticket.save()
         else:
-            ticket = SupportTicket.objects(id=ticket_id).first()
             ticket.messages.append(Message(sender="user", content=message))
             ticket.last_updated = datetime.utcnow()
             ticket.save()
