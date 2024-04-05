@@ -275,7 +275,6 @@ def view_friend_profile():
             'username': friend_profile.username,
             'first_name': friend_profile.first_name,
             'surname': friend_profile.surname,
-            'phone_number': friend_profile.phone_number,
             'random_fav_station': random_station_info,
             'recent_activity': {
                 'activity': recent_activity.details,
