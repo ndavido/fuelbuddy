@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 
 from flask import Blueprint
-from ..services import account, delete_account, edit_account, logout, upload_profile_picture
+from ..services import account, delete_account, edit_account, logout, upload_profile_picture, load_profile_picture
 
 account_blueprint = Blueprint('account', __name__)
 
@@ -11,3 +11,5 @@ account_blueprint.route('/edit_account', methods=['PATCH'])(edit_account)
 account_blueprint.route('/logout', methods=['POST'])(logout)
 account_blueprint.route('/upload_profile_picture',
                         methods=['POST'])(upload_profile_picture)
+account_blueprint.route('/load_profile_picture',
+                        methods=['GET'])(load_profile_picture)
