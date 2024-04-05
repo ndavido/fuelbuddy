@@ -1,6 +1,6 @@
 {
   "name": "frontend",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "start": "expo start",
@@ -22,6 +22,7 @@
     "@react-native-async-storage/async-storage": "1.21.0",
     "@react-native-community/cli": "^13.6.2",
     "@react-native-community/masked-view": "^0.1.11",
+    "@react-native-community/slider": "^4.5.0",
     "@react-native-picker/picker": "2.6.1",
     "@react-navigation/bottom-tabs": "^6.5.11",
     "@react-navigation/native-stack": "^6.9.16",
@@ -49,6 +50,7 @@
     "react-native-actions-sheet": "^0.8.29",
     "react-native-animatable": "^1.4.0",
     "react-native-chart-kit": "^6.12.0",
+    "react-native-collapsible": "^1.6.1",
     "react-native-dropdown-picker": "^5.4.6",
     "react-native-gesture-handler": "~2.14.0",
     "react-native-gifted-charts": "^1.4.4",

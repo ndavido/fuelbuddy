@@ -187,8 +187,7 @@ const DashboardScreen = () => {
                     },
                 });
                 deductions = deductionsResponse.data.deductions || [];
-                await setUserDeductions(deductions);
-                console.log("Deductions", userDeductions);
+                console.log("Deductions", deductions);
             } catch (error) {
                 if (error.response && error.response.status === 404) {
                     console.log("No deductions found for this user");
@@ -252,8 +251,10 @@ const DashboardScreen = () => {
                 console.log("No deductions found for this week");
             }
 
+            filteredDeductions.reverse().slice(0, 3);
+
             await setUserDeductions(filteredDeductions);
-            console.log("Deductions", userDeductions);
+            console.log("List Deductions", userDeductions);
 
             try {
                 const weeklyBudgetsResponse = await axios.post(`${url}/get_weekly_budgets`, {id: userData.username}, {
@@ -610,7 +611,7 @@ const DashboardScreen = () => {
                             <View style={{marginBottom: 10, marginTop: 20}}>
                                 <H6>This Week</H6>
                                 {userDeductions.length > 0 ? (
-                                    [...userDeductions].reverse().slice(0, 3).map((deduction, index) => {
+                                    userDeductions.map((deduction, index) => {
                                         const activityDate = new Date(deduction.updated_at);
                                         const today = new Date();
                                         const isToday = activityDate.getDate() === today.getDate() &&

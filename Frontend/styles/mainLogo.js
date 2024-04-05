@@ -8,7 +8,7 @@ const LogoContainer = styled.View`
   background-color: #FFFFFF;
   top: 0;
   z-index: 1000;
-  box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);
+  //box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);
   margin: auto;
   position: absolute;
   align-items: center;

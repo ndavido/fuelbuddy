@@ -71,12 +71,12 @@ const SetPreferencesScreen = () => {
                     <Container>
                         <H3 tmargin='20px' bmargin='20px'>Set Preferences</H3>
                         <>
-                            <H6 bmargin='5px'>Boobies</H6>
+                            <H6 bmargin='5px'>PREF HERE</H6>
                         </>
                     </Container>
                     <LRButtonDiv>
                         <ButtonButton color="#6bff91" txtWidth="100%"
-                                      txtColor="white" text="Finish" onPress={handleFinish}/>
+                                      txtColor="white" text="Finish" accessibilityLabel="Finish" onPress={handleFinish} accessible={true}/>
                     </LRButtonDiv>
                 </Content>
             </WrapperScroll>

@@ -65,9 +65,9 @@ const CompleteVehicleScreen = () => {
                     </Container>
                     <LRButtonDiv>
                         <ButtonButton color="#6bff91" txtWidth="100%"
-                                      txtColor="white" text="Continue" onPress={handleSave}/>
+                                      txtColor="white" text="Continue" onPress={handleSave} accessibilityLabel="Continue"  accessible={true}/>
                         <ButtonButton color="transparent" txtWidth="100%"
-                                      txtColor="black" text="Skip" onPress={handleSkip}/>
+                                      txtColor="black" text="Skip" onPress={handleSkip} accessibilityLabel="Skip"  accessible={true}/>
                     </LRButtonDiv>
                 </Content>
             </WrapperScroll>

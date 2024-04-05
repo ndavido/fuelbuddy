@@ -127,13 +127,13 @@ export const LRContainer = styled.View`
   height: auto;
   padding: 5px;
   border-radius: 10px;
-  width: calc(100% - 20px);
+  width: ${props => props.width || 'calc(100% - 20px)'};
   flex-direction: row;
   background-color: #F7F7F7;
   margin-bottom: 10px;
-  margin-top: 160px;
-  margin-left: 10px;
-  margin-right: 10px;
+  margin-top: ${props => props.mTop || 160}px;
+  margin-left: ${props => props.mLeft || 10}px;
+  margin-right: ${props => props.mRight || 10}px;
   position: relative;
 `;
 

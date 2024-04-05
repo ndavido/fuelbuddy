@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import BottomSheet from '@gorhom/bottom-sheet';
 import * as Location from "expo-location";
+import Slider from '@react-native-community/slider';
 import {useCombinedContext} from "../../CombinedContext";
 
 const jsonBig = require('json-bigint');
@@ -27,9 +28,17 @@ if (!isWeb) {
 
 // Styling
 import {H2, H3, H4, H5, H6, H7, H8} from "../../styles/text";
-import {Container, ButtonContainer, CardContainer, Card, ModalContent, InputTxt} from "../../styles/styles";
+import {
+    Container,
+    ButtonContainer,
+    CardContainer,
+    Card,
+    ModalContent,
+    InputTxt,
+    LRContainer, LRButtonDiv, CardMini
+} from "../../styles/styles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {AnimatedGenericButton, AnimatedHeartButton, ButtonButton} from "../../styles/buttons";
+import {AnimatedGenericButton, AnimatedHeartButton, ButtonButton, ToggleButton} from "../../styles/buttons";
 import CustomMarker from "../../Components/customMarker";
 import axios from "axios";
 import {jwtDecode} from "jwt-decode";
@@ -55,13 +64,14 @@ const MapScreen = () => {
     const [initialAnimationDone, setInitialAnimationDone] = useState(false);
     const [location, setLocation] = useState(null);
     const {token, userData, setUser, updateUserFromBackend} = useCombinedContext();
-    const [userHeading, setUserHeading] = useState(null);
 
     const [favoriteStations, setFavoriteStations] = useState([]);
 
     const [favoriteStatus, setFavoriteStatus] = useState({});
 
     const mapRef = useRef(null);
+    const [tempRadius, setTempRadius] = useState(40);
+
     const [estimatedDuration, setEstimatedDuration] = useState(null);
     const [estimatedDistance, setEstimatedDistance] = useState(null);
     const [estimatedTime, setEstimatedTime] = useState(null);
@@ -432,7 +442,7 @@ const MapScreen = () => {
             if (selectedStation.prices && selectedStation.prices.petrol_price) {
                 petrolCostPerLiter = parseFloat(selectedStation.prices.petrol_price);
             } else {
-                petrolCostPerLiter = 1.72; // Hardcoded value
+                petrolCostPerLiter = 1.72; // TODO Hardcoded value
             }
 
             const journeyPrice = calculateJourneyPrice(directionsInfo.distance.text, 18, petrolCostPerLiter);
@@ -485,18 +495,18 @@ const MapScreen = () => {
         }
     };
 
-    const handleCameraMove = () => {
+    const handleCameraMove = (stationLocation) => {
         mapRef.current?.animateCamera(
             {
                 center: {
-                    latitude: location.coords.latitude,
-                    longitude: location.coords.longitude,
+                    latitude: stationLocation.latitude,
+                    longitude: stationLocation.longitude,
                 },
-                altitude: 160, // Adjust the altitude to control the zoom level
-                pitch: 45, // Adjust the pitch angle
-                heading: location.coords.heading,
+                altitude: 20000,
+                pitch: 0,
+                heading: 1,
             },
-            {duration: 1000}
+            {duration: 1500}
         );
     }
 
@@ -712,30 +722,87 @@ const MapScreen = () => {
 
     const handleNearbySelectedStation = (station) => {
         setSelectedStation(station);
+        handleCameraMove(station.location);
         setShowNearbyStationsSheet(false);
         setShowStationInfo(true);
         setShowRouteInfo(false);
     }
 
     const renderOptionsBottomSheet = () => {
+        const debounce = (func, delay) => {
+            let timeoutId;
+            return (...args) => {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => func(...args), delay);
+            };
+        };
+
+        const debouncedSetTempRadius = debounce(setTempRadius, 300);
+
         if (!isWeb && showNearbyStationsSheet) {
             return (
-                <BottomSheet snapPoints={['20%', '85%']} index={0}>
+                <BottomSheet snapPoints={['30%', '85%']} index={0}>
                     <Container>
-                        <H4 style={{marginBottom: 10}}>Stations Near Me</H4>
-                        <View style={{flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10}}>
-                            <Button onPress={() => setSortOption('distance')} title="Sort by Distance"/>
-                            <Button onPress={() => setSortOption('price')} title="Sort by Price"/>
+                        <H4>Map Radius</H4>
+                        <H6 style={{opacity: 0.6, marginBottom: 10}}>Higher Kilometers can cause performance
+                            Issues.</H6>
+                        <View style={{marginBottom: 20}}>
+                            <Slider
+                                value={tempRadius}
+                                onValueChange={debouncedSetTempRadius}
+                                minimumValue={30}
+                                maximumValue={800}
+                                step={10}
+                            />
+                            <H5>Radius: {tempRadius}km</H5>
                         </View>
-                        {sortedStations.map(station => (
-                            <TouchableOpacity
-                                key={station.id}
-                                style={{paddingVertical: 10}}
-                                onPress={() => handleNearbySelectedStation(station)}
-                            >
-                                <H6>{station.name}</H6>
-                            </TouchableOpacity>
-                        ))}
+                        <ButtonButton txtWidth="100%" width="40%" text="Save Radius"/>
+                        <H4 style={{marginTop: 40}}>Stations Near Me</H4>
+                        <H6 style={{opacity: 0.6}}>Filter By Distance or Price</H6>
+                        <LRContainer mTop={10} mRight={-1} mLeft={-1}>
+                            <ButtonButton accessibilityLabel="Register Button" accessible={true}
+                                          txtWidth="100%" width="50%"
+                                          txtColor={sortOption === 'distance' ? '#FFFFFF' : 'black'} text="distance"
+                                          color={sortOption === 'distance' ? '#6bff91' : '#F7F7F7'}
+                                          onPress={() => setSortOption('distance')}
+                            />
+                            <ButtonButton accessibilityLabel="Register Button" accessible={true}
+                                          color={sortOption === 'price' ? '#6bff91' : '#F7F7F7'} txtWidth="100%"
+                                          width="50%"
+                                          txtColor={sortOption === 'price' ? '#FFFFFF' : 'black'} text="price"
+                                          onPress={() => setSortOption('price')}/>
+                        </LRContainer>
+                        <ScrollView style={{maxHeight: 250}}>
+                            {sortedStations.map(station => (
+                                <TouchableOpacity
+                                    key={station.id}
+                                    onPress={() => handleNearbySelectedStation(station)}
+                                >
+                                    <CardMini>
+                                        <H5>{station.name}</H5>
+                                        <H6 style={{opacity: 0.6}}>{station.address}</H6>
+                                        <H6 style={{marginTop: 10}}>Current Prices</H6>
+                                        <CardContainer style={{marginRight: -10, marginLeft: -10}}>
+                                            <Card>
+                                                <H5 style={{opacity: 0.6, textAlign: 'center'}}>Petrol</H5>
+                                                <H3 weight='600'
+                                                    style={{textAlign: 'center'}}>{station.prices.petrol_price ? parseFloat(station.prices.petrol_price).toFixed(2) : 'NA'}</H3>
+                                                <H8 style={{opacity: 0.6, textAlign: 'center'}}>Last
+                                                    Updated: {station.prices.petrol_updated_at}</H8>
+                                            </Card>
+                                            <Card>
+                                                <H5 style={{opacity: 0.6, textAlign: 'center'}}>Diesel</H5>
+                                                <H3 weight='600'
+                                                    style={{textAlign: 'center'}}>{station.prices.diesel_price ? parseFloat(station.prices.diesel_price).toFixed(2) : 'NA'}</H3>
+                                                <H8 style={{opacity: 0.6, textAlign: 'center'}}>Last
+                                                    Updated: {station.prices.diesel_updated_at}</H8>
+                                            </Card>
+                                        </CardContainer>
+
+                                    </CardMini>
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
                     </Container>
                 </BottomSheet>
             );

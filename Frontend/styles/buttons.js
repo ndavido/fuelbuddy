@@ -1,5 +1,5 @@
 import React from 'react';
-import {TouchableOpacity, Text} from 'react-native';
+import {TouchableOpacity, Text, Button} from 'react-native';
 import {Entypo, FontAwesome, FontAwesome5, MaterialCommunityIcons} from '@expo/vector-icons';
 import * as Animatable from 'react-native-animatable';
 import styled from 'styled-components/native';
@@ -206,5 +206,15 @@ export const BackButton = ({title = 'Back'}) => {
             </BackButtonContainer>
         </Container>
 
+    );
+};
+
+export const ToggleButton = ({ title, selected, onPress }) => {
+    return (
+        <Button
+            title={title}
+            onPress={onPress}
+            style={{ backgroundColor: selected ? 'lightblue' : 'lightgray' }}
+        />
     );
 };
