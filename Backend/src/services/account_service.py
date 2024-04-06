@@ -98,8 +98,24 @@ def edit_account():
             user.surname = data['surname']
         if 'email' in data:
             user.email = data['email']
-        if 'reg_full' in data:
-            user.reg_full = data['reg_full']
+
+        user.save()
+        return jsonify({"message": "Account updated successfully"}), 200
+    except Exception as e:
+        handle_api_error(e)
+
+
+@require_api_key
+@jwt_required()
+def complete_registration():
+    try:
+        user_id = get_jwt_identity()
+        user = Users.objects(id=user_id).first()
+
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+
+        user.reg_full = True
 
         user.save()
         return jsonify({"message": "Account updated successfully"}), 200
