@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-from mongoengine import Document, StringField, ReferenceField, ListField, DateTimeField, DecimalField, BooleanField
+from mongoengine import Document, StringField, ReferenceField, ListField, DateTimeField, DecimalField, BooleanField, IntField
 from .location import Location
 from datetime import datetime
 from .budget import BudgetHistory
@@ -22,6 +22,7 @@ class Users(Document):
     reg_full = BooleanField(default=False)
     weekly_budget = DecimalField(precision=2)
     profile_picture = StringField()
+    radius_preferences = IntField()
 
     meta = {
         'collection': 'users',

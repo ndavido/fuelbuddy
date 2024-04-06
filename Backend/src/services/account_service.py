@@ -125,6 +125,33 @@ def complete_registration():
 
 @require_api_key
 @jwt_required()
+def save_preferences():
+    try:
+        user_id = get_jwt_identity()
+        user = Users.objects(id=user_id).first()
+
+        if not user:
+            print("User not found")
+            return jsonify({"error": "User not found"}), 404
+
+        data = request.get_json()
+
+        if not data:
+            print("No preferences provided")
+            return jsonify({"error": "No preferences provided"}), 400
+
+        preferences = data['radius_preferences']
+
+        user.radius_preferences = preferences
+
+        user.save()
+        return jsonify({"message": "Preferences updated successfully"}), 200
+    except Exception as e:
+        handle_api_error(e)
+
+
+@require_api_key
+@jwt_required()
 def upload_profile_picture():
     try:
         user_id = get_jwt_identity()
