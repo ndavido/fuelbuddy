@@ -67,3 +67,33 @@ def save_receipt():
 
     except Exception as e:
         handle_api_error(e)
+
+
+@require_api_key
+@jwt_required()
+def get_past_reciepts():
+    try:
+        current_user_id = get_jwt_identity()
+        user = Users.objects.get(id=current_user_id)
+
+        receipts = ReceiptOcr.objects(user=user).order_by('-date')
+
+        if not receipts:
+            print('No receipts found')
+            return jsonify({'error': 'No receipts found'}), 404
+
+        receipts = [{
+            'receipt': receipt.receipt,
+            'fuel_type': receipt.fuel_type,
+            'volume': receipt.volume,
+            'price_per_litre': receipt.price_per_litre,
+            'total': receipt.total,
+            'date': receipt.date
+        } for receipt in receipts]
+
+        return jsonify({
+            'receipts': receipts
+        })
+
+    except Exception as e:
+        handle_api_error(e)
