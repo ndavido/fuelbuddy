@@ -13,6 +13,7 @@ import BottomSheet from '@gorhom/bottom-sheet';
 import * as Location from "expo-location";
 import Slider from '@react-native-community/slider';
 import {useCombinedContext} from "../../CombinedContext";
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const jsonBig = require('json-bigint');
 
@@ -35,7 +36,7 @@ import {
     Card,
     ModalContent,
     InputTxt,
-    LRContainer, LRButtonDiv, CardMini
+    LRContainer, LRButtonDiv, CardMini, WrapperScroll
 } from "../../styles/styles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {AnimatedGenericButton, AnimatedHeartButton, ButtonButton, ToggleButton} from "../../styles/buttons";
@@ -70,7 +71,7 @@ const MapScreen = () => {
     const [favoriteStatus, setFavoriteStatus] = useState({});
 
     const mapRef = useRef(null);
-    const [tempRadius, setTempRadius] = useState(40);
+    const [tempRadius, setTempRadius] = useState(userData.radius_preferences || 30);
 
     const [estimatedDuration, setEstimatedDuration] = useState(null);
     const [estimatedDistance, setEstimatedDistance] = useState(null);
@@ -90,6 +91,9 @@ const MapScreen = () => {
     const [showStationInfo, setShowStationInfo] = useState(true);
     const [showRouteInfo, setShowRouteInfo] = useState(false);
     const bottomSheetRef = useRef(null);
+    const optionsScrollViewRef = useRef(null);
+    const stationsScrollViewRef = useRef(null);
+    const [isMenuExpanded, setIsMenuExpanded] = useState(false);
 
     const [nearbyStations, setNearbyStations] = useState([]);
     const [showNearbyStationsSheet, setShowNearbyStationsSheet] = useState(false);
@@ -98,30 +102,7 @@ const MapScreen = () => {
 
     const [refreshing, setRefreshing] = useState(false);
 
-    const [currentDirectionIndex, setCurrentDirectionIndex] = useState(0);
-
     const snapPoints = useMemo(() => ['20%', '40%', '85%'], []);
-
-    const updateDirectionIndexBasedOnLocation = (userLocation) => {
-        if (detailedSteps.length === 0) {
-            return;
-        }
-
-        for (let i = 0; i < detailedSteps.length; i++) {
-            const step = detailedSteps[i];
-            const stepEndLocation = {
-                latitude: step.end_location.lat,
-                longitude: step.end_location.lng,
-            };
-
-            const distanceToStepEnd = getDistanceBetweenLocations(userLocation, stepEndLocation);
-
-            if (distanceToStepEnd < 50) {
-                setCurrentDirectionIndex(i + 1);
-                break;
-            }
-        }
-    };
 
     const getDistanceBetweenLocations = (location1, location2) => {
         const R = 6371;
@@ -155,21 +136,22 @@ const MapScreen = () => {
             let {status} = await Location.requestForegroundPermissionsAsync();
             if (status !== "granted") {
                 console.error("Permission to access location was denied");
+                fetchFavoriteStations(null);
                 return;
             }
 
             try {
-                const location = await Location.getCurrentPositionAsync({});
-                setLocation(location);
+                const userLocation = await Location.getCurrentPositionAsync({});
+                setLocation(userLocation);
 
                 // TODO DEV ONLY
-                console.log("User Location: ", location);
+                console.log("User Location: ", userLocation);
                 if (!initialAnimationDone) {
                     mapRef.current?.animateCamera(
                         {
                             center: {
-                                latitude: location.coords.latitude,
-                                longitude: location.coords.longitude,
+                                latitude: userLocation.coords.latitude,
+                                longitude: userLocation.coords.longitude,
                             },
                             altitude: 20000,
                             pitch: 0,
@@ -182,11 +164,9 @@ const MapScreen = () => {
 
                 Location.watchPositionAsync({distanceInterval: 10}, (newLocation) => {
                     setLocation(newLocation);
-
-                    updateDirectionIndexBasedOnLocation(newLocation.coords);
                 });
 
-                fetchFavoriteStations();
+                fetchFavoriteStations(userLocation);
             } catch (error) {
                 console.error("Error fetching user location:", error);
             }
@@ -217,17 +197,19 @@ const MapScreen = () => {
         if (token) {
             await updateUserFromBackend();
 
-            await fetchFavoriteStations();
+            const location = await Location.getCurrentPositionAsync({});
+            setLocation(location);
+            await fetchFavoriteStations(location);
         }
         setRefreshing(false);
     };
 
-    const fetchPetrolStations = async () => {
+    const fetchPetrolStations = async (userLocation) => {
         try {
             const requestBody = {
-                user_longitude: location.coords.longitude,
-                user_latitude: location.coords.latitude,
-                radius: 50
+                user_longitude: userLocation.coords.longitude || null,
+                user_latitude: userLocation.coords.latitude || null,
+                radius: userData.radius_preferences || null,
             };
 
             const response = await axios.post(`${url}/fuel_stations`, requestBody, {
@@ -249,9 +231,8 @@ const MapScreen = () => {
         }
     };
 
-    const fetchFavoriteStations = async () => {
+    const fetchFavoriteStations = async (userLocation) => {
         try {
-
             const user_id = jwtDecode(token).sub;
 
             console.log("User ID: ", user_id)
@@ -287,12 +268,46 @@ const MapScreen = () => {
                 setFavoriteStations([]);
                 setFavoriteStatus({});
             }
-            fetchPetrolStations();
+            fetchPetrolStations(userLocation);
         } catch (error) {
             console.error('Error fetching favorite fuel stations:', error);
         }
     };
 
+    const handleUpdateRadius = async (radius) => {
+        try {
+            const config = {
+                headers: {
+                    'X-API-Key': apiKey,
+                    'Authorization': `Bearer ${token}`
+                },
+            };
+
+
+            const data = {
+                radius_preferences: radius,
+            };
+
+            const updatedUserData = {
+                ...userData,
+                radius_preferences: radius,
+            };
+
+            const response = await axios.patch(`${url}/save_preferences`, data, config);
+
+            if (response.data) {
+                console.log("Update successful");
+
+                await setUser({...updatedUserData});
+
+                await manualRefresh();
+            } else {
+                console.log("Update unsuccessful");
+            }
+        } catch (error) {
+            console.error('Error updating user Radius:', error);
+        }
+    };
 
     const handleUpdatePress = async () => {
         try {
@@ -428,7 +443,6 @@ const MapScreen = () => {
             setDetailedSteps(directionsInfo.steps);
             setEstimatedDuration(directionsInfo.duration.text);
             setEstimatedDistance(directionsInfo.distance.text);
-            setCurrentDirectionIndex(0);
 
             const [durationValue, durationUnit] = directionsInfo.duration.text.split(" ");
 
@@ -457,42 +471,36 @@ const MapScreen = () => {
     };
 
     const handleCancelPress = () => {
-        if (journeyMode) {
-            setJourneyMode(false);
-            setIsJourneyActive(false);
-            setShowStationInfo(false);
-            setShowRouteInfo(true);
+        setShowStationInfo(true);
+        setShowRouteInfo(false);
+        if (selectedStation) {
+            mapRef.current?.animateCamera(
+                {
+                    center: {
+                        latitude: selectedStation.location.latitude,
+                        longitude: selectedStation.location.longitude,
+                    },
+                    altitude: 50000,
+                    pitch: 0,
+                    heading: 1,
+                },
+                {duration: 1500}
+            );
         } else {
-            setShowStationInfo(true);
-            setShowRouteInfo(false);
-            if (selectedStation) {
-                mapRef.current?.animateCamera(
-                    {
-                        center: {
-                            latitude: selectedStation.location.latitude,
-                            longitude: selectedStation.location.longitude,
-                        },
-                        altitude: 50000,
-                        pitch: 0,
-                        heading: 1,
+            mapRef.current?.animateCamera(
+                {
+                    center: {
+                        latitude: location.coords.latitude,
+                        longitude: location.coords.longitude,
                     },
-                    {duration: 1500}
-                );
-            } else {
-                mapRef.current?.animateCamera(
-                    {
-                        center: {
-                            latitude: location.coords.latitude,
-                            longitude: location.coords.longitude,
-                        },
-                        altitude: 50000,
-                        pitch: 0,
-                        heading: 1,
-                    },
-                    {duration: 1500}
-                );
-            }
+                    altitude: 50000,
+                    pitch: 0,
+                    heading: 1,
+                },
+                {duration: 1500}
+            );
         }
+
     };
 
     const handleCameraMove = (stationLocation) => {
@@ -509,13 +517,6 @@ const MapScreen = () => {
             {duration: 1500}
         );
     }
-
-    const watchUserPosition = () => {
-        return Location.watchPositionAsync({distanceInterval: 10}, (newLocation) => {
-            setLocation(newLocation);
-            updateDirectionIndexBasedOnLocation(newLocation.coords);
-        });
-    };
 
     const renderMap = () => {
         if (isWeb) {
@@ -578,81 +579,88 @@ const MapScreen = () => {
     };
 
     const renderStationBottomSheet = () => {
+        const handleBottomSheetChange = (index) => {
+            const isFullyOpen = index === 2;
+            stationsScrollViewRef.current.setNativeProps({scrollEnabled: isFullyOpen});
+        };
+
         if (!isWeb && showStationInfo) {
             return (
                 <BottomSheet snapPoints={snapPoints}
                              backgroundStyle={{
                                  backgroundColor: '#F7F7F7'
-                             }}>
+                             }} index={0} onChange={handleBottomSheetChange}>
                     {selectedStation && showStationInfo && (
-                        <Container>
-                            <H3 weight='600' style={{lineHeight: 24}}>{selectedStation.name}</H3>
-                            <H6 weight='400' style={{opacity: 0.6, lineHeight: 16}}>Fuel Station</H6>
-                            <ButtonContainer>
-                                <ButtonButton icon="location-pin" text="Route To Station"
-                                              onPress={handleRoutePress}/>
-                                <View style={{flexDirection: 'row'}}>
-                                    <AnimatedHeartButton
-                                        initialIsActive={favoriteStatus[selectedStation.id] || false}
-                                        onPress={() => handleLikePress(selectedStation.id)}
-                                    />
-                                    <AnimatedGenericButton onPress={() => setUpdateModalVisible(true)}/>
+                        <ScrollView style={{marginTop: 10}} ref={stationsScrollViewRef}>
+                            <Container style={{paddingTop: 10}}>
+                                <H3 weight='600' style={{lineHeight: 24}}>{selectedStation.name}</H3>
+                                <H6 weight='400' style={{opacity: 0.6, lineHeight: 16}}>Fuel Station</H6>
+                                <ButtonContainer>
+                                    <ButtonButton icon="location-pin" text="Route To Station"
+                                                  onPress={handleRoutePress}/>
+                                    <View style={{flexDirection: 'row'}}>
+                                        <AnimatedHeartButton
+                                            initialIsActive={favoriteStatus[selectedStation.id] || false}
+                                            onPress={() => handleLikePress(selectedStation.id)}/>
+                                        <AnimatedGenericButton onPress={() => setUpdateModalVisible(true)}/>
+                                    </View>
+                                </ButtonContainer>
+                                <H4>Current Prices</H4>
+                                <CardContainer style={{marginRight: -10, marginLeft: -10, marginBottom: 20}}>
+                                    <Card>
+                                        <H5 style={{opacity: 0.6, textAlign: 'center'}}>Petrol</H5>
+                                        <H3 weight='600'
+                                            style={{textAlign: 'center'}}>{selectedStation.prices.petrol_price ? parseFloat(selectedStation.prices.petrol_price).toFixed(2) : 'NA'}</H3>
+                                        <H8 style={{opacity: 0.6, textAlign: 'center'}}>Last
+                                            Updated: {selectedStation.prices.petrol_updated_at}</H8>
+                                    </Card>
+                                    <Card>
+                                        <H5 style={{opacity: 0.6, textAlign: 'center'}}>Diesel</H5>
+                                        <H3 weight='600'
+                                            style={{textAlign: 'center'}}>{selectedStation.prices.diesel_price ? parseFloat(selectedStation.prices.diesel_price).toFixed(2) : 'NA'}</H3>
+                                        <H8 style={{opacity: 0.6, textAlign: 'center'}}>Last
+                                            Updated: {selectedStation.prices.diesel_updated_at}</H8>
+                                    </Card>
+                                </CardContainer>
+                                <H4>About</H4>
+                                <H6>Services</H6>
+                                <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+                                    {selectedStation.facilities && Object.entries(selectedStation.facilities).map(([facility, available]) => (
+                                        available && (
+                                            <View key={facility}
+                                                  style={{marginRight: 10, marginTop: 10, marginBottom: 30}}>
+                                                <Image source={
+                                                    facility === 'convenience_store' ? conStoreIcon :
+                                                        facility === 'food' ? foodIcon :
+                                                            facility === 'atm' ? atmIcon :
+                                                                facility === 'car_parking' ? parkingIcon :
+                                                                    facility === 'car_wash' ? carWashIcon :
+                                                                        facility === 'car_service' ? serviceIcon :
+                                                                            null
+                                                }
+                                                       style={{width: 40, height: 40}}
+                                                />
+                                            </View>
+                                        )
+                                    ))}
                                 </View>
-                            </ButtonContainer>
-                            <H4>Current Prices</H4>
-                            <CardContainer style={{marginRight: -10, marginLeft: -10, marginBottom: 20}}>
-                                <Card>
-                                    <H5 style={{opacity: 0.6, textAlign: 'center'}}>Petrol</H5>
-                                    <H3 weight='600'
-                                        style={{textAlign: 'center'}}>{selectedStation.prices.petrol_price ? parseFloat(selectedStation.prices.petrol_price).toFixed(2) : 'NA'}</H3>
-                                    <H8 style={{opacity: 0.6, textAlign: 'center'}}>Last
-                                        Updated: {selectedStation.prices.petrol_updated_at}</H8>
-                                </Card>
-                                <Card>
-                                    <H5 style={{opacity: 0.6, textAlign: 'center'}}>Diesel</H5>
-                                    <H3 weight='600'
-                                        style={{textAlign: 'center'}}>{selectedStation.prices.diesel_price ? parseFloat(selectedStation.prices.diesel_price).toFixed(2) : 'NA'}</H3>
-                                    <H8 style={{opacity: 0.6, textAlign: 'center'}}>Last
-                                        Updated: {selectedStation.prices.diesel_updated_at}</H8>
-                                </Card>
-                            </CardContainer>
-                            <H4>About</H4>
-                            <H6>Services</H6>
-                            <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
-                                {selectedStation.facilities && Object.entries(selectedStation.facilities).map(([facility, available]) => (
-                                    available && (
-                                        <View key={facility} style={{marginRight: 10, marginTop: 10, marginBottom: 30}}>
-                                            <Image source={
-                                                facility === 'convenience_store' ? conStoreIcon :
-                                                    facility === 'food' ? foodIcon :
-                                                        facility === 'atm' ? atmIcon :
-                                                            facility === 'car_parking' ? parkingIcon :
-                                                                facility === 'car_wash' ? carWashIcon :
-                                                                    facility === 'car_service' ? serviceIcon :
-                                                                        null
-                                            }
-                                                   style={{width: 40, height: 40}}
-                                            />
-                                        </View>
-                                    )
-                                ))}
-                            </View>
-                            <H6>Opening Hours</H6>
-                            <H6 style={{opacity: 0.6}}>{selectedStation.opening_hours}</H6>
-                            <H6>Phone Number</H6>
-                            <H6 style={{opacity: 0.6, color: '#3891FA'}}
-                                onPress={() => {
-                                    if (selectedStation && selectedStation.phone_number) {
-                                        const phoneNumber = `tel:${selectedStation.phone_number}`;
-                                        Linking.openURL(phoneNumber);
-                                    }
-                                }}>{selectedStation.phone_number}</H6>
-                            <H6 style={{opacity: 0.6}}>{selectedStation.details}</H6>
-                            <H6>Address</H6>
-                            <H6 style={{opacity: 0.6}}>{selectedStation.address},</H6>
-                            <H6 style={{opacity: 0.6}}>Ireland</H6>
+                                <H6>Opening Hours</H6>
+                                <H6 style={{opacity: 0.6}}>{selectedStation.opening_hours}</H6>
+                                <H6>Phone Number</H6>
+                                <H6 style={{opacity: 0.6, color: '#3891FA'}}
+                                    onPress={() => {
+                                        if (selectedStation && selectedStation.phone_number) {
+                                            const phoneNumber = `tel:${selectedStation.phone_number}`;
+                                            Linking.openURL(phoneNumber);
+                                        }
+                                    }}>{selectedStation.phone_number}</H6>
+                                <H6 style={{opacity: 0.6}}>{selectedStation.details}</H6>
+                                <H6>Address</H6>
+                                <H6 style={{opacity: 0.6}}>{selectedStation.address},</H6>
+                                <H6 style={{opacity: 0.6}}>Ireland</H6>
 
-                        </Container>)}
+                            </Container>
+                        </ScrollView>)}
                 </BottomSheet>);
         } else {
             return null;
@@ -692,6 +700,10 @@ const MapScreen = () => {
     const calculateDistance = (station) => {
         return getDistanceBetweenLocations(location.coords, station.location);
     };
+
+    function convertMetersToKilometers(distanceInMeters) {
+        return (distanceInMeters / 1000).toFixed(2);
+    }
 
     const findNearbyStations = (userLocation) => {
         const nearbyStations = [];
@@ -737,73 +749,100 @@ const MapScreen = () => {
             };
         };
 
-        const debouncedSetTempRadius = debounce(setTempRadius, 300);
+        const debouncedSetTempRadius = debounce(setTempRadius, 150);
+
+        const handleBottomSheetChange = (index) => {
+            const isFullyOpen = index === 1;
+            optionsScrollViewRef.current.setNativeProps({scrollEnabled: isFullyOpen});
+        };
+
+        const toggleMenu = () => {
+            setIsMenuExpanded(!isMenuExpanded);
+        };
 
         if (!isWeb && showNearbyStationsSheet) {
             return (
-                <BottomSheet snapPoints={['30%', '85%']} index={0}>
-                    <Container>
-                        <H4>Map Radius</H4>
-                        <H6 style={{opacity: 0.6, marginBottom: 10}}>Higher Kilometers can cause performance
-                            Issues.</H6>
-                        <View style={{marginBottom: 20}}>
-                            <Slider
-                                value={tempRadius}
-                                onValueChange={debouncedSetTempRadius}
-                                minimumValue={30}
-                                maximumValue={800}
-                                step={10}
-                            />
-                            <H5>Radius: {tempRadius}km</H5>
-                        </View>
-                        <ButtonButton txtWidth="100%" width="40%" text="Save Radius"/>
-                        <H4 style={{marginTop: 40}}>Stations Near Me</H4>
-                        <H6 style={{opacity: 0.6}}>Filter By Distance or Price</H6>
-                        <LRContainer mTop={10} mRight={-1} mLeft={-1}>
-                            <ButtonButton accessibilityLabel="Register Button" accessible={true}
-                                          txtWidth="100%" width="50%"
-                                          txtColor={sortOption === 'distance' ? '#FFFFFF' : 'black'} text="distance"
-                                          color={sortOption === 'distance' ? '#6bff91' : '#F7F7F7'}
-                                          onPress={() => setSortOption('distance')}
-                            />
-                            <ButtonButton accessibilityLabel="Register Button" accessible={true}
-                                          color={sortOption === 'price' ? '#6bff91' : '#F7F7F7'} txtWidth="100%"
-                                          width="50%"
-                                          txtColor={sortOption === 'price' ? '#FFFFFF' : 'black'} text="price"
-                                          onPress={() => setSortOption('price')}/>
-                        </LRContainer>
-                        <ScrollView style={{maxHeight: 250}}>
-                            {sortedStations.map(station => (
-                                <TouchableOpacity
-                                    key={station.id}
-                                    onPress={() => handleNearbySelectedStation(station)}
-                                >
-                                    <CardMini>
-                                        <H5>{station.name}</H5>
-                                        <H6 style={{opacity: 0.6}}>{station.address}</H6>
-                                        <H6 style={{marginTop: 10}}>Current Prices</H6>
-                                        <CardContainer style={{marginRight: -10, marginLeft: -10}}>
-                                            <Card>
-                                                <H5 style={{opacity: 0.6, textAlign: 'center'}}>Petrol</H5>
-                                                <H3 weight='600'
-                                                    style={{textAlign: 'center'}}>{station.prices.petrol_price ? parseFloat(station.prices.petrol_price).toFixed(2) : 'NA'}</H3>
-                                                <H8 style={{opacity: 0.6, textAlign: 'center'}}>Last
-                                                    Updated: {station.prices.petrol_updated_at}</H8>
-                                            </Card>
-                                            <Card>
-                                                <H5 style={{opacity: 0.6, textAlign: 'center'}}>Diesel</H5>
-                                                <H3 weight='600'
-                                                    style={{textAlign: 'center'}}>{station.prices.diesel_price ? parseFloat(station.prices.diesel_price).toFixed(2) : 'NA'}</H3>
-                                                <H8 style={{opacity: 0.6, textAlign: 'center'}}>Last
-                                                    Updated: {station.prices.diesel_updated_at}</H8>
-                                            </Card>
-                                        </CardContainer>
+                <BottomSheet snapPoints={['30%', '85%']} index={0} onChange={handleBottomSheetChange}>
+                    <ScrollView style={{marginTop: 10}} ref={optionsScrollViewRef}>
+                        <Container style={{paddingTop: 10}}>
+                            <TouchableOpacity onPress={toggleMenu}>
+                                <View>
+                                    <View>
+                                        <H4>Map Radius</H4>
+                                        <H6 style={{opacity: 0.6}}>Higher Kilometers can cause performance Issues</H6>
+                                    </View>
+                                    <Icon style={{position: 'absolute', top: 0, right: 0}}
+                                          name={isMenuExpanded ? 'chevron-up' : 'chevron-down'} size={20}
+                                          color="black"/>
+                                </View>
+                            </TouchableOpacity>
+                            {isMenuExpanded && (
+                                <View>
+                                    <Slider
+                                        value={userData.radius_preferences}
+                                        onValueChange={debouncedSetTempRadius}
+                                        minimumValue={30}
+                                        maximumValue={400}
+                                        step={10}
+                                    />
+                                    <H5>Radius: {tempRadius}km</H5>
+                                    <ButtonContainer style={{display: 'flex'}}>
+                                        <ButtonButton place="right" txtWidth="100%" width="40%" text="Save Radius"
+                                                      onPress={() => handleUpdateRadius(tempRadius)}
+                                                      disabled={!userData.radius_preferences || tempRadius === userData.radius_preferences}/>
+                                    </ButtonContainer>
+                                </View>
+                            )}
+                            <H4 style={{marginTop: 10}}>Stations Near Me</H4>
+                            <H6 style={{opacity: 0.6}}>Sort By Distance or Price</H6>
+                            <LRContainer mTop={10} mRight={-1} mLeft={-1}>
+                                <ButtonButton accessibilityLabel="Register Button" accessible={true}
+                                              txtWidth="100%" width="50%"
+                                              txtColor={sortOption === 'distance' ? '#FFFFFF' : 'black'} text="distance"
+                                              color={sortOption === 'distance' ? '#6bff91' : '#F7F7F7'}
+                                              onPress={() => setSortOption('distance')}
+                                />
+                                <ButtonButton accessibilityLabel="Register Button" accessible={true}
+                                              color={sortOption === 'price' ? '#6bff91' : '#F7F7F7'} txtWidth="100%"
+                                              width="50%"
+                                              txtColor={sortOption === 'price' ? '#FFFFFF' : 'black'} text="price"
+                                              onPress={() => setSortOption('price')}/>
+                            </LRContainer>
+                            <View>
+                                {sortedStations.map(station => (
+                                    <TouchableOpacity
+                                        key={station.id}
+                                        onPress={() => handleNearbySelectedStation(station)}
+                                    >
+                                        <CardMini>
+                                            <H5>{station.name}</H5>
+                                            <H6 style={{opacity: 0.8}}>Direct Distance from
+                                                location: {convertMetersToKilometers(calculateDistance(station))}km</H6>
+                                            <H6 style={{opacity: 0.6}}>{station.address}</H6>
+                                            <H6 style={{marginTop: 10}}>Current Prices</H6>
+                                            <CardContainer style={{marginRight: -10, marginLeft: -10}}>
+                                                <Card>
+                                                    <H5 style={{opacity: 0.6, textAlign: 'center'}}>Petrol</H5>
+                                                    <H3 weight='600'
+                                                        style={{textAlign: 'center'}}>{station.prices.petrol_price ? parseFloat(station.prices.petrol_price).toFixed(2) : 'NA'}</H3>
+                                                    <H8 style={{opacity: 0.6, textAlign: 'center'}}>Last
+                                                        Updated: {station.prices.petrol_updated_at}</H8>
+                                                </Card>
+                                                <Card>
+                                                    <H5 style={{opacity: 0.6, textAlign: 'center'}}>Diesel</H5>
+                                                    <H3 weight='600'
+                                                        style={{textAlign: 'center'}}>{station.prices.diesel_price ? parseFloat(station.prices.diesel_price).toFixed(2) : 'NA'}</H3>
+                                                    <H8 style={{opacity: 0.6, textAlign: 'center'}}>Last
+                                                        Updated: {station.prices.diesel_updated_at}</H8>
+                                                </Card>
+                                            </CardContainer>
 
-                                    </CardMini>
-                                </TouchableOpacity>
-                            ))}
-                        </ScrollView>
-                    </Container>
+                                        </CardMini>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        </Container>
+                    </ScrollView>
                 </BottomSheet>
             );
         } else {
@@ -826,7 +865,6 @@ const MapScreen = () => {
                 <ButtonButton icon="list" iconColor="#b8bec2" color="#F7F7F7" onPress={renderOptionsPress}/>
             </TouchableOpacity>
         </View>
-
 
         <Modal
             animationType="slide"

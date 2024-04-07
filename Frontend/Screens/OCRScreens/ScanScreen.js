@@ -4,13 +4,25 @@ import * as ImagePicker from 'expo-image-picker';
 import {Camera, CameraType} from 'expo-camera';
 import * as FileSystem from 'expo-file-system';
 
+// Styling
 import MainLogo from '../../styles/mainLogo';
-import {AccountContainer, Content, InputTxt, Main, TextWrapper, Wrapper, WrapperScroll} from '../../styles/styles';
+import {
+    AccountContainer, BottomBar, bottomBar,
+    Container,
+    Content,
+    InputTxt,
+    Main, ReceiptContainer,
+    TextWrapper,
+    Wrapper,
+    WrapperScroll
+} from '../../styles/styles';
 import {jwtDecode} from "jwt-decode";
-import {H3, H5, H6} from "../../styles/text";
+import {H2, H3, H4, H5, H6} from "../../styles/text";
 import {useCombinedContext} from "../../CombinedContext";
 import axios from "axios";
 import {useNavigation} from "@react-navigation/native";
+import {CenterButton, CenterButtonContainer, SideButton} from "../../styles/buttons";
+import {FontAwesome} from "@expo/vector-icons";
 
 const apiKey = process.env.REACT_NATIVE_API_KEY;
 const url = process.env.REACT_APP_BACKEND_URL;
@@ -20,7 +32,6 @@ const ScanScreen = () => {
     const [imageUri, setImageUri] = useState(null);
     const [type, setType] = useState(CameraType.back);
     const [cameraModalVisible, setCameraModalVisible] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
     const [jsonResponse, setJsonResponse] = useState(null);
 
     const navigation = useNavigation();
@@ -56,6 +67,7 @@ const ScanScreen = () => {
         if (!result.cancelled) {
             console.log('imageUri:', result.assets[0].uri);
             setImageUri(result.assets[0].uri);
+            navigation.navigate('ReceiptConfirm', {image: result.assets[0].uri})
         }
     };
 
@@ -70,94 +82,48 @@ const ScanScreen = () => {
             if (!result.cancelled) {
                 setImageUri(result.uri);
                 setCameraModalVisible(false);
+                navigation.navigate('ReceiptConfirm', {image: result.uri})
             }
         }
-    };
-
-    const sendImageToBackend = async () => {
-        if (!imageUri) {
-            return;
-        }
-
-        setIsLoading(true);
-        try {
-            const response = await fetch(imageUri);
-            const blob = await response.blob();
-
-            const reader = new FileReader();
-            reader.readAsDataURL(blob);
-            reader.onloadend = async () => {
-                const base64data = reader.result.replace(/^data:image\/\w+;base64,/, "");
-
-                const requestOptions = {
-                    method: 'POST',
-                    headers: {
-                        'X-API-Key': apiKey,
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({image: base64data})
-                };
-
-                console.log('requestOptions:', requestOptions);
-                const backendResponse = await fetch(`${url}/ocr_reciept_image_upload`, requestOptions);
-
-                if (!backendResponse.ok) {
-                    console.error('Error sending image to backend:', await backendResponse.text());
-                    return;
-                } else {
-                    const responseData = await backendResponse.json();
-                    console.log('Response:', responseData);
-                    console.log('Extracted Info:', responseData.extracted_info);
-                    setJsonResponse(responseData.extracted_info);
-                    console.log('Image (Base64):', responseData.receipt_image_base64);
-                    setImageUri(null);
-                    navigation.navigate('BudgetReceipt', {receipt: responseData.extracted_info})
-                }
-            }
-        } catch (error) {
-            console.error('Error sending image to backend:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const clearJson = async () => {
-        setJsonResponse(null);
     };
 
     return (
         <Main>
             <MainLogo PageTxt="Receipt Scanner"/>
-            <WrapperScroll>
-                <AccountContainer style={{minHeight: 800}}>
-                    {isLoading && (
-                        <Modal visible={isLoading} transparent={true}>
-                            <View style={styles.loadingContainer}>
-                                <ActivityIndicator size="large"/>
-                            </View>
-                        </Modal>
-                    )}
-                    <Content>
-                        {imageUri ? (<Button title="Retake Picture" onPress={() => setCameraModalVisible(true)}/>) :
-                            (<Button title="Take Picture" onPress={() => setCameraModalVisible(true)}/>)}
-                        <Button title="Confirm Image" onPress={sendImageToBackend} disabled={!imageUri}/>
-                        {userData.roles && userData.roles.includes("Developer") &&
-                            <>
-                                <H6 weight="400" style={{textAlign: 'center'}}>Developer Features</H6>
-                                <Button title="Pick Image" onPress={pickImage}/>
-                                <Button title="Clear JSON" onPress={clearJson} disabled={!jsonResponse} />
-                                {jsonResponse && (<H5>JSON Response: {JSON.stringify(jsonResponse)}</H5>)}
-                            </>}
-                        {imageUri && <Image source={{uri: imageUri}} style={{
-                            flex: 1,
-                            width: null,
-                            height: null,
-                            resizeMode: 'contain'
-                        }}/>}
-                    </Content>
-                </AccountContainer>
-            </WrapperScroll>
+            <Wrapper>
+                <Content style={{backgroundColor: "#F7F7F7"}}>
+                    <Container style={{height: '100%'}}>
+                        <H3>Past Receipts</H3>
+                        <ReceiptContainer>
+
+                        </ReceiptContainer>
+                        <BottomBar>
+                            {userData && userData.roles && userData.roles.includes("Developer") && (
+                                <SideButton onPress={pickImage}>
+                                    <FontAwesome name="image" size={25} color="#b8bec2"/>
+                                </SideButton>
+                            )}
+                            <CenterButtonContainer>
+                                <CenterButton onPress={() => setCameraModalVisible(true)}>
+                                    <FontAwesome name="plus" size={25} color="white"/>
+                                </CenterButton>
+                            </CenterButtonContainer>
+                            {userData && userData.roles && userData.roles.includes("Developer") && (
+                                <SideButton>
+
+                                </SideButton>
+                            )}
+
+                        </BottomBar>
+
+                        {/*<BottomBar>*/}
+                        {/*    {imageUri ? (<Button title="Retake Picture" onPress={() => setCameraModalVisible(true)}/>) :*/}
+                        {/*    (<Button title="Take Picture" onPress={() => setCameraModalVisible(true)}/>)}*/}
+                        {/*<Button title="Confirm Image" onPress={sendImageToBackend} disabled={!imageUri}/>*/}
+                        {/*</BottomBar>*/}
+                    </Container>
+                </Content>
+            </Wrapper>
 
             <Modal visible={cameraModalVisible} onRequestClose={() => setCameraModalVisible(false)}>
                 <View style={styles.cameraContainer}>
@@ -168,9 +134,20 @@ const ScanScreen = () => {
                         onCameraReady={() => console.log('Camera ready')}
                     >
                         <View style={styles.buttonContainer}>
-                            <Button title="Take Picture" onPress={takePicture}/>
-                            <Button title="Exit" onPress={() => setCameraModalVisible(false)}/>
+                            <SideButton>
+
+                            </SideButton>
+                            <CenterButtonContainer>
+                                <CenterButton onPress={takePicture}>
+                                    <FontAwesome name="camera" size={25} color="white"/>
+                                </CenterButton>
+                            </CenterButtonContainer>
+                            <SideButton onPress={() => setCameraModalVisible(false)}>
+                                <FontAwesome name="times" size={25} color="#b8bec2"/>
+                            </SideButton>
+
                         </View>
+
                     </Camera>
                 </View>
             </Modal>
@@ -186,11 +163,11 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     buttonContainer: {
+        bottom: 10,
+        position: 'absolute',
         flex: 1,
         backgroundColor: 'transparent',
         flexDirection: 'row',
-        justifyContent: 'space-around',
-        alignItems: 'flex-end',
         marginBottom: 50,
     },
     loadingContainer: {

@@ -38,9 +38,31 @@ const AccountScreen = () => {
     const [refreshing, setRefreshing] = useState(false);
     const [isLoading, setLoading] = useState(false);
     const [imageUri, setImageUri] = useState(null);
+    const [profilePicture, setProfilePicture] = useState(null);
     const bottomSheetRef = useRef(null);
 
     const {token, userData, setUser, logout, updateUserFromBackend} = useCombinedContext();
+
+    useEffect(() => {
+        fetchProfilePicture();
+    }, []);
+
+    const fetchProfilePicture = async () => {
+        try {
+            const response = await axios.get(`${url}/load_profile_picture`, {
+                headers: {
+                    'X-API-Key': apiKey,
+                    'Authorization': `Bearer ${token}`
+                },
+            });
+
+            console.log(response.data)
+            if (response.data.profile_picture) setProfilePicture(response.data.profile_picture);
+
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     const requestPermissions = async () => {
         const {cameraStatus} = await Camera.requestCameraPermissionsAsync();
@@ -115,9 +137,11 @@ const AccountScreen = () => {
                     return;
                 } else {
                     const responseData = await backendResponse.json();
+                    silentRefresh();
                     updateUserFromBackend();
                     console.log('Response:', responseData);
                     setImageUri(null);
+
                 }
             }
         } catch (error) {
@@ -176,6 +200,10 @@ const AccountScreen = () => {
         }
     };
 
+    const silentRefresh = async () => {
+        await fetchProfilePicture();
+    };
+
     return (
         <Main>
             <MainLogo PageTxt='Account'/>
@@ -193,16 +221,19 @@ const AccountScreen = () => {
                 )}
                 <TopInfo>
                     <View style={{zIndex: 1000, top: 20}}>
-                        {userData.profile_picture ? (
-                                <TouchableOpacity onPress={pickImage}>
-                                    <AccountImg uri={`data:image/png;base64,${userData.profile_picture}`}/>
-                                </TouchableOpacity>
-                            ) : <TouchableOpacity onPress={pickImage}>
-                                <AccountImg/>
-                            </TouchableOpacity>}
+                        {profilePicture ? (
+                            <TouchableOpacity onPress={pickImage}>
+                                <AccountImg uri={`data:image/png;base64,${profilePicture}`}/>
+                            </TouchableOpacity>
+                        ) : <TouchableOpacity onPress={pickImage}>
+                            <AccountImg/>
+                        </TouchableOpacity>}
                         <H4 tmargin="10px" style={{textAlign: 'center'}}>{userData.first_name}</H4>
                         <H6 weight="400"
-                            style={{textAlign: 'center', opacity: 0.5}}>@{userData.username} {userData.roles && userData.roles.includes("Developer") &&
+                            style={{
+                                textAlign: 'center',
+                                opacity: 0.5
+                            }}>@{userData.username} {userData.roles && userData.roles.includes("Developer") &&
                             <DeveloperTick>🧑‍💻</DeveloperTick>}</H6>
                     </View>
                     <TopDesign>

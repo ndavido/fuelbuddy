@@ -21,10 +21,11 @@ import {ButtonButton} from "../../styles/buttons";
 import {Logo} from "../../styles/images";
 
 const url = process.env.REACT_APP_BACKEND_URL
+const apiKey = process.env.REACT_NATIVE_API_KEY;
 
 const SetPreferencesScreen = () => {
     const navigation = useNavigation();
-    const {userData, setUser, updateUserFromBackend} = useCombinedContext();
+    const {userData, setUser, updateUserFromBackend, token} = useCombinedContext();
 
     async function reloadApp() {
         await Updates.reloadAsync();
@@ -35,10 +36,11 @@ const SetPreferencesScreen = () => {
 
     const handleFinish = async () => {
         try {
-            const apiKey = process.env.REACT_NATIVE_API_KEY;
+
             const config = {
                 headers: {
                     'X-API-Key': apiKey,
+                    'Authorization': `Bearer ${token}`
                 },
             };
 
@@ -47,7 +49,7 @@ const SetPreferencesScreen = () => {
                 reg_full: true,
             };
 
-            const response = await axios.patch(`${url}/edit_account`, updatedUserData, config);
+            const response = await axios.get(`${url}/complete_registration`, config);
 
             if (response.data && response.data.message === 'Account updated successfully') {
                 setUser({...updatedUserData});

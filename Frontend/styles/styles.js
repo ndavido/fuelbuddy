@@ -1,6 +1,7 @@
-import React from 'react';
+import React, {useState} from 'react';
 import styled, {css} from "styled-components/native";
 import {FontAwesome5} from "@expo/vector-icons";
+import {TouchableOpacity} from "react-native";
 
 /* Main Styling */
 export const Main = styled.View`
@@ -72,7 +73,6 @@ export const TextContainer = styled.Text`
   height: auto;
   line-height: 18px;
   background-color: ${props => props.bcolor || '#F7F7F7'};
-  
   border-radius: 10px;
 `;
 
@@ -217,14 +217,42 @@ export const CardTitle = styled.Text`
   margin-bottom: 10px;
 `;
 
+/* OCR Screen */
+export const BottomBar = styled.View`
+  position: absolute;
+  margin-bottom: 80px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  flex-direction: row;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  height: 18%;
+  background-color: #FFFFFF;
+`;
+
+export const ReceiptContainer= styled.View`
+  position: relative;
+  margin-top: 20px;
+  margin-bottom: 80px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  flex-direction: row;
+  border-radius: 10px;
+
+  height: 62%;
+  background-color: #FFFFFF;
+`;
+
 
 /* Friends Screen */
 export const FContainer = styled.View`
-flex-direction: row;
-justify-content: space-between;
-align-items: center;
-padding: 12px;
- 
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+
 `;
 
 export const FSButtonContainer = styled.TouchableOpacity`
@@ -277,14 +305,15 @@ export const DeveloperTick = styled.Text`
 /* Modals */
 export const ModalContent = styled.View`
   background-color: white;
-    padding: 20px;
-    border-radius: 20px;
-    margin: 50px;
-    min-width: 350px;
-    min-height: 200px;
-    border: 1px solid #ddd;
+  padding: 20px;
+  border-radius: 20px;
+  margin: 50px;
+  min-width: 350px;
+  min-height: 200px;
+  border: 1px solid #ddd;
 `;
 
+/* Search Bar */
 const SearchContainer = styled.View`
   flex-direction: row;
   align-items: center;
@@ -300,16 +329,31 @@ const SearchInput = styled.TextInput`
   color: #333;
 `;
 
-export const SearchBox = ({ placeholder, onChangeText, value }) => {
-  return (
-    <SearchContainer>
-      <FontAwesome5 name="search" size={18} color="#b8bec2" />
-      <SearchInput
-        placeholder={placeholder}
-        placeholderTextColor="#888"
-        onChangeText={onChangeText}
-        value={value}
-      />
-    </SearchContainer>
-  );
+export const SearchBox = ({placeholder, onChangeText, value}) => {
+    const [hasText, setHasText] = useState(false);
+
+    const handleClear = () => {
+        onChangeText('');
+        setHasText(false);
+    };
+
+    return (
+        <SearchContainer>
+            <FontAwesome5 name="search" size={18} color="#b8bec2"/>
+            <SearchInput
+                placeholder={placeholder}
+                placeholderTextColor="#888"
+                onChangeText={text => {
+                    onChangeText(text);
+                    setHasText(text !== '');
+                }}
+                value={value}
+            />
+            { hasText && (
+                <TouchableOpacity onPress={handleClear}>
+                    <FontAwesome5 name="times" size={18} color="#b8bec2" style={{marginLeft: 8}}/>
+                </TouchableOpacity>
+            )}
+        </SearchContainer>
+    );
 };

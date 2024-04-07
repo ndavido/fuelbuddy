@@ -27,9 +27,10 @@ import ScanScreen from './Screens/OCRScreens/ScanScreen';
 import AccountScreen from './Screens/UserScreens/AccountScreen';
 
 /* OCR */
+import ConfirmReceipt from './Screens/OCRScreens/ReceiptConfirmScreen'
 import BudgetReceipt from './Screens/OCRScreens/ReceiptBudgetScreen'
 import StationReceipt from './Screens/OCRScreens/ReceiptStationScreen'
-import ConfirmReceipt from './Screens/OCRScreens/ReceiptConfirmScreen'
+import CompleteReceipt from './Screens/OCRScreens/ReceiptCompleteScreen'
 
 /* Friends */
 import FriendsScreen from './Screens/FriendsScreens/FriendsScreen';
@@ -115,9 +116,10 @@ const ScanFlow = () => {
     return (
         <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName="OCR">
             <Stack.Screen name="OCR" component={ScanScreen}/>
+            <Stack.Screen name="ReceiptConfirm" component={ConfirmReceipt}/>
             <Stack.Screen name="BudgetReceipt" component={BudgetReceipt}/>
             <Stack.Screen name="StationReceipt" component={StationReceipt}/>
-            <Stack.Screen name="ConfirmReceipt" component={ConfirmReceipt}/>
+            <Stack.Screen name="CompleteReceipt" component={CompleteReceipt}/>
         </Stack.Navigator>
     )
 }
@@ -183,6 +185,7 @@ const AppNavigator = () => {
                                 tabBarInactiveTintColor: '#515151',
                                 tabBarStyle: {
                                     backgroundColor: '#FFFFFF',
+                                    height: 90
                                 },
                                 tabBarLabelStyle: {
                                     fontSize: 16,

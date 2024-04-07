@@ -14,6 +14,6 @@ account_blueprint.route('/upload_profile_picture',
 account_blueprint.route('/load_profile_picture',
                         methods=['GET'])(load_profile_picture)
 account_blueprint.route('/complete_registration',
-                        methods=['PATCH'])(complete_registration)
+                        methods=['GET'])(complete_registration)
 account_blueprint.route('/save_preferences',
                         methods=['PATCH'])(save_preferences)

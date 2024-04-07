@@ -1,7 +1,9 @@
 import React, {useState, useEffect} from 'react';
 import axios from 'axios';
 import {useNavigation, useRoute} from '@react-navigation/native';
+import {Image, Platform, View, StyleSheet} from "react-native";
 import {useCombinedContext} from '../../CombinedContext';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Updates from 'expo-updates';
 
 // Styling
@@ -12,22 +14,26 @@ import {
     InputTxt, LRButtonDiv,
     Main,
     TextContainer,
-    WelcomeMain,
+    WelcomeMain, Wrapper,
     WrapperScroll
 } from "../../styles/styles";
 import {ButtonButton} from "../../styles/buttons";
-import {Image} from "react-native";
+
 
 const url = process.env.REACT_APP_BACKEND_URL
 const apiKey = process.env.REACT_NATIVE_API_KEY
 
 const ReceiptBudgetScreen = () => {
     const route = useRoute();
-    const { receipt } = route.params;
+    const {receipt, receiptImage} = route.params;
 
     console.log(receipt)
 
+    console.log("Receipt On Budget Screen", receiptImage)
+
     const [editedReceiptTotal, setEditedReceiptTotal] = useState((receipt.total || 0).toString());
+    const [selectedDate, setSelectedDate] = useState(new Date());
+    const [showDatePicker, setShowDatePicker] = useState(false);
     const [message, setMessage] = useState('');
     const navigation = useNavigation();
     const {token, userData, setUser, updateUserFromBackend} = useCombinedContext();
@@ -42,11 +48,10 @@ const ReceiptBudgetScreen = () => {
     /* TODO Add Alt if Budget is not set!!! */
     const handleUpdateBudget = async () => {
         try {
-            const apiUrl = `${url}/update_budget`;
+            const apiUrl = `${url}/update_user_deduction`;
 
             const requestBody = {
-                id: userData.username,
-                deductions: editedReceiptTotal,
+                new_amount: editedReceiptTotal,
             };
 
             const response = await axios.post(apiUrl, requestBody, {
@@ -59,7 +64,7 @@ const ReceiptBudgetScreen = () => {
 
             if (response.data.message) {
                 console.log(response.data.message);
-                navigation.navigate('StationReceipt', {receipt: receipt});
+                navigation.navigate('StationReceipt', {receipt: receipt, receiptImage: receiptImage});
             } else {
                 console.error('Failed to add deduction:', response.data.error);
             }
@@ -69,8 +74,14 @@ const ReceiptBudgetScreen = () => {
     };
 
     const handleSkip = async () => {
-        navigation.navigate('StationReceipt');
+        navigation.navigate('StationReceipt', {receipt: receipt});
     }
+
+    const handleDateChange = (event, selectedDate) => {
+        const currentDate = selectedDate || date;
+        setShowDatePicker(Platform.OS === 'ios');
+        setSelectedDate(currentDate);
+    };
 
     useEffect(() => {
         updateUserFromBackend();
@@ -80,18 +91,27 @@ const ReceiptBudgetScreen = () => {
 
     return (
         <WelcomeMain>
-            <WrapperScroll>
+            <Wrapper>
                 <Content>
                     <Container>
-                        <H3 tmargin='20px' bmargin='20px'>Update Budget</H3>
+                        <H3 bmargin="10px">Update Budget</H3>
                         <>
                             <H6>Current Budget</H6>
                             <TextContainer bgColor='grey'>€{userData.weekly_budget}</TextContainer>
                             <H6 bmargin='5px'>Receipt Total (€)</H6>
-                            <InputTxt bcolor='white' value={editedReceiptTotal} onChangeText={setEditedReceiptTotal}
+                            <InputTxt value={editedReceiptTotal} onChangeText={setEditedReceiptTotal}
                                       placeholder="Total Spent"/>
-                            <H6>Time</H6>
-                            <TextContainer bgColor='grey'>DATE</TextContainer>
+                            <H6>Date </H6>
+                            <View style={styles.container}>
+                                <DateTimePicker
+                                    style={{left: -10}}
+                                    value={selectedDate}
+                                    mode="date"
+                                    display="default"
+                                    onChange={handleDateChange}
+                                />
+                            </View>
+
                         </>
                         <H6 tmargin='10px' bmargin='10px'>{message}</H6>
                     </Container>
@@ -102,9 +122,17 @@ const ReceiptBudgetScreen = () => {
                                       txtColor="black" text="Skip" onPress={handleSkip}/>
                     </LRButtonDiv>
                 </Content>
-            </WrapperScroll>
+            </Wrapper>
         </WelcomeMain>
     );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+  },
+});
 
 export default ReceiptBudgetScreen;
