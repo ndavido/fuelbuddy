@@ -294,9 +294,10 @@ def add_rating_to_fuel_station():
 def store_fuel_prices():
     try:
         user = Users.objects(id=get_jwt_identity()).first()
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+
         data = request.get_json()
-        print('user', user.username, user.roles, user.id, user.email)
-        print('data', data)
         fuel_prices_data = data.get('fuelPrices', [])
 
         for price_data in fuel_prices_data:
@@ -306,12 +307,6 @@ def store_fuel_prices():
             if not fuel_station:
                 continue
 
-            # used pop to remove the last element in the list
-            if fuel_station.petrol_prices:
-                fuel_station.petrol_prices.pop()
-            if fuel_station.diesel_prices:
-                fuel_station.diesel_prices.pop()
-
             petrol_price = price_data.get('petrol_price')
             diesel_price = price_data.get('diesel_price')
 
@@ -320,29 +315,30 @@ def store_fuel_prices():
             if set(user.roles) & {'admin', 'Developer', 'Station_Owner'}:
                 price_verified = True
 
-            fuel_station.petrol_prices.append(PetrolPrices(
-                price=petrol_price, price_verified=price_verified, updated_at=datetime.utcnow()))
-            fuel_station.diesel_prices.append(DieselPrices(
-                price=diesel_price, price_verified=price_verified, updated_at=datetime.utcnow()))
-            fuel_station.save()
+            # Update Petrol Price
+            if petrol_price is not None:
+                new_petrol_price = PetrolPrices(
+                    price=petrol_price, price_verified=price_verified, updated_at=datetime.utcnow())
+                fuel_station.update(push__petrol_prices=new_petrol_price)
 
-            new_price = FuelPrices(
-                station=fuel_station,
-                petrol_prices=[PetrolPrices(
-                    price=petrol_price, price_verified=price_verified, updated_at=datetime.utcnow())],
-                diesel_prices=[DieselPrices(
-                    price=diesel_price, price_verified=price_verified, updated_at=datetime.utcnow())],
-                updated_at=datetime.utcnow()
-            )
-            print('new_price', new_price)
-            new_price.save()
+            # Update Diesel Price
+            if diesel_price is not None:
+                new_diesel_price = DieselPrices(
+                    price=diesel_price, price_verified=price_verified, updated_at=datetime.utcnow())
+                fuel_station.update(push__diesel_prices=new_diesel_price)
 
-            UserActivity(user=user, activity_type="fuel_price_update",
-                         details=f"{user.username} updated fuel price at {fuel_station.name}",
-                         station=fuel_station).save()
+            # Log activity
+            UserActivity(
+                user=user,
+                activity_type="fuel_price_update",
+                details=f"{user.username} updated fuel prices at {fuel_station.name}",
+                station=fuel_station
+            ).save()
 
+        print("Fuel prices stored successfully")
         return jsonify({"message": "Fuel prices stored successfully"})
     except DoesNotExist:
+        print("Fuel station not found")
         return jsonify({"error": "Fuel station not found"}), 404
     except Exception as e:
         handle_api_error(e)
