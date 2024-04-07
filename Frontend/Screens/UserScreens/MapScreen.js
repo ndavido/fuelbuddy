@@ -51,6 +51,7 @@ import atmIcon from '../../assets/serviceIcons/fs_atm.png';
 import parkingIcon from '../../assets/serviceIcons/fs_parking.png';
 import serviceIcon from '../../assets/serviceIcons/fs_service.png';
 import conStoreIcon from '../../assets/serviceIcons/fs_con_store.png';
+import ScrollPicker from "react-native-wheel-scrollview-picker";
 
 
 const apiMapKey = process.env.REACT_NATIVE_GoogleMaps_API_KEY;
@@ -85,8 +86,11 @@ const MapScreen = () => {
 
     const [selectedStation, setSelectedStation] = useState(null);
     const [updateModalVisible, setUpdateModalVisible] = useState(false);
-    const [newPetrolPrice, setNewPetrolPrice] = useState('');
-    const [newDieselPrice, setNewDieselPrice] = useState('');
+
+    const [selectedPetrolEuros, setSelectedPetrolEuros] = useState(0);
+    const [selectedPetrolCents, setSelectedPetrolCents] = useState(0);
+    const [selectedDieselEuros, setSelectedDieselEuros] = useState(0);
+    const [selectedDieselCents, setSelectedDieselCents] = useState(0);
 
     const [showStationInfo, setShowStationInfo] = useState(true);
     const [showRouteInfo, setShowRouteInfo] = useState(false);
@@ -103,6 +107,9 @@ const MapScreen = () => {
     const [refreshing, setRefreshing] = useState(false);
 
     const snapPoints = useMemo(() => ['20%', '40%', '85%'], []);
+
+    const eurosData = ['1', '2', '3'];
+    const centsData = Array.from({length: 100}, (_, i) => (i < 10 ? `0${i}` : `${i}`));
 
     const getDistanceBetweenLocations = (location1, location2) => {
         const R = 6371;
@@ -311,10 +318,16 @@ const MapScreen = () => {
 
     const handleUpdatePress = async () => {
         try {
+            const updatedPetrolPrice = `${selectedPetrolEuros}.${selectedPetrolCents}`;
+            const updatedDieselPrice = `${selectedDieselEuros}.${selectedDieselCents}`;
+
+            console.log('New Petrol Price:', updatedPetrolPrice);
+            console.log('New Diesel Price:', updatedDieselPrice);
+
             const payload = {
                 fuelPrices: [{
                     station_id: selectedStation.id,
-                    petrol_price: newPetrolPrice, diesel_price: newDieselPrice, timestamp: new Date().toISOString(),
+                    petrol_price: updatedPetrolPrice, diesel_price: updatedDieselPrice, timestamp: new Date().toISOString(),
                 },],
             };
 
@@ -331,8 +344,8 @@ const MapScreen = () => {
                 setSelectedStation(prevStation => ({
                     ...prevStation,
                     prices: {
-                        petrol_price: newPetrolPrice,
-                        diesel_price: newDieselPrice,
+                        petrol_price: updatedPetrolPrice,
+                        diesel_price: updatedDieselPrice,
                         petrol_updated_at: new Date().toISOString(),
                         diesel_updated_at: new Date().toISOString(),
                     }
@@ -391,11 +404,23 @@ const MapScreen = () => {
 
     const handleMarkerPress = (station) => {
         setSelectedStation(station);
-        setJourneyMode(false);
-        setIsJourneyActive(false);
+        const storedPetrolPrice = `${station.prices.petrol_price || '1.69'}`;
+        const storedDieselPrice = `${station.prices.diesel_price || '1.69'}`;
+
+        console.log("Stored Petrol Price: ", storedPetrolPrice);
+
+        const [initialPetrolEuros, initialPetrolCents] = storedPetrolPrice.split('.');
+        const [initialDieselEuros, initialDieselCents] = storedDieselPrice.split('.');
+
+        setSelectedPetrolEuros(parseInt(initialPetrolEuros, 10));
+        setSelectedPetrolCents(parseInt(initialPetrolCents, 10));
+        setSelectedDieselEuros(parseInt(initialDieselEuros, 10));
+        setSelectedDieselCents(parseInt(initialDieselCents, 10));
+
         setShowStationInfo(true);
         setShowRouteInfo(false);
         setShowNearbyStationsSheet(false);
+
         // TODO Remove Dev Only
         console.log("Selected Station: ", station);
     };
@@ -517,6 +542,11 @@ const MapScreen = () => {
             {duration: 1500}
         );
     }
+
+    const updatePrice = (newEuros, newCents, setPriceEuros, setPriceCents) => {
+        setPriceEuros(newEuros);
+        setPriceCents(newCents);
+    };
 
     const renderMap = () => {
         if (isWeb) {
@@ -726,6 +756,7 @@ const MapScreen = () => {
 
     const renderOptionsPress = () => {
         setShowStationInfo(false);
+        setShowRouteInfo(false);
         const nearbyStations = findNearbyStations(location.coords);
         setNearbyStations(nearbyStations);
         console.log('Nearby stations:', nearbyStations);
@@ -874,27 +905,77 @@ const MapScreen = () => {
         >
             <View style={styles.modalContainer}>
                 <ModalContent>
-                    <H5 tmargin="10px" bmargin="30px" style={{textAlign: 'center'}}>Update Price</H5>
+                    <H5 tmargin="10px" bmargin="20px" style={{textAlign: 'center'}}>Update Price</H5>
                     <ButtonContainer style={{position: 'absolute', marginTop: 20, marginLeft: 20}}>
                         <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
                             <ButtonButton icon="cross" color="#eaedea" iconColor="#b8bec2"
                                           onPress={() => setUpdateModalVisible(false)}/>
                         </View>
                     </ButtonContainer>
-                    <InputTxt
-                        placeholder="New Petrol Price"
-                        keyboardType="numeric"
-                        placeholderTextColor="#000000"
-                        value={newPetrolPrice}
-                        onChangeText={(text) => setNewPetrolPrice(text)}
-                    />
-                    <InputTxt
-                        placeholder="New Diesel Price"
-                        keyboardType="numeric"
-                        placeholderTextColor="#000000"
-                        value={newDieselPrice}
-                        onChangeText={(text) => setNewDieselPrice(text)}
-                    />
+                    <CardContainer style={{marginRight: -10, marginLeft: -10}}>
+                        <Card>
+                            <H6 style={{opacity: 0.6, textAlign: 'center'}}>Petrol (€)</H6>
+                            <View style={styles.pickerRow}>
+                                <ScrollPicker
+                                    dataSource={eurosData}
+                                    selectedIndex={selectedPetrolEuros - 1}
+                                    onValueChange={(val, index) => updatePrice(val, selectedPetrolCents, setSelectedPetrolEuros, setSelectedPetrolCents)}
+                                    itemTextStyle={{fontFamily: 'Poppins_500Medium'}}
+                                    wrapperHeight={120}
+                                    wrapperBackground={'#FFFFFF'}
+                                    itemHeight={40}
+                                    highlightColor={'#d8d8d8'}
+                                    highlightBorderWidth={2}
+                                    activeItemColor={'#222121'}
+                                    itemColor={'#B4B4B4'}
+                                />
+                                <ScrollPicker
+                                    dataSource={centsData}
+                                    selectedIndex={selectedPetrolCents}
+                                    onValueChange={(val, index) => updatePrice(selectedPetrolEuros, val, setSelectedPetrolEuros, setSelectedPetrolCents)}
+                                    itemTextStyle={{fontFamily: 'Poppins_500Medium'}}
+                                    wrapperHeight={120}
+                                    wrapperBackground={'#FFFFFF'}
+                                    itemHeight={40}
+                                    highlightColor={'#d8d8d8'}
+                                    highlightBorderWidth={2}
+                                    activeItemColor={'#222121'}
+                                    itemColor={'#B4B4B4'}
+                                />
+                            </View>
+                        </Card>
+                        <Card>
+                            <H6 style={{opacity: 0.6, textAlign: 'center'}}>Diesel (€)</H6>
+                            <View style={styles.pickerRow}>
+                                <ScrollPicker
+                                    dataSource={eurosData}
+                                    itemTextStyle={{fontFamily: 'Poppins_500Medium'}}
+                                    wrapperHeight={120}
+                                    selectedIndex={selectedDieselEuros - 1}
+                                    onValueChange={(val, index) => updatePrice(val, selectedDieselCents, setSelectedDieselEuros, setSelectedDieselCents)}
+                                    wrapperBackground={'#FFFFFF'}
+                                    itemHeight={40}
+                                    highlightColor={'#d8d8d8'}
+                                    highlightBorderWidth={2}
+                                    activeItemColor={'#222121'}
+                                    itemColor={'#B4B4B4'}
+                                />
+                                <ScrollPicker
+                                    dataSource={centsData}
+                                    itemTextStyle={{fontFamily: 'Poppins_500Medium'}}
+                                    wrapperHeight={120}
+                                    selectedIndex={selectedDieselCents}
+                                    onValueChange={(val, index) => updatePrice(selectedDieselEuros, val, setSelectedDieselEuros, setSelectedDieselCents)}
+                                    wrapperBackground={'#FFFFFF'}
+                                    itemHeight={40}
+                                    highlightColor={'#d8d8d8'}
+                                    highlightBorderWidth={2}
+                                    activeItemColor={'#222121'}
+                                    itemColor={'#B4B4B4'}
+                                />
+                            </View>
+                        </Card>
+                    </CardContainer>
                     <ButtonContainer style={{width: "auto", position: "relative"}}>
                         <ButtonButton icon="plus" color="#6BFF91" text="Update" onPress={handleUpdatePress}/>
                     </ButtonContainer>
@@ -938,6 +1019,15 @@ const styles = StyleSheet.create({
         margin: 16,
         borderRadius: 10,
         elevation: 5,
+    },
+    pickerSection: {
+        display: 'inline-flex',
+        marginBottom: 20,
+    },
+    pickerRow: {
+        width: "100%",
+        flexDirection: 'row',
+        justifyContent: 'space-between',
     },
 });
 

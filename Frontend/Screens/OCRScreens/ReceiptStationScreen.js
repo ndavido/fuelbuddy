@@ -107,7 +107,7 @@ const ReceiptStationScreen = () => {
                 fuelPrices: [{
                     station_id: selectedStation.id,
                     [fuelTypeToUpdate]: priceToUpdate,
-                    [oppositeFuelType]: 1.50,
+                    [oppositeFuelType]: null,
                     timestamp: new Date().toISOString(),
                 }],
             };
