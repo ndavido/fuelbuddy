@@ -19,6 +19,7 @@ import {
 } from "../../styles/styles";
 import {ButtonButton} from "../../styles/buttons";
 import {Logo} from "../../styles/images";
+import Slider from "@react-native-community/slider";
 
 const url = process.env.REACT_APP_BACKEND_URL
 const apiKey = process.env.REACT_NATIVE_API_KEY;
@@ -26,6 +27,7 @@ const apiKey = process.env.REACT_NATIVE_API_KEY;
 const SetPreferencesScreen = () => {
     const navigation = useNavigation();
     const {userData, setUser, updateUserFromBackend, token} = useCombinedContext();
+    const [tempRadius, setTempRadius] = useState(userData.radius_preferences || 30);
 
     async function reloadApp() {
         await Updates.reloadAsync();
@@ -33,6 +35,49 @@ const SetPreferencesScreen = () => {
         /*TODO Remove DEV ONLY!!*/
         console.log("Reloaded")
     }
+
+    const handleUpdateRadius = async (radius) => {
+        try {
+            const config = {
+                headers: {
+                    'X-API-Key': apiKey,
+                    'Authorization': `Bearer ${token}`
+                },
+            };
+
+            const data = {
+                radius_preferences: radius,
+            };
+
+            const updatedUserData = {
+                ...userData,
+                radius_preferences: radius,
+            };
+
+            const response = await axios.patch(`${url}/save_preferences`, data, config);
+
+            if (response.data) {
+                console.log("Update successful");
+
+                await setUser({...updatedUserData});
+
+            } else {
+                console.log("Update unsuccessful");
+            }
+        } catch (error) {
+            console.error('Error updating user Radius:', error);
+        }
+    };
+
+    const debounce = (func, delay) => {
+        let timeoutId;
+        return (...args) => {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => func(...args), delay);
+        };
+    };
+
+    const debouncedSetTempRadius = debounce(setTempRadius, 150);
 
     const handleFinish = async () => {
         try {
@@ -73,12 +118,29 @@ const SetPreferencesScreen = () => {
                     <Container>
                         <H3 tmargin='20px' bmargin='20px'>Set Preferences</H3>
                         <>
-                            <H6 bmargin='5px'>PREF HERE</H6>
+                            <H5>Map Radius</H5>
+                            <H6 style={{opacity: 0.6}}>Higher Kilometers can cause performance Issues</H6>
+                            <View>
+                                <Slider
+                                    value={userData.radius_preferences}
+                                    onValueChange={debouncedSetTempRadius}
+                                    minimumValue={30}
+                                    maximumValue={400}
+                                    step={10}
+                                />
+                                <H5>Radius: {tempRadius}km</H5>
+                                <ButtonContainer style={{display: 'flex'}}>
+                                    <ButtonButton place="right" txtWidth="100%" width="40%" text="Save Radius"
+                                                  onPress={() => handleUpdateRadius(tempRadius)}
+                                                  disabled={!userData.radius_preferences || tempRadius === userData.radius_preferences}/>
+                                </ButtonContainer>
+                            </View>
                         </>
                     </Container>
                     <LRButtonDiv>
                         <ButtonButton color="#6bff91" txtWidth="100%"
-                                      txtColor="white" text="Finish" accessibilityLabel="Finish" onPress={handleFinish} accessible={true}/>
+                                      txtColor="white" text="Finish" accessibilityLabel="Finish" onPress={handleFinish}
+                                      accessible={true}/>
                     </LRButtonDiv>
                 </Content>
             </WrapperScroll>

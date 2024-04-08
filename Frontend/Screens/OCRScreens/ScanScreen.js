@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useRef} from 'react';
-import {View, Text, Button, StyleSheet, Modal, Image, ActivityIndicator} from 'react-native';
+import {View, Text, Button, StyleSheet, Modal, Image, ActivityIndicator, ScrollView} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import {Camera, CameraType} from 'expo-camera';
 import * as FileSystem from 'expo-file-system';
@@ -7,7 +7,7 @@ import * as FileSystem from 'expo-file-system';
 // Styling
 import MainLogo from '../../styles/mainLogo';
 import {
-    AccountContainer, BottomBar, bottomBar,
+    AccountContainer, BottomBar, bottomBar, CardMini,
     Container,
     Content,
     InputTxt,
@@ -17,7 +17,7 @@ import {
     WrapperScroll
 } from '../../styles/styles';
 import {jwtDecode} from "jwt-decode";
-import {H2, H3, H4, H5, H6} from "../../styles/text";
+import {H2, H3, H4, H5, H6, H7} from "../../styles/text";
 import {useCombinedContext} from "../../CombinedContext";
 import axios from "axios";
 import {useNavigation} from "@react-navigation/native";
@@ -30,6 +30,7 @@ const url = process.env.REACT_APP_BACKEND_URL;
 const ScanScreen = () => {
     const {token, userData, setUser, updateUserFromBackend} = useCombinedContext();
     const [imageUri, setImageUri] = useState(null);
+    const [receipts, setReceipts] = useState([]);
     const [type, setType] = useState(CameraType.back);
     const [cameraModalVisible, setCameraModalVisible] = useState(false);
     const [jsonResponse, setJsonResponse] = useState(null);
@@ -54,6 +55,25 @@ const ScanScreen = () => {
         if (!hasPermissions) {
             console.error('Permissions not granted');
         }
+
+        const fetchUserReceipts = async () => {
+            try {
+                const response = await axios.get(`${url}/retrieve_past_reciepts`, {
+                    headers: {
+                        'X-API-Key': apiKey,
+                        'Authorization': `Bearer ${token}`
+                    },
+                });
+
+                if (response.data && response.data.receipts) {
+                    setReceipts(response.data.receipts);
+                }
+
+            } catch (error) {
+                console.error(error);
+            }
+        };
+        fetchUserReceipts();
     }, []);
 
     const pickImage = async () => {
@@ -94,9 +114,26 @@ const ScanScreen = () => {
                 <Content style={{backgroundColor: "#F7F7F7"}}>
                     <Container style={{height: '100%'}}>
                         <H3>Past Receipts</H3>
-                        <ReceiptContainer>
-
-                        </ReceiptContainer>
+                        <ScrollView>
+                            {receipts.length > 0 ? (
+                                <>
+                                    {receipts.map((receipt, index) => (
+                                        <CardMini bColor="#FFFFFF" key={index} style={{paddingBottom: 10}}>
+                                            <H6 style={{paddingTop: 5}}>STATION NAME</H6>
+                                            <H7 >Price Per Litre: {receipt.price_per_litre}</H7>
+                                            <H7 >Volume: {receipt.volume}</H7>
+                                            <H6 width="100%" tmargin="15px" lmargin="10px" position="absolute"
+                                                style={{textAlign: "right"}}>€{receipt.total}</H6>
+                                            <H7 style={{opacity: 0.3, paddingBottom: 5}}>
+                                                {receipt.date.toLocaleString()}
+                                            </H7>
+                                        </CardMini>
+                                    ))}
+                                </>
+                            ) : (
+                                <H5>No receipts found</H5>
+                            )}
+                        </ScrollView>
                         <BottomBar>
                             {userData && userData.roles && userData.roles.includes("Developer") && (
                                 <SideButton onPress={pickImage}>
@@ -115,12 +152,6 @@ const ScanScreen = () => {
                             )}
 
                         </BottomBar>
-
-                        {/*<BottomBar>*/}
-                        {/*    {imageUri ? (<Button title="Retake Picture" onPress={() => setCameraModalVisible(true)}/>) :*/}
-                        {/*    (<Button title="Take Picture" onPress={() => setCameraModalVisible(true)}/>)}*/}
-                        {/*<Button title="Confirm Image" onPress={sendImageToBackend} disabled={!imageUri}/>*/}
-                        {/*</BottomBar>*/}
                     </Container>
                 </Content>
             </Wrapper>

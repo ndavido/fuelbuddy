@@ -81,7 +81,7 @@ const ReceiptConfirmScreen = () => {
                     console.log('Extracted Info:', responseData.extracted_info);
                     setJsonResponse(responseData.extracted_info);
                     console.log('Image (Base64):', responseData.receipt_image_base64);
-                    navigation.navigate('BudgetReceipt', {receipt: responseData.extracted_info, receiptImage: responseData.receipt_image_base64})
+                    navigation.navigate('BudgetReceipt', {receipt: responseData.extracted_info, receiptImage: base64data})
                     setImageUri(null);
                 }
             }

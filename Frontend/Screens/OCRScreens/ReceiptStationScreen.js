@@ -122,7 +122,7 @@ const ReceiptStationScreen = () => {
 
             if (response.ok) {
                 console.log('Successfully updated fuel prices');
-                navigation.navigate('CompleteReceipt', {receipt: receipt});
+                navigation.navigate('CompleteReceipt', {receipt: receipt, receiptImage: receiptImage});
             } else {
                 console.error('Failed to update fuel prices');
             }

@@ -133,15 +133,15 @@ const AccountScreen = () => {
                             <TextContainer bcolor="#FFFFFF">{userData.phone_number}</TextContainer>
                             <H6 bmargin='5px'>Email</H6>
                             <TextContainer bcolor="#FFFFFF">{userData.email}</TextContainer>
-                        </>
-                    )}
-                    <H6 tmargin='10px' bmargin='10px'>{message}</H6>
+                            <H6 tmargin='10px' bmargin='10px'>{message}</H6>
                     <H5 tmargin='40px' bmargin='5px'>Delete Account</H5>
                     <H6 style={{opacity: 0.6}} bmargin='20px' weight='400'>Not comfortable? Deleting your
                         account will
                         remove all data from our servers</H6>
                     <ButtonButton pos="single" iconColor="white" icon="cross" color="red"
                                   txtColor="black" txtMargin="15px" text="Delete Account" onPress={handleDelete}/>
+                        </>
+                    )}
                 </AccountContainer>
             </WrapperScroll>
         </Main>

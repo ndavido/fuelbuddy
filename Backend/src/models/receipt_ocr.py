@@ -6,7 +6,7 @@ from datetime import datetime
 
 class ReceiptOcr(Document):
     user = ReferenceField('Users', required=True)
-    receipt = StringField(required=True)  # image in bit
+    receipt = StringField()  # image in bit
     fuel_type = StringField(required=True)
     volume = DecimalField(required=True, precision=2)
     price_per_litre = DecimalField(required=True, precision=3)

@@ -203,7 +203,7 @@ export const Card = styled.View`
 `;
 
 export const CardMini = styled.View`
-  background-color: #F7F7F7;
+  background-color: ${props => props.bColor || "#F7F7F7"};
   flex: 1;
   border-radius: 8px;
   padding: 10px;

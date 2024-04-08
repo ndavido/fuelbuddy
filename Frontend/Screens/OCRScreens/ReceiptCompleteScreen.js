@@ -49,11 +49,6 @@ const ReceiptCompleteScreen = () => {
 
         try {
             const apiKey = process.env.REACT_NATIVE_API_KEY;
-            const config = {
-                headers: {
-                    'X-API-Key': apiKey,
-                },
-            };
 
             const receiptData = {
                 receipt_image_base64: receiptImage,

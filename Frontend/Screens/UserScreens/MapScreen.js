@@ -14,6 +14,7 @@ import * as Location from "expo-location";
 import Slider from '@react-native-community/slider';
 import {useCombinedContext} from "../../CombinedContext";
 import Icon from 'react-native-vector-icons/FontAwesome';
+import openMap from 'react-native-open-maps';
 
 const jsonBig = require('json-bigint');
 
@@ -327,7 +328,9 @@ const MapScreen = () => {
             const payload = {
                 fuelPrices: [{
                     station_id: selectedStation.id,
-                    petrol_price: updatedPetrolPrice, diesel_price: updatedDieselPrice, timestamp: new Date().toISOString(),
+                    petrol_price: updatedPetrolPrice,
+                    diesel_price: updatedDieselPrice,
+                    timestamp: new Date().toISOString(),
                 },],
             };
 
@@ -548,6 +551,13 @@ const MapScreen = () => {
         setPriceCents(newCents);
     };
 
+    const handleOpenInMaps = () => {
+        const endLatitude = selectedStation.location.latitude;
+        const endLongitude = selectedStation.location.longitude;
+
+        openMap({ latitude: endLatitude, longitude: endLongitude });
+    }
+
     const renderMap = () => {
         if (isWeb) {
             return (<View style={{flex: 1}}>
@@ -706,7 +716,7 @@ const MapScreen = () => {
                         <H6 style={{opacity: 0.7}}>Estimated Price: €{estimatedPrice} - 18km/l @ €1.77</H6>
                         <H6 style={{opacity: 0.7}}>(Based Off Your Selected Vehicle)</H6>
                         <ButtonContainer>
-                            <ButtonButton icon="arrow-with-circle-up" text="Start Journey"/>
+                            <ButtonButton text="Open In Maps" onPress={handleOpenInMaps}/>
                             <ButtonButton style={{float: "left"}} icon="cross" text="Exit"
                                           onPress={handleCancelPress}/>
                         </ButtonContainer>
@@ -867,7 +877,6 @@ const MapScreen = () => {
                                                         Updated: {station.prices.diesel_updated_at}</H8>
                                                 </Card>
                                             </CardContainer>
-
                                         </CardMini>
                                     </TouchableOpacity>
                                 ))}
