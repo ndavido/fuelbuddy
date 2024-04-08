@@ -2,7 +2,7 @@
   "expo": {
     "name": "fuelbuddy",
     "slug": "fuelbuddy",
-    "version": "1.0.3",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/iconDrop.png",
     "userInterfaceStyle": "light",

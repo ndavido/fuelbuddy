@@ -59,7 +59,11 @@ const DashboardScreen = () => {
 
     const getMondayLabel = (offset) => {
         const today = new Date();
-        const firstDayOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay() + 1);
+        const dayOfWeek = today.getDay();
+
+        const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+        const firstDayOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - daysToSubtract);
+
         const targetDate = new Date(firstDayOfWeek.setDate(firstDayOfWeek.getDate() + (offset * 7)));
         const month = targetDate.toLocaleString('default', {month: 'short'});
         const day = targetDate.getDate().toString().padStart(2, '0');
@@ -187,8 +191,7 @@ const DashboardScreen = () => {
                     },
                 });
                 deductions = deductionsResponse.data.deductions || [];
-                await setUserDeductions(deductions);
-                console.log("Deductions", userDeductions);
+                console.log("Deductions", deductions);
             } catch (error) {
                 if (error.response && error.response.status === 404) {
                     console.log("No deductions found for this user");
@@ -204,17 +207,19 @@ const DashboardScreen = () => {
             }, {});
 
             const today = new Date();
-            const firstDayOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay() + 1);
+            const dayOfWeek = today.getDay();
+
+            const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+            const firstDayOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - daysToSubtract);
+
             const targetDate = new Date(firstDayOfWeek.setDate(firstDayOfWeek.getDate() + (0 * 7)));
             const year = targetDate.getFullYear();
             const month = (targetDate.getMonth() + 1).toString().padStart(2, '0');
             const day = targetDate.getDate().toString().padStart(2, '0');
             const startOfWeek = `${year}-${month}-${day}`;
 
-            console.log("Start of Week Label", startOfWeek)
+            console.log("Start of Week Label", startOfWeek);
 
-            let dayOfWeek = today.getDay() - 1;
-            if (dayOfWeek === -1) dayOfWeek = 6;
             const startDate = new Date(startOfWeek);
 
             const endDate = new Date(startDate);
@@ -252,8 +257,10 @@ const DashboardScreen = () => {
                 console.log("No deductions found for this week");
             }
 
+            filteredDeductions.reverse().slice(0, 4);
+
             await setUserDeductions(filteredDeductions);
-            console.log("Deductions", userDeductions);
+            console.log("List Deductions", userDeductions);
 
             try {
                 const weeklyBudgetsResponse = await axios.post(`${url}/get_weekly_budgets`, {id: userData.username}, {
@@ -610,7 +617,7 @@ const DashboardScreen = () => {
                             <View style={{marginBottom: 10, marginTop: 20}}>
                                 <H6>This Week</H6>
                                 {userDeductions.length > 0 ? (
-                                    [...userDeductions].reverse().slice(0, 3).map((deduction, index) => {
+                                    userDeductions.map((deduction, index) => {
                                         const activityDate = new Date(deduction.updated_at);
                                         const today = new Date();
                                         const isToday = activityDate.getDate() === today.getDate() &&
@@ -719,7 +726,7 @@ const DashboardScreen = () => {
                                 <ScrollPicker
                                     dataSource={deductionValues}
                                     onValueChange={(data, selectedIndex) => {
-                                      setSelectedDeduction(selectedIndex + 1)
+                                        setSelectedDeduction(selectedIndex + 1)
                                     }}
                                     itemTextStyle={{fontFamily: 'Poppins_500Medium'}}
                                     wrapperHeight={120}
@@ -764,7 +771,7 @@ const DashboardScreen = () => {
                                 <ScrollPicker
                                     dataSource={deductionValues}
                                     onValueChange={(data, selectedIndex) => {
-                                      setSelectedDeduction(selectedIndex + 1)
+                                        setSelectedDeduction(selectedIndex + 1)
                                     }}
                                     wrapperHeight={120}
                                     wrapperWidth={200}

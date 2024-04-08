@@ -1,5 +1,5 @@
 import React from 'react';
-import {TouchableOpacity, Text} from 'react-native';
+import {TouchableOpacity, Text, Button} from 'react-native';
 import {Entypo, FontAwesome, FontAwesome5, MaterialCommunityIcons} from '@expo/vector-icons';
 import * as Animatable from 'react-native-animatable';
 import styled from 'styled-components/native';
@@ -129,8 +129,20 @@ const applyTextMargin = props => {
     }
 };
 
+const applyPlacement = ({place}) => {
+    if (place === "right") {
+        return `margin-left: auto;`;
+    } else if (place === "center") {
+        return `flex: 1;`;
+    } else {
+        return ``;
+    }
+};
+
 const ButtonWrapper = styled.TouchableOpacity`
   width: ${props => props.width || 'auto'};
+  opacity: ${(props) => props.disabled ? '0.5' : '1'};
+  ${applyPlacement};
 ` ;
 
 const TGenericButton = styled(Animatable.View)`
@@ -158,7 +170,7 @@ const ButtonText = styled.Text`
   font-family: 'Poppins_500Medium';
 `;
 
-export const ButtonButton = ({width, txtWidth, series, color, icon, txtMargin, text, txtColor, onPress, iconColor, pos}) => {
+export const ButtonButton = ({width, place, txtWidth, series, color, icon, txtMargin, text, txtColor, onPress, iconColor, pos, disabled}) => {
     const handlePress = () => {
         if (onPress) {
             onPress();
@@ -166,7 +178,7 @@ export const ButtonButton = ({width, txtWidth, series, color, icon, txtMargin, t
     };
 
     return (
-        <ButtonWrapper width={width} onPress={handlePress}>
+        <ButtonWrapper disabled={disabled} place={place} width={width} onPress={handlePress}>
             <TGenericButton color={color} hasText={!!text} pos={pos}>
                 <IconComponent series={series} icon={icon} iconColor={iconColor}/>
                 {text ? <ButtonText txtWidth={txtWidth} txtMargin={txtMargin} txtColor={txtColor}>{text}</ButtonText> : null}
@@ -208,3 +220,35 @@ export const BackButton = ({title = 'Back'}) => {
 
     );
 };
+
+export const ToggleButton = ({ title, selected, onPress }) => {
+    return (
+        <Button
+            title={title}
+            onPress={onPress}
+            style={{ backgroundColor: selected ? 'lightblue' : 'lightgray' }}
+        />
+    );
+};
+
+export const CenterButtonContainer = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+`;
+
+export const CenterButton = styled.TouchableOpacity`
+  width: 70px;
+  height: 70px;
+  border-radius: 35px; 
+  background-color: #6BFF91;
+  justify-content: center;
+  align-items: center;
+`;
+
+export const SideButton = styled.TouchableOpacity`
+  opacity: ${(props) => props.disabled ? '0.5' : '1'};
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+`;

@@ -11,7 +11,10 @@ import {
 } from "react-native";
 import BottomSheet from '@gorhom/bottom-sheet';
 import * as Location from "expo-location";
+import Slider from '@react-native-community/slider';
 import {useCombinedContext} from "../../CombinedContext";
+import Icon from 'react-native-vector-icons/FontAwesome';
+import openMap from 'react-native-open-maps';
 
 const jsonBig = require('json-bigint');
 
@@ -27,9 +30,17 @@ if (!isWeb) {
 
 // Styling
 import {H2, H3, H4, H5, H6, H7, H8} from "../../styles/text";
-import {Container, ButtonContainer, CardContainer, Card, ModalContent, InputTxt} from "../../styles/styles";
+import {
+    Container,
+    ButtonContainer,
+    CardContainer,
+    Card,
+    ModalContent,
+    InputTxt,
+    LRContainer, LRButtonDiv, CardMini, WrapperScroll
+} from "../../styles/styles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {AnimatedGenericButton, AnimatedHeartButton, ButtonButton} from "../../styles/buttons";
+import {AnimatedGenericButton, AnimatedHeartButton, ButtonButton, ToggleButton} from "../../styles/buttons";
 import CustomMarker from "../../Components/customMarker";
 import axios from "axios";
 import {jwtDecode} from "jwt-decode";
@@ -41,6 +52,7 @@ import atmIcon from '../../assets/serviceIcons/fs_atm.png';
 import parkingIcon from '../../assets/serviceIcons/fs_parking.png';
 import serviceIcon from '../../assets/serviceIcons/fs_service.png';
 import conStoreIcon from '../../assets/serviceIcons/fs_con_store.png';
+import ScrollPicker from "react-native-wheel-scrollview-picker";
 
 
 const apiMapKey = process.env.REACT_NATIVE_GoogleMaps_API_KEY;
@@ -55,13 +67,14 @@ const MapScreen = () => {
     const [initialAnimationDone, setInitialAnimationDone] = useState(false);
     const [location, setLocation] = useState(null);
     const {token, userData, setUser, updateUserFromBackend} = useCombinedContext();
-    const [userHeading, setUserHeading] = useState(null);
 
     const [favoriteStations, setFavoriteStations] = useState([]);
 
     const [favoriteStatus, setFavoriteStatus] = useState({});
 
     const mapRef = useRef(null);
+    const [tempRadius, setTempRadius] = useState(userData.radius_preferences || 30);
+
     const [estimatedDuration, setEstimatedDuration] = useState(null);
     const [estimatedDistance, setEstimatedDistance] = useState(null);
     const [estimatedTime, setEstimatedTime] = useState(null);
@@ -74,12 +87,18 @@ const MapScreen = () => {
 
     const [selectedStation, setSelectedStation] = useState(null);
     const [updateModalVisible, setUpdateModalVisible] = useState(false);
-    const [newPetrolPrice, setNewPetrolPrice] = useState('');
-    const [newDieselPrice, setNewDieselPrice] = useState('');
+
+    const [selectedPetrolEuros, setSelectedPetrolEuros] = useState(0);
+    const [selectedPetrolCents, setSelectedPetrolCents] = useState(0);
+    const [selectedDieselEuros, setSelectedDieselEuros] = useState(0);
+    const [selectedDieselCents, setSelectedDieselCents] = useState(0);
 
     const [showStationInfo, setShowStationInfo] = useState(true);
     const [showRouteInfo, setShowRouteInfo] = useState(false);
     const bottomSheetRef = useRef(null);
+    const optionsScrollViewRef = useRef(null);
+    const stationsScrollViewRef = useRef(null);
+    const [isMenuExpanded, setIsMenuExpanded] = useState(false);
 
     const [nearbyStations, setNearbyStations] = useState([]);
     const [showNearbyStationsSheet, setShowNearbyStationsSheet] = useState(false);
@@ -88,30 +107,10 @@ const MapScreen = () => {
 
     const [refreshing, setRefreshing] = useState(false);
 
-    const [currentDirectionIndex, setCurrentDirectionIndex] = useState(0);
-
     const snapPoints = useMemo(() => ['20%', '40%', '85%'], []);
 
-    const updateDirectionIndexBasedOnLocation = (userLocation) => {
-        if (detailedSteps.length === 0) {
-            return;
-        }
-
-        for (let i = 0; i < detailedSteps.length; i++) {
-            const step = detailedSteps[i];
-            const stepEndLocation = {
-                latitude: step.end_location.lat,
-                longitude: step.end_location.lng,
-            };
-
-            const distanceToStepEnd = getDistanceBetweenLocations(userLocation, stepEndLocation);
-
-            if (distanceToStepEnd < 50) {
-                setCurrentDirectionIndex(i + 1);
-                break;
-            }
-        }
-    };
+    const eurosData = ['1', '2', '3'];
+    const centsData = Array.from({length: 100}, (_, i) => (i < 10 ? `0${i}` : `${i}`));
 
     const getDistanceBetweenLocations = (location1, location2) => {
         const R = 6371;
@@ -145,21 +144,22 @@ const MapScreen = () => {
             let {status} = await Location.requestForegroundPermissionsAsync();
             if (status !== "granted") {
                 console.error("Permission to access location was denied");
+                fetchFavoriteStations(null);
                 return;
             }
 
             try {
-                const location = await Location.getCurrentPositionAsync({});
-                setLocation(location);
+                const userLocation = await Location.getCurrentPositionAsync({});
+                setLocation(userLocation);
 
                 // TODO DEV ONLY
-                console.log("User Location: ", location);
+                console.log("User Location: ", userLocation);
                 if (!initialAnimationDone) {
                     mapRef.current?.animateCamera(
                         {
                             center: {
-                                latitude: location.coords.latitude,
-                                longitude: location.coords.longitude,
+                                latitude: userLocation.coords.latitude,
+                                longitude: userLocation.coords.longitude,
                             },
                             altitude: 20000,
                             pitch: 0,
@@ -172,11 +172,9 @@ const MapScreen = () => {
 
                 Location.watchPositionAsync({distanceInterval: 10}, (newLocation) => {
                     setLocation(newLocation);
-
-                    updateDirectionIndexBasedOnLocation(newLocation.coords);
                 });
 
-                fetchFavoriteStations();
+                fetchFavoriteStations(userLocation);
             } catch (error) {
                 console.error("Error fetching user location:", error);
             }
@@ -207,17 +205,19 @@ const MapScreen = () => {
         if (token) {
             await updateUserFromBackend();
 
-            await fetchFavoriteStations();
+            const location = await Location.getCurrentPositionAsync({});
+            setLocation(location);
+            await fetchFavoriteStations(location);
         }
         setRefreshing(false);
     };
 
-    const fetchPetrolStations = async () => {
+    const fetchPetrolStations = async (userLocation) => {
         try {
             const requestBody = {
-                user_longitude: location.coords.longitude,
-                user_latitude: location.coords.latitude,
-                radius: 50
+                user_longitude: userLocation.coords.longitude || null,
+                user_latitude: userLocation.coords.latitude || null,
+                radius: userData.radius_preferences || null,
             };
 
             const response = await axios.post(`${url}/fuel_stations`, requestBody, {
@@ -239,9 +239,8 @@ const MapScreen = () => {
         }
     };
 
-    const fetchFavoriteStations = async () => {
+    const fetchFavoriteStations = async (userLocation) => {
         try {
-
             const user_id = jwtDecode(token).sub;
 
             console.log("User ID: ", user_id)
@@ -277,19 +276,61 @@ const MapScreen = () => {
                 setFavoriteStations([]);
                 setFavoriteStatus({});
             }
-            fetchPetrolStations();
+            fetchPetrolStations(userLocation);
         } catch (error) {
             console.error('Error fetching favorite fuel stations:', error);
         }
     };
 
+    const handleUpdateRadius = async (radius) => {
+        try {
+            const config = {
+                headers: {
+                    'X-API-Key': apiKey,
+                    'Authorization': `Bearer ${token}`
+                },
+            };
+
+
+            const data = {
+                radius_preferences: radius,
+            };
+
+            const updatedUserData = {
+                ...userData,
+                radius_preferences: radius,
+            };
+
+            const response = await axios.patch(`${url}/save_preferences`, data, config);
+
+            if (response.data) {
+                console.log("Update successful");
+
+                await setUser({...updatedUserData});
+
+                await manualRefresh();
+            } else {
+                console.log("Update unsuccessful");
+            }
+        } catch (error) {
+            console.error('Error updating user Radius:', error);
+        }
+    };
 
     const handleUpdatePress = async () => {
         try {
+            const updatedPetrolPrice = `${selectedPetrolEuros}.${selectedPetrolCents}`;
+            const updatedDieselPrice = `${selectedDieselEuros}.${selectedDieselCents}`;
+
+            console.log('New Petrol Price:', updatedPetrolPrice);
+            console.log('New Diesel Price:', updatedDieselPrice);
+
             const payload = {
                 fuelPrices: [{
                     station_id: selectedStation.id,
-                    petrol_price: newPetrolPrice, diesel_price: newDieselPrice, timestamp: new Date().toISOString(),
+                    petrol_price: updatedPetrolPrice,
+                    diesel_price: updatedDieselPrice,
+                    timestamp: new Date().toISOString(),
                 },],
             };
 
@@ -306,8 +347,8 @@ const MapScreen = () => {
                 setSelectedStation(prevStation => ({
                     ...prevStation,
                     prices: {
-                        petrol_price: newPetrolPrice,
-                        diesel_price: newDieselPrice,
+                        petrol_price: updatedPetrolPrice,
+                        diesel_price: updatedDieselPrice,
                         petrol_updated_at: new Date().toISOString(),
                         diesel_updated_at: new Date().toISOString(),
                     }
@@ -366,11 +407,23 @@ const MapScreen = () => {
 
     const handleMarkerPress = (station) => {
         setSelectedStation(station);
-        setJourneyMode(false);
-        setIsJourneyActive(false);
+        const storedPetrolPrice = `${station.prices.petrol_price || '1.69'}`;
+        const storedDieselPrice = `${station.prices.diesel_price || '1.69'}`;
+
+        console.log("Stored Petrol Price: ", storedPetrolPrice);
+
+        const [initialPetrolEuros, initialPetrolCents] = storedPetrolPrice.split('.');
+        const [initialDieselEuros, initialDieselCents] = storedDieselPrice.split('.');
+
+        setSelectedPetrolEuros(parseInt(initialPetrolEuros, 10));
+        setSelectedPetrolCents(parseInt(initialPetrolCents, 10));
+        setSelectedDieselEuros(parseInt(initialDieselEuros, 10));
+        setSelectedDieselCents(parseInt(initialDieselCents, 10));
+
         setShowStationInfo(true);
         setShowRouteInfo(false);
         setShowNearbyStationsSheet(false);
+
         // TODO Remove Dev Only
         console.log("Selected Station: ", station);
     };
@@ -418,7 +471,6 @@ const MapScreen = () => {
             setDetailedSteps(directionsInfo.steps);
             setEstimatedDuration(directionsInfo.duration.text);
             setEstimatedDistance(directionsInfo.distance.text);
-            setCurrentDirectionIndex(0);
 
             const [durationValue, durationUnit] = directionsInfo.duration.text.split(" ");
 
@@ -432,7 +484,7 @@ const MapScreen = () => {
             if (selectedStation.prices && selectedStation.prices.petrol_price) {
                 petrolCostPerLiter = parseFloat(selectedStation.prices.petrol_price);
             } else {
-                petrolCostPerLiter = 1.72; // Hardcoded value
+                petrolCostPerLiter = 1.72; // TODO Hardcoded value
             }
 
             const journeyPrice = calculateJourneyPrice(directionsInfo.distance.text, 18, petrolCostPerLiter);
@@ -447,65 +499,64 @@ const MapScreen = () => {
     };
 
     const handleCancelPress = () => {
-        if (journeyMode) {
-            setJourneyMode(false);
-            setIsJourneyActive(false);
-            setShowStationInfo(false);
-            setShowRouteInfo(true);
+        setShowStationInfo(true);
+        setShowRouteInfo(false);
+        if (selectedStation) {
+            mapRef.current?.animateCamera(
+                {
+                    center: {
+                        latitude: selectedStation.location.latitude,
+                        longitude: selectedStation.location.longitude,
+                    },
+                    altitude: 50000,
+                    pitch: 0,
+                    heading: 1,
+                },
+                {duration: 1500}
+            );
         } else {
-            setShowStationInfo(true);
-            setShowRouteInfo(false);
-            if (selectedStation) {
-                mapRef.current?.animateCamera(
-                    {
-                        center: {
-                            latitude: selectedStation.location.latitude,
-                            longitude: selectedStation.location.longitude,
-                        },
-                        altitude: 50000,
-                        pitch: 0,
-                        heading: 1,
+            mapRef.current?.animateCamera(
+                {
+                    center: {
+                        latitude: location.coords.latitude,
+                        longitude: location.coords.longitude,
                     },
-                    {duration: 1500}
-                );
-            } else {
-                mapRef.current?.animateCamera(
-                    {
-                        center: {
-                            latitude: location.coords.latitude,
-                            longitude: location.coords.longitude,
-                        },
-                        altitude: 50000,
-                        pitch: 0,
-                        heading: 1,
-                    },
-                    {duration: 1500}
-                );
-            }
+                    altitude: 50000,
+                    pitch: 0,
+                    heading: 1,
+                },
+                {duration: 1500}
+            );
         }
+
     };
 
-    const handleCameraMove = () => {
+    const handleCameraMove = (stationLocation) => {
         mapRef.current?.animateCamera(
             {
                 center: {
-                    latitude: location.coords.latitude,
-                    longitude: location.coords.longitude,
+                    latitude: stationLocation.latitude,
+                    longitude: stationLocation.longitude,
                 },
-                altitude: 160, // Adjust the altitude to control the zoom level
-                pitch: 45, // Adjust the pitch angle
-                heading: location.coords.heading,
+                altitude: 20000,
+                pitch: 0,
+                heading: 1,
             },
-            {duration: 1000}
+            {duration: 1500}
         );
     }
 
-    const watchUserPosition = () => {
-        return Location.watchPositionAsync({distanceInterval: 10}, (newLocation) => {
-            setLocation(newLocation);
-            updateDirectionIndexBasedOnLocation(newLocation.coords);
-        });
+    const updatePrice = (newEuros, newCents, setPriceEuros, setPriceCents) => {
+        setPriceEuros(newEuros);
+        setPriceCents(newCents);
     };
+
+    const handleOpenInMaps = () => {
+        const endLatitude = selectedStation.location.latitude;
+        const endLongitude = selectedStation.location.longitude;
+
+        openMap({ latitude: endLatitude, longitude: endLongitude });
+    }
 
     const renderMap = () => {
         if (isWeb) {
@@ -568,81 +619,88 @@ const MapScreen = () => {
     };
 
     const renderStationBottomSheet = () => {
+        const handleBottomSheetChange = (index) => {
+            const isFullyOpen = index === 2;
+            stationsScrollViewRef.current.setNativeProps({scrollEnabled: isFullyOpen});
+        };
+
         if (!isWeb && showStationInfo) {
             return (
                 <BottomSheet snapPoints={snapPoints}
                              backgroundStyle={{
                                  backgroundColor: '#F7F7F7'
-                             }}>
+                             }} index={0} onChange={handleBottomSheetChange}>
                     {selectedStation && showStationInfo && (
-                        <Container>
-                            <H3 weight='600' style={{lineHeight: 24}}>{selectedStation.name}</H3>
-                            <H6 weight='400' style={{opacity: 0.6, lineHeight: 16}}>Fuel Station</H6>
-                            <ButtonContainer>
-                                <ButtonButton icon="location-pin" text="Route To Station"
-                                              onPress={handleRoutePress}/>
-                                <View style={{flexDirection: 'row'}}>
-                                    <AnimatedHeartButton
-                                        initialIsActive={favoriteStatus[selectedStation.id] || false}
-                                        onPress={() => handleLikePress(selectedStation.id)}
-                                    />
-                                    <AnimatedGenericButton onPress={() => setUpdateModalVisible(true)}/>
+                        <ScrollView style={{marginTop: 10}} ref={stationsScrollViewRef}>
+                            <Container style={{paddingTop: 10}}>
+                                <H3 weight='600' style={{lineHeight: 24}}>{selectedStation.name}</H3>
+                                <H6 weight='400' style={{opacity: 0.6, lineHeight: 16}}>Fuel Station</H6>
+                                <ButtonContainer>
+                                    <ButtonButton icon="location-pin" text="Route To Station"
+                                                  onPress={handleRoutePress}/>
+                                    <View style={{flexDirection: 'row'}}>
+                                        <AnimatedHeartButton
+                                            initialIsActive={favoriteStatus[selectedStation.id] || false}
+                                            onPress={() => handleLikePress(selectedStation.id)}/>
+                                        <AnimatedGenericButton onPress={() => setUpdateModalVisible(true)}/>
+                                    </View>
+                                </ButtonContainer>
+                                <H4>Current Prices</H4>
+                                <CardContainer style={{marginRight: -10, marginLeft: -10, marginBottom: 20}}>
+                                    <Card>
+                                        <H5 style={{opacity: 0.6, textAlign: 'center'}}>Petrol</H5>
+                                        <H3 weight='600'
+                                            style={{textAlign: 'center'}}>{selectedStation.prices.petrol_price ? parseFloat(selectedStation.prices.petrol_price).toFixed(2) : 'NA'}</H3>
+                                        <H8 style={{opacity: 0.6, textAlign: 'center'}}>Last
+                                            Updated: {selectedStation.prices.petrol_updated_at}</H8>
+                                    </Card>
+                                    <Card>
+                                        <H5 style={{opacity: 0.6, textAlign: 'center'}}>Diesel</H5>
+                                        <H3 weight='600'
+                                            style={{textAlign: 'center'}}>{selectedStation.prices.diesel_price ? parseFloat(selectedStation.prices.diesel_price).toFixed(2) : 'NA'}</H3>
+                                        <H8 style={{opacity: 0.6, textAlign: 'center'}}>Last
+                                            Updated: {selectedStation.prices.diesel_updated_at}</H8>
+                                    </Card>
+                                </CardContainer>
+                                <H4>About</H4>
+                                <H6>Services</H6>
+                                <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+                                    {selectedStation.facilities && Object.entries(selectedStation.facilities).map(([facility, available]) => (
+                                        available && (
+                                            <View key={facility}
+                                                  style={{marginRight: 10, marginTop: 10, marginBottom: 30}}>
+                                                <Image source={
+                                                    facility === 'convenience_store' ? conStoreIcon :
+                                                        facility === 'food' ? foodIcon :
+                                                            facility === 'atm' ? atmIcon :
+                                                                facility === 'car_parking' ? parkingIcon :
+                                                                    facility === 'car_wash' ? carWashIcon :
+                                                                        facility === 'car_service' ? serviceIcon :
+                                                                            null
+                                                }
+                                                       style={{width: 40, height: 40}}
+                                                />
+                                            </View>
+                                        )
+                                    ))}
                                 </View>
-                            </ButtonContainer>
-                            <H4>Current Prices</H4>
-                            <CardContainer style={{marginRight: -10, marginLeft: -10, marginBottom: 20}}>
-                                <Card>
-                                    <H5 style={{opacity: 0.6, textAlign: 'center'}}>Petrol</H5>
-                                    <H3 weight='600'
-                                        style={{textAlign: 'center'}}>{selectedStation.prices.petrol_price ? parseFloat(selectedStation.prices.petrol_price).toFixed(2) : 'NA'}</H3>
-                                    <H8 style={{opacity: 0.6, textAlign: 'center'}}>Last
-                                        Updated: {selectedStation.prices.petrol_updated_at}</H8>
-                                </Card>
-                                <Card>
-                                    <H5 style={{opacity: 0.6, textAlign: 'center'}}>Diesel</H5>
-                                    <H3 weight='600'
-                                        style={{textAlign: 'center'}}>{selectedStation.prices.diesel_price ? parseFloat(selectedStation.prices.diesel_price).toFixed(2) : 'NA'}</H3>
-                                    <H8 style={{opacity: 0.6, textAlign: 'center'}}>Last
-                                        Updated: {selectedStation.prices.diesel_updated_at}</H8>
-                                </Card>
-                            </CardContainer>
-                            <H4>About</H4>
-                            <H6>Services</H6>
-                            <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
-                                {selectedStation.facilities && Object.entries(selectedStation.facilities).map(([facility, available]) => (
-                                    available && (
-                                        <View key={facility} style={{marginRight: 10, marginTop: 10, marginBottom: 30}}>
-                                            <Image source={
-                                                facility === 'convenience_store' ? conStoreIcon :
-                                                    facility === 'food' ? foodIcon :
-                                                        facility === 'atm' ? atmIcon :
-                                                            facility === 'car_parking' ? parkingIcon :
-                                                                facility === 'car_wash' ? carWashIcon :
-                                                                    facility === 'car_service' ? serviceIcon :
-                                                                        null
-                                            }
-                                                   style={{width: 40, height: 40}}
-                                            />
-                                        </View>
-                                    )
-                                ))}
-                            </View>
-                            <H6>Opening Hours</H6>
-                            <H6 style={{opacity: 0.6}}>{selectedStation.opening_hours}</H6>
-                            <H6>Phone Number</H6>
-                            <H6 style={{opacity: 0.6, color: '#3891FA'}}
-                                onPress={() => {
-                                    if (selectedStation && selectedStation.phone_number) {
-                                        const phoneNumber = `tel:${selectedStation.phone_number}`;
-                                        Linking.openURL(phoneNumber);
-                                    }
-                                }}>{selectedStation.phone_number}</H6>
-                            <H6 style={{opacity: 0.6}}>{selectedStation.details}</H6>
-                            <H6>Address</H6>
-                            <H6 style={{opacity: 0.6}}>{selectedStation.address},</H6>
-                            <H6 style={{opacity: 0.6}}>Ireland</H6>
+                                <H6>Opening Hours</H6>
+                                <H6 style={{opacity: 0.6}}>{selectedStation.opening_hours}</H6>
+                                <H6>Phone Number</H6>
+                                <H6 style={{opacity: 0.6, color: '#3891FA'}}
+                                    onPress={() => {
+                                        if (selectedStation && selectedStation.phone_number) {
+                                            const phoneNumber = `tel:${selectedStation.phone_number}`;
+                                            Linking.openURL(phoneNumber);
+                                        }
+                                    }}>{selectedStation.phone_number}</H6>
+                                <H6 style={{opacity: 0.6}}>{selectedStation.details}</H6>
+                                <H6>Address</H6>
+                                <H6 style={{opacity: 0.6}}>{selectedStation.address},</H6>
+                                <H6 style={{opacity: 0.6}}>Ireland</H6>
 
-                        </Container>)}
+                            </Container>
+                        </ScrollView>)}
                 </BottomSheet>);
         } else {
             return null;
@@ -658,7 +716,7 @@ const MapScreen = () => {
                         <H6 style={{opacity: 0.7}}>Estimated Price: €{estimatedPrice} - 18km/l @ €1.77</H6>
                         <H6 style={{opacity: 0.7}}>(Based Off Your Selected Vehicle)</H6>
                         <ButtonContainer>
-                            <ButtonButton icon="arrow-with-circle-up" text="Start Journey"/>
+                            <ButtonButton text="Open In Maps" onPress={handleOpenInMaps}/>
                             <ButtonButton style={{float: "left"}} icon="cross" text="Exit"
                                           onPress={handleCancelPress}/>
                         </ButtonContainer>
@@ -683,6 +741,10 @@ const MapScreen = () => {
         return getDistanceBetweenLocations(location.coords, station.location);
     };
 
+    function convertMetersToKilometers(distanceInMeters) {
+        return (distanceInMeters / 1000).toFixed(2);
+    }
+
     const findNearbyStations = (userLocation) => {
         const nearbyStations = [];
 
@@ -704,6 +766,7 @@ const MapScreen = () => {
 
     const renderOptionsPress = () => {
         setShowStationInfo(false);
+        setShowRouteInfo(false);
         const nearbyStations = findNearbyStations(location.coords);
         setNearbyStations(nearbyStations);
         console.log('Nearby stations:', nearbyStations);
@@ -712,31 +775,114 @@ const MapScreen = () => {
 
     const handleNearbySelectedStation = (station) => {
         setSelectedStation(station);
+        handleCameraMove(station.location);
         setShowNearbyStationsSheet(false);
         setShowStationInfo(true);
         setShowRouteInfo(false);
     }
 
     const renderOptionsBottomSheet = () => {
+        const debounce = (func, delay) => {
+            let timeoutId;
+            return (...args) => {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => func(...args), delay);
+            };
+        };
+
+        const debouncedSetTempRadius = debounce(setTempRadius, 150);
+
+        const handleBottomSheetChange = (index) => {
+            const isFullyOpen = index === 1;
+            optionsScrollViewRef.current.setNativeProps({scrollEnabled: isFullyOpen});
+        };
+
+        const toggleMenu = () => {
+            setIsMenuExpanded(!isMenuExpanded);
+        };
+
         if (!isWeb && showNearbyStationsSheet) {
             return (
-                <BottomSheet snapPoints={['20%', '85%']} index={0}>
-                    <Container>
-                        <H4 style={{marginBottom: 10}}>Stations Near Me</H4>
-                        <View style={{flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10}}>
-                            <Button onPress={() => setSortOption('distance')} title="Sort by Distance"/>
-                            <Button onPress={() => setSortOption('price')} title="Sort by Price"/>
-                        </View>
-                        {sortedStations.map(station => (
-                            <TouchableOpacity
-                                key={station.id}
-                                style={{paddingVertical: 10}}
-                                onPress={() => handleNearbySelectedStation(station)}
-                            >
-                                <H6>{station.name}</H6>
+                <BottomSheet snapPoints={['30%', '85%']} index={0} onChange={handleBottomSheetChange}>
+                    <ScrollView style={{marginTop: 10}} ref={optionsScrollViewRef}>
+                        <Container style={{paddingTop: 10}}>
+                            <TouchableOpacity onPress={toggleMenu}>
+                                <View>
+                                    <View>
+                                        <H4>Map Radius</H4>
+                                        <H6 style={{opacity: 0.6}}>Higher Kilometers can cause performance Issues</H6>
+                                    </View>
+                                    <Icon style={{position: 'absolute', top: 0, right: 0}}
+                                          name={isMenuExpanded ? 'chevron-up' : 'chevron-down'} size={20}
+                                          color="black"/>
+                                </View>
                             </TouchableOpacity>
-                        ))}
-                    </Container>
+                            {isMenuExpanded && (
+                                <View>
+                                    <Slider
+                                        value={userData.radius_preferences}
+                                        onValueChange={debouncedSetTempRadius}
+                                        minimumValue={30}
+                                        maximumValue={400}
+                                        step={10}
+                                    />
+                                    <H5>Radius: {tempRadius}km</H5>
+                                    <ButtonContainer style={{display: 'flex'}}>
+                                        <ButtonButton place="right" txtWidth="100%" width="40%" text="Save Radius"
+                                                      onPress={() => handleUpdateRadius(tempRadius)}
+                                                      disabled={!userData.radius_preferences || tempRadius === userData.radius_preferences}/>
+                                    </ButtonContainer>
+                                </View>
+                            )}
+                            <H4 style={{marginTop: 10}}>Stations Near Me</H4>
+                            <H6 style={{opacity: 0.6}}>Sort By Distance or Price</H6>
+                            <LRContainer mTop={10} mRight={-1} mLeft={-1}>
+                                <ButtonButton accessibilityLabel="Register Button" accessible={true}
+                                              txtWidth="100%" width="50%"
+                                              txtColor={sortOption === 'distance' ? '#FFFFFF' : 'black'} text="distance"
+                                              color={sortOption === 'distance' ? '#6bff91' : '#F7F7F7'}
+                                              onPress={() => setSortOption('distance')}
+                                />
+                                <ButtonButton accessibilityLabel="Register Button" accessible={true}
+                                              color={sortOption === 'price' ? '#6bff91' : '#F7F7F7'} txtWidth="100%"
+                                              width="50%"
+                                              txtColor={sortOption === 'price' ? '#FFFFFF' : 'black'} text="price"
+                                              onPress={() => setSortOption('price')}/>
+                            </LRContainer>
+                            <View>
+                                {sortedStations.map(station => (
+                                    <TouchableOpacity
+                                        key={station.id}
+                                        onPress={() => handleNearbySelectedStation(station)}
+                                    >
+                                        <CardMini>
+                                            <H5>{station.name}</H5>
+                                            <H6 style={{opacity: 0.8}}>Direct Distance from
+                                                location: {convertMetersToKilometers(calculateDistance(station))}km</H6>
+                                            <H6 style={{opacity: 0.6}}>{station.address}</H6>
+                                            <H6 style={{marginTop: 10}}>Current Prices</H6>
+                                            <CardContainer style={{marginRight: -10, marginLeft: -10}}>
+                                                <Card>
+                                                    <H5 style={{opacity: 0.6, textAlign: 'center'}}>Petrol</H5>
+                                                    <H3 weight='600'
+                                                        style={{textAlign: 'center'}}>{station.prices.petrol_price ? parseFloat(station.prices.petrol_price).toFixed(2) : 'NA'}</H3>
+                                                    <H8 style={{opacity: 0.6, textAlign: 'center'}}>Last
+                                                        Updated: {station.prices.petrol_updated_at}</H8>
+                                                </Card>
+                                                <Card>
+                                                    <H5 style={{opacity: 0.6, textAlign: 'center'}}>Diesel</H5>
+                                                    <H3 weight='600'
+                                                        style={{textAlign: 'center'}}>{station.prices.diesel_price ? parseFloat(station.prices.diesel_price).toFixed(2) : 'NA'}</H3>
+                                                    <H8 style={{opacity: 0.6, textAlign: 'center'}}>Last
+                                                        Updated: {station.prices.diesel_updated_at}</H8>
+                                                </Card>
+                                            </CardContainer>
+                                        </CardMini>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        </Container>
+                    </ScrollView>
                 </BottomSheet>
             );
         } else {
@@ -760,7 +906,6 @@ const MapScreen = () => {
             </TouchableOpacity>
         </View>
 
-
         <Modal
             animationType="slide"
             transparent={true}
@@ -769,27 +914,77 @@ const MapScreen = () => {
         >
             <View style={styles.modalContainer}>
                 <ModalContent>
-                    <H5 tmargin="10px" bmargin="30px" style={{textAlign: 'center'}}>Update Price</H5>
+                    <H5 tmargin="10px" bmargin="20px" style={{textAlign: 'center'}}>Update Price</H5>
                     <ButtonContainer style={{position: 'absolute', marginTop: 20, marginLeft: 20}}>
                         <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
                             <ButtonButton icon="cross" color="#eaedea" iconColor="#b8bec2"
                                           onPress={() => setUpdateModalVisible(false)}/>
                         </View>
                     </ButtonContainer>
-                    <InputTxt
-                        placeholder="New Petrol Price"
-                        keyboardType="numeric"
-                        placeholderTextColor="#000000"
-                        value={newPetrolPrice}
-                        onChangeText={(text) => setNewPetrolPrice(text)}
-                    />
-                    <InputTxt
-                        placeholder="New Diesel Price"
-                        keyboardType="numeric"
-                        placeholderTextColor="#000000"
-                        value={newDieselPrice}
-                        onChangeText={(text) => setNewDieselPrice(text)}
-                    />
+                    <CardContainer style={{marginRight: -10, marginLeft: -10}}>
+                        <Card>
+                            <H6 style={{opacity: 0.6, textAlign: 'center'}}>Petrol (€)</H6>
+                            <View style={styles.pickerRow}>
+                                <ScrollPicker
+                                    dataSource={eurosData}
+                                    selectedIndex={selectedPetrolEuros - 1}
+                                    onValueChange={(val, index) => updatePrice(val, selectedPetrolCents, setSelectedPetrolEuros, setSelectedPetrolCents)}
+                                    itemTextStyle={{fontFamily: 'Poppins_500Medium'}}
+                                    wrapperHeight={120}
+                                    wrapperBackground={'#FFFFFF'}
+                                    itemHeight={40}
+                                    highlightColor={'#d8d8d8'}
+                                    highlightBorderWidth={2}
+                                    activeItemColor={'#222121'}
+                                    itemColor={'#B4B4B4'}
+                                />
+                                <ScrollPicker
+                                    dataSource={centsData}
+                                    selectedIndex={selectedPetrolCents}
+                                    onValueChange={(val, index) => updatePrice(selectedPetrolEuros, val, setSelectedPetrolEuros, setSelectedPetrolCents)}
+                                    itemTextStyle={{fontFamily: 'Poppins_500Medium'}}
+                                    wrapperHeight={120}
+                                    wrapperBackground={'#FFFFFF'}
+                                    itemHeight={40}
+                                    highlightColor={'#d8d8d8'}
+                                    highlightBorderWidth={2}
+                                    activeItemColor={'#222121'}
+                                    itemColor={'#B4B4B4'}
+                                />
+                            </View>
+                        </Card>
+                        <Card>
+                            <H6 style={{opacity: 0.6, textAlign: 'center'}}>Diesel (€)</H6>
+                            <View style={styles.pickerRow}>
+                                <ScrollPicker
+                                    dataSource={eurosData}
+                                    itemTextStyle={{fontFamily: 'Poppins_500Medium'}}
+                                    wrapperHeight={120}
+                                    selectedIndex={selectedDieselEuros - 1}
+                                    onValueChange={(val, index) => updatePrice(val, selectedDieselCents, setSelectedDieselEuros, setSelectedDieselCents)}
+                                    wrapperBackground={'#FFFFFF'}
+                                    itemHeight={40}
+                                    highlightColor={'#d8d8d8'}
+                                    highlightBorderWidth={2}
+                                    activeItemColor={'#222121'}
+                                    itemColor={'#B4B4B4'}
+                                />
+                                <ScrollPicker
+                                    dataSource={centsData}
+                                    itemTextStyle={{fontFamily: 'Poppins_500Medium'}}
+                                    wrapperHeight={120}
+                                    selectedIndex={selectedDieselCents}
+                                    onValueChange={(val, index) => updatePrice(selectedDieselEuros, val, setSelectedDieselEuros, setSelectedDieselCents)}
+                                    wrapperBackground={'#FFFFFF'}
+                                    itemHeight={40}
+                                    highlightColor={'#d8d8d8'}
+                                    highlightBorderWidth={2}
+                                    activeItemColor={'#222121'}
+                                    itemColor={'#B4B4B4'}
+                                />
+                            </View>
+                        </Card>
+                    </CardContainer>
                     <ButtonContainer style={{width: "auto", position: "relative"}}>
                         <ButtonButton icon="plus" color="#6BFF91" text="Update" onPress={handleUpdatePress}/>
                     </ButtonContainer>
@@ -833,6 +1028,15 @@ const styles = StyleSheet.create({
         margin: 16,
         borderRadius: 10,
         elevation: 5,
+    },
+    pickerSection: {
+        display: 'inline-flex',
+        marginBottom: 20,
+    },
+    pickerRow: {
+        width: "100%",
+        flexDirection: 'row',
+        justifyContent: 'space-between',
     },
 });
 
