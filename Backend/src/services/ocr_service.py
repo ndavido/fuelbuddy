@@ -8,6 +8,7 @@ from ..models import ReceiptOcr, Users
 import cv2
 import numpy as np
 import base64
+from datetime import datetime
 
 
 @require_api_key
@@ -55,11 +56,18 @@ def save_receipt():
 
         receipt = ReceiptOcr(
             user=user,
-            receipt=receipt_data.get('receipt_image_base64'),
-            fuel_type=receipt_data.get('fuel_type'),
-            volume=receipt_data.get('volume'),
-            price_per_litre=receipt_data.get('price_per_litre'),
-            total=receipt_data.get('total')
+            receipt=receipt_data.get('receipt_image_base64') if receipt_data.get(
+                'receipt_image_base64') else None,
+            fuel_type=receipt_data.get(
+                'fuel_type') if receipt_data.get('fuel_type') else None,
+            volume=receipt_data.get(
+                'volume') if receipt_data.get('volume') else None,
+            price_per_litre=receipt_data.get(
+                'price_per_litre') if receipt_data.get('price_per_litre') else None,
+            total=receipt_data.get(
+                'total') if receipt_data.get('total') else None,
+            date=receipt_data.get('date') if receipt_data.get(
+                'date') else datetime.utcnow()
         )
         receipt.save()
 
