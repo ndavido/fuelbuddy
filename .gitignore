@@ -3,3 +3,4 @@
 /Frontend/.env
 /Frontend/eas.json
 __pycache__/
+/Backend/venv/
