@@ -229,14 +229,10 @@ def reset_weekly_budgets():
     users = Users.objects()
 
     for user in users:
-        budget_history = BudgetHistory.objects(user=user).first()
-
-        if budget_history:
-            user.weekly_budget = budget_history.initial_weekly_budget
-            user.save()
+        user.weekly_budget = None
+        user.save()
 
     print("Weekly budgets reset successfully.")
-    schedule.every().monday.at("00:00").do(reset_weekly_budgets)
 
 # @require_api_key
 # @jwt_required()

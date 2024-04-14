@@ -1,10 +1,10 @@
 #! /usr/bin/env python3
-
+import schedule
 from flask import Flask
 from flask_cors import CORS, cross_origin
 from .config import API_KEY, JWT_SECRET_KEY
 from .extenstions import db_connect, configure_jwt
-
+from .services import reset_weekly_budgets
 from .controllers import auth_blueprint, account_blueprint, budget_blueprint, fuel_station_blueprint, friend_blueprint, vehicle_blueprint, ocr_blueprint, user_admin_support_blueprint
 from datetime import timedelta
 
@@ -33,3 +33,6 @@ app.register_blueprint(user_admin_support_blueprint)
 
 configure_jwt(app)
 db_connect()
+
+schedule.every().monday.at("00:00").do(reset_weekly_budgets())
+
