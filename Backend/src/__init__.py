@@ -34,5 +34,4 @@ app.register_blueprint(user_admin_support_blueprint)
 configure_jwt(app)
 db_connect()
 
-schedule.every().monday.at("00:00").do(reset_weekly_budgets())
-
+schedule.every().sunday.at("00:00").do(reset_weekly_budgets)
