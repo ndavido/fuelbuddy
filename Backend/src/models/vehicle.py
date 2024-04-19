@@ -1,5 +1,6 @@
 from mongoengine import Document, StringField, ListField, EmbeddedDocument, EmbeddedDocumentField
 
+
 class TrimInfo(EmbeddedDocument):
     series = StringField()
     trim = StringField()
@@ -18,20 +19,22 @@ class TrimInfo(EmbeddedDocument):
     co2_emissions_g_km = StringField()
     car_class = StringField()
 
+
 class YearInfo(EmbeddedDocument):
     year = StringField()
     trims = ListField(EmbeddedDocumentField(TrimInfo))
 
+
 class ModelInfo(EmbeddedDocument):
     model = StringField()
     years = ListField(EmbeddedDocumentField(YearInfo))
+
+
 class UserVehicle(Document):
     user_id = StringField(required=True)
     make = StringField(required=True)
     model = StringField(required=True)
     year = StringField(required=True)
-
-    # Additional fields (optional)
     series = StringField()
     trim = StringField()
     body_type = StringField()
@@ -44,6 +47,8 @@ class UserVehicle(Document):
     meta = {
         'collection': 'user_vehicles'
     }
+
+
 class Vehicle(Document):
     make = StringField()
     models = ListField(EmbeddedDocumentField(ModelInfo))
