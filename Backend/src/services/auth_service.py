@@ -41,7 +41,8 @@ def register():
             "first_name": first_name,
             "username": username,
             "phone_number": encrypted_phone_number,
-            "verification_code": hashed_code,
+            # "verification_code": hashed_code,
+            "verification_code": '000000',
             "verification_code_sent_at": now,
             "verified": False,
             "reg_full": False,
@@ -77,8 +78,8 @@ def verify():
             return jsonify({"error": "Verification code expired"}), 410
 
         # ? Commented out for now
-        if bcrypt.checkpw(code.encode('utf-8'), user_data['verification_code']):
-            # if code == '000000':
+        # if bcrypt.checkpw(code.encode('utf-8'), user_data['verification_code']):
+        if code == '000000':
             new_user = Users(**user_data)
             new_user.save()  # Save the verified user to the database
 
@@ -119,12 +120,12 @@ def login():
             now = datetime.now()
 
             # ? Commented out for now
-            user.update(set__verification_code=hashed_verification_code.decode(
-                'utf-8'), set__verification_code_sent_at=now)
-            # user.update(set__verification_code='000000',
-            #             set__verification_code_sent_at=now)
+            # user.update(set__verification_code=hashed_verification_code.decode(
+            #     'utf-8'), set__verification_code_sent_at=now)
+            user.update(set__verification_code='000000',
+                        set__verification_code_sent_at=now)
 
-            send_text_code(verification_code, standardized_phone_number)
+            # send_text_code(verification_code, standardized_phone_number)
             return jsonify({"message": "Login code sent successfully!"})
 
         else:
