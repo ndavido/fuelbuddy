@@ -47,7 +47,8 @@ def register():
             "reg_full": False,
             "roles": ["user"],
             "created_at": now,
-            "updated_at": now
+            "updated_at": now,
+            "radius_preferences": 30
         }
 
         send_text_code(verification_code, full_phone_number)
