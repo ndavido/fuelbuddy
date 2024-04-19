@@ -4,7 +4,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from ..middleware import require_api_key
 from ..utils import extract_receipt_info_single, allowed_file, ocr_cleanup, convert_image_to_base64, decode_base64_image, handle_api_error
-from ..models import ReceiptOcr, Users
+from ..models import ReceiptOcr, Users, FuelStation
 import cv2
 import numpy as np
 import base64
@@ -54,8 +54,14 @@ def save_receipt():
 
         user = Users.objects.get(id=current_user_id)
 
+        fuelstation_name = receipt_data.get(
+            'fuelstation') if receipt_data.get('fuelstation') else None
+        fuelstation = FuelStation.objects(
+            name=fuelstation_name).first() if fuelstation_name else None
+
         receipt = ReceiptOcr(
             user=user,
+            fuelstation=fuelstation,
             receipt=receipt_data.get('receipt_image_base64') if receipt_data.get(
                 'receipt_image_base64') else None,
             fuel_type=receipt_data.get(
