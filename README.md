@@ -250,7 +250,7 @@ cd Backend
 2. #### _On Linux/macOS_
 
    ```
-   python -m venv envname
+   python3 -m venv venv
    ```
 
 #### - Activate the Virtual Environment
@@ -264,7 +264,7 @@ cd Backend
 2. #### _On Windows (Command Prompt)_
 
    ```
-   envname\Scripts\activate.bat
+   .\venv\Scripts\activate.bat
    ```
 
 3. #### _On Linux/macOS_
@@ -293,11 +293,11 @@ pip install -r requirements.txt
 > Once you're in the correct directory, you can run the script using the Python interpreter. If you're using Python 3 (which is recommended), you might need to use `python3` instead of `python`, depending on how Python is installed and configured on your system.
 
 ```
-python __init__.py
+python app.py
 ```
 
 > or, if you're using Python3 specifically:
 
 ```
-python3 __init__.py
+python3 app.py
 ```
