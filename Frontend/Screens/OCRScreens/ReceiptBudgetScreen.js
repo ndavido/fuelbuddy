@@ -63,8 +63,13 @@ const ReceiptBudgetScreen = () => {
             });
 
             if (response.data.message) {
+                const updatedData = {
+                    ...receipt,
+                    total: editedReceiptTotal,
+                    date: selectedDate,
+                }
                 console.log(response.data.message);
-                navigation.navigate('StationReceipt', {receipt: receipt, receiptImage: receiptImage});
+                navigation.navigate('StationReceipt', {receipt: updatedData, receiptImage: receiptImage});
             } else {
                 console.error('Failed to add deduction:', response.data.error);
             }

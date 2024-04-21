@@ -51,12 +51,15 @@ const ReceiptCompleteScreen = () => {
             const apiKey = process.env.REACT_NATIVE_API_KEY;
 
             const receiptData = {
+                fuelstation: receipt.fuelstation,
                 receipt_image_base64: receiptImage,
                 fuel_type: receipt.fuel_type,
                 volume: receipt.volume,
                 price_per_litre: receipt.price_per_litre,
                 total: receipt.total
             };
+
+            console.log('Receipt Data:', receiptData)
 
             const response = await axios.post(`${url}/ocr_reciept_image_save`, receiptData, {
                 headers: {

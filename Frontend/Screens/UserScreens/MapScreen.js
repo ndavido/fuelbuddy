@@ -1029,10 +1029,6 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         elevation: 5,
     },
-    pickerSection: {
-        display: 'inline-flex',
-        marginBottom: 20,
-    },
     pickerRow: {
         width: "100%",
         flexDirection: 'row',

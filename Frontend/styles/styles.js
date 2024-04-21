@@ -195,7 +195,7 @@ export const CardContainer = styled.View`
 `;
 
 export const Card = styled.View`
-  background-color: #ffffff;
+  background-color: ${props => props.bColor || "#ffffff"};
   flex: 1;
   border-radius: 8px;
   padding: 10px;

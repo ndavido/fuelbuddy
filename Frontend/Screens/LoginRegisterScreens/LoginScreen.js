@@ -119,10 +119,10 @@ const LoginScreen = () => {
             <Wrapper>
                 <Content>
                     <LRContainer>
-                        <ButtonButton accessibilityLabel="Register Button" accessible={true} color="#6bff91" txtWidth="100%" width="50%"
-                                  txtColor="white" text="Register" onPress={() => navigation.navigate('Register')}/>
-                        <ButtonButton color="#F7F7F7" txtWidth="100%" width="50%"
-                                  txtColor="black" text="Login"/>
+                        <ButtonButton accessibilityLabel="Register Button" accessible={true} color="#F7F7F7" txtWidth="100%" width="50%"
+                                  txtColor="black" text="Register" onPress={() => navigation.navigate('Register')}/>
+                        <ButtonButton  txtWidth="100%" width="50%"
+                                   txtColor="white" color="#6bff91" text="Login"/>
                     </LRContainer>
                     <Container>
                         <H6 bmargin='5px'>Phone Number</H6>

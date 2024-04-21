@@ -7,10 +7,10 @@ import * as Updates from 'expo-updates';
 
 // Styling
 import MainLogo from '../../styles/mainLogo';
-import {H2, H3, H4, H5, H6} from "../../styles/text";
+import {H2, H3, H4, H5, H6, H8} from "../../styles/text";
 import {
     AccountContainer,
-    ButtonContainer,
+    ButtonContainer, Card, CardContainer, CardMini,
     Container, Content,
     InputTxt,
     Main,
@@ -100,19 +100,32 @@ const UserStationScreen = () => {
                     </ButtonContainer>
                     <Content>
                         <View>
-                            {favoriteStations.map(item => (
-                                <View key={item.station_id}>
-                                    <H4>{item.name}</H4>
-                                    <H6>{item.station_id}</H6>
-                                    <H6>{item.location.latitude}</H6>
-                                    <H6>{item.location.longitude}</H6>
-                                    <H6>{item.prices.petrol_price}</H6>
-                                    <H6>{item.prices.petrol_updated_at}</H6>
-                                    <H6>{item.prices.diesel_price}</H6>
-                                    <H6>{item.prices.diesel_updated_at}</H6>
-                                </View>
-                            ))}
-                        </View>
+                                {favoriteStations.map(station => (
+                                    <TouchableOpacity>
+                                        <CardMini bColor="#ffffff">
+                                            <H5>{station.name}</H5>
+                                            <H6 style={{opacity: 0.6}}>{station.address}</H6>
+                                            <H6 style={{marginTop: 10}}>Current Prices</H6>
+                                            <CardContainer style={{marginRight: -10, marginLeft: -10}}>
+                                                <Card bColor="#f7f7f7">
+                                                    <H5 style={{opacity: 0.6, textAlign: 'center'}}>Petrol</H5>
+                                                    <H3 weight='600'
+                                                        style={{textAlign: 'center'}}>{station.prices.petrol_price ? parseFloat(station.prices.petrol_price).toFixed(2) : 'NA'}</H3>
+                                                    <H8 style={{opacity: 0.6, textAlign: 'center'}}>Last
+                                                        Updated: {station.prices.petrol_updated_at}</H8>
+                                                </Card>
+                                                <Card bColor="#f7f7f7">
+                                                    <H5 style={{opacity: 0.6, textAlign: 'center'}}>Diesel</H5>
+                                                    <H3 weight='600'
+                                                        style={{textAlign: 'center'}}>{station.prices.diesel_price ? parseFloat(station.prices.diesel_price).toFixed(2) : 'NA'}</H3>
+                                                    <H8 style={{opacity: 0.6, textAlign: 'center'}}>Last
+                                                        Updated: {station.prices.diesel_updated_at}</H8>
+                                                </Card>
+                                            </CardContainer>
+                                        </CardMini>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
                     </Content>
                 </AccountContainer>
             </WrapperScroll>

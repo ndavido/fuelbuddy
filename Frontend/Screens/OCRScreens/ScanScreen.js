@@ -1,5 +1,15 @@
 import React, {useState, useEffect, useRef} from 'react';
-import {View, Text, Button, StyleSheet, Modal, Image, ActivityIndicator, ScrollView} from 'react-native';
+import {
+    View,
+    Text,
+    Button,
+    StyleSheet,
+    Modal,
+    Image,
+    ActivityIndicator,
+    ScrollView,
+    RefreshControl
+} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import {Camera, CameraType} from 'expo-camera';
 import * as FileSystem from 'expo-file-system';
@@ -32,12 +42,21 @@ const ScanScreen = () => {
     const [imageUri, setImageUri] = useState(null);
     const [receipts, setReceipts] = useState([]);
     const [type, setType] = useState(CameraType.back);
+    const [refreshing, setRefreshing] = useState(false);
     const [cameraModalVisible, setCameraModalVisible] = useState(false);
     const [jsonResponse, setJsonResponse] = useState(null);
 
     const navigation = useNavigation();
 
     const cameraRef = useRef(null);
+
+    const onRefresh = async () => {
+        setRefreshing(true);
+
+        await fetchUserReceipts();
+
+        setRefreshing(false);
+    };
 
     const requestPermissions = async () => {
         const {cameraStatus} = await Camera.requestCameraPermissionsAsync();
@@ -46,35 +65,31 @@ const ScanScreen = () => {
         return cameraStatus === 'granted' && mediaLibraryStatus === 'granted';
     };
 
-    function toggleCameraType() {
-        setType(current => (current === CameraType.back ? CameraType.front : CameraType.back));
-    }
-
     useEffect(() => {
         const hasPermissions = requestPermissions();
         if (!hasPermissions) {
             console.error('Permissions not granted');
         }
-
-        const fetchUserReceipts = async () => {
-            try {
-                const response = await axios.get(`${url}/retrieve_past_reciepts`, {
-                    headers: {
-                        'X-API-Key': apiKey,
-                        'Authorization': `Bearer ${token}`
-                    },
-                });
-
-                if (response.data && response.data.receipts) {
-                    setReceipts(response.data.receipts);
-                }
-
-            } catch (error) {
-                console.error(error);
-            }
-        };
         fetchUserReceipts();
     }, []);
+
+    const fetchUserReceipts = async () => {
+        try {
+            const response = await axios.get(`${url}/retrieve_past_reciepts`, {
+                headers: {
+                    'X-API-Key': apiKey,
+                    'Authorization': `Bearer ${token}`
+                },
+            });
+
+            if (response.data && response.data.receipts) {
+                setReceipts(response.data.receipts);
+            }
+
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     const pickImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
@@ -114,14 +129,19 @@ const ScanScreen = () => {
                 <Content style={{backgroundColor: "#F7F7F7"}}>
                     <Container style={{height: '100%'}}>
                         <H3>Past Receipts</H3>
-                        <ScrollView>
+                        <ScrollView refreshControl={
+                            <RefreshControl
+                                refreshing={refreshing}
+                                onRefresh={onRefresh}
+                            />
+                        }>
                             {receipts.length > 0 ? (
                                 <>
                                     {receipts.map((receipt, index) => (
                                         <CardMini bColor="#FFFFFF" key={index} style={{paddingBottom: 10}}>
-                                            <H6 style={{paddingTop: 5}}>STATION NAME</H6>
-                                            <H7 >Price Per Litre: {receipt.price_per_litre}</H7>
-                                            <H7 >Volume: {receipt.volume}</H7>
+                                            <H6 style={{paddingTop: 5}}>{receipt.fuelstation ? receipt.fuelstation : "Receipt"}</H6>
+                                            <H7>Price Per Litre: {receipt.price_per_litre}</H7>
+                                            <H7>Volume: {receipt.volume}</H7>
                                             <H6 width="100%" tmargin="15px" lmargin="10px" position="absolute"
                                                 style={{textAlign: "right"}}>€{receipt.total}</H6>
                                             <H7 style={{opacity: 0.3, paddingBottom: 5}}>

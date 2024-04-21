@@ -36,7 +36,6 @@ const DashboardScreen = () => {
 
     const [barParentWidth, setBarParentWidth] = useState(0);
 
-    const [newWeeklyBudgetInput, setNewWeeklyBudgetInput] = useState('');
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isDeductionModalVisible, setIsDeductionModalVisible] = useState(false);
     const [selectedDeduction, setSelectedDeduction] = useState(0);
@@ -52,10 +51,15 @@ const DashboardScreen = () => {
     const [endOfWeek, setEndOfWeek] = useState(new Date());
 
     const [cumulativeValue, setCumulativeValue] = useState(0);
+    const [remainingValue, setRemainingValue] = useState(0);
 
     const labels = ["Mon", "", "Wed", "", "Fri", "", "Sun"];
 
-    const deductionValues = Array.from({length: 500}, (_, i) => (i + 1).toString());
+    const deductionEuro = Array.from({length: 500}, (_, i) => (i + 1).toString());
+    const deductionCent = Array.from({length: 100}, (_, i) => (i < 10 ? `0${i}` : `${i}`));
+    const [selectedDeductionEuro, setSelectedDeductionEuro] = useState(0);
+    const [selectedDeductionCent, setSelectedDeductionCent] = useState(0);
+
 
     const getMondayLabel = (offset) => {
         const today = new Date();
@@ -238,6 +242,7 @@ const DashboardScreen = () => {
 
             await setLineData(dailyData);
             await setCumulativeValue(cumulativeValue);
+            await setRemainingValue(Math.max(0, weeklyBudget - cumulativeValue));
             console.log(dailyData);
 
             console.log(weeklyBudget);
@@ -257,9 +262,10 @@ const DashboardScreen = () => {
                 console.log("No deductions found for this week");
             }
 
-            filteredDeductions.reverse().slice(0, 4);
+            filteredDeductions.reverse();
+            const slicedDeductions = filteredDeductions.slice(-4);
 
-            await setUserDeductions(filteredDeductions);
+            await setUserDeductions(slicedDeductions);
             console.log("List Deductions", userDeductions);
 
             try {
@@ -357,11 +363,21 @@ const DashboardScreen = () => {
 
     const handleAddDeductionPress = () => {
         setIsDeductionModalVisible(true);
+        setSelectedDeductionEuro(1);
+        setSelectedDeductionCent(0);
+    };
+
+    const updatePrice = (newEuros, newCents, setPriceEuros, setPriceCents) => {
+        setSelectedDeductionEuro(newEuros);
+        setSelectedDeductionCent(newCents);
     };
 
     const handleDeductionModalSubmit = () => {
-        const deductionAmount = selectedDeduction;
-        if (deductionAmount < 1 || deductionAmount > 500) {
+        const deductionAmount = `${selectedDeductionEuro}.${selectedDeductionCent}`;
+        console.log(selectedDeductionEuro)
+        console.log(selectedDeductionCent)
+        console.log(deductionAmount)
+        if (deductionAmount < 1 || deductionAmount > 501) {
             console.error('Please select a deduction amount between 1 and 500');
             return;
         }
@@ -464,7 +480,7 @@ const DashboardScreen = () => {
 
     const handleVehicle = async () => {
         try {
-            navigate.navigate('Account', {screen: 'Vehicle'});
+            navigate.navigate('Account');
 
         } catch (error) {
             console.error('Error Loading Vehicle Information:', error);
@@ -487,7 +503,7 @@ const DashboardScreen = () => {
                     <CardOverlap>
                         <CardContainer>
                             <Card>
-                                <H8 style={{opacity: 0.4}}>Total Budget</H8>
+                                <H8 style={{opacity: 0.4}}>Budget</H8>
                                 <H5>Spending</H5>
                                 <View style={{
                                     flex: 1,
@@ -526,7 +542,7 @@ const DashboardScreen = () => {
                                 </View>
                             </Card>
                             <Card>
-                                <H8 style={{opacity: 0.4}}>Total Budget</H8>
+                                <H8 style={{opacity: 0.4}}>Budget</H8>
                                 <H5>Past Budgets</H5>
                                 <View style={{
                                     flex: 1,
@@ -573,7 +589,7 @@ const DashboardScreen = () => {
                             </Card>
                         </CardContainer>
                         <Card>
-                            <H8 style={{opacity: 0.4}}>Total Budget</H8>
+                            <H8 style={{opacity: 0.4}}>Budget</H8>
                             <H5>Breakdown</H5>
                             <ButtonContainer style={{position: 'absolute', marginTop: 10, marginLeft: 10}}>
                                 <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
@@ -608,13 +624,31 @@ const DashboardScreen = () => {
                                                 alignItems: 'center',
                                             }}>
                                                 <H8 style={{opacity: 0.5}}>Spent</H8>
-                                                <Text><H5>€</H5><H2>{cumulativeValue}/</H2><H5>€</H5><H2>{userData.weekly_budget > 0 ? userData.weekly_budget : 0}</H2></Text>
+                                                <Text>
+                                                    {userData.weekly_budget > 80 ? (
+                                                        <>
+                                                            <H5>€</H5>
+                                                            <H3>{cumulativeValue}/</H3>
+                                                            <H5>€</H5>
+                                                            <H3>{userData.weekly_budget > 0 ? userData.weekly_budget : 0}</H3>
+                                                         </>
+                                                    ) : (
+                                                        <>
+                                                            <H5>€</H5>
+                                                            <H2>{cumulativeValue}/</H2>
+                                                            <H5>€</H5>
+                                                            <H2>{userData.weekly_budget > 0 ? userData.weekly_budget : 0}</H2>
+                                                         </>
+                                                    )}
+                                                </Text>
+                                                <H8 style={{opacity: 0.5}}>Remaining</H8>
+                                                <Text><H5>€</H5><H2>{remainingValue > 0 ? remainingValue : 0}</H2></Text>
                                             </View>
                                         );
                                     }}
                                 />
                             </View>
-                            <View style={{marginBottom: 10, marginTop: 20}}>
+                            <View style={{marginBottom: 10, marginTop: 20, minHeight: 100,}}>
                                 <H6>This Week</H6>
                                 {userDeductions.length > 0 ? (
                                     userDeductions.map((deduction, index) => {
@@ -722,9 +756,11 @@ const DashboardScreen = () => {
                                                   onPress={handleModalCancel}/>
                                 </View>
                             </ButtonContainer>
+                            <H6 style={{opacity: 0.6, textAlign: 'center'}}>Select your weekly spending amount for fuel.
+                                (€)</H6>
                             <Container style={{height: 160, width: 200}}>
                                 <ScrollPicker
-                                    dataSource={deductionValues}
+                                    dataSource={deductionEuro}
                                     onValueChange={(data, selectedIndex) => {
                                         setSelectedDeduction(selectedIndex + 1)
                                     }}
@@ -743,7 +779,7 @@ const DashboardScreen = () => {
                                 <ButtonButton
                                     color="#6BFF91"
                                     txtWidth="100%"
-                                    text="Add Budget"
+                                    text="Add Weekly Budget"
                                     accessibilityLabel="Add Budget Button 2"
                                     accessible={true}
                                     onPress={handleModalSubmit}
@@ -767,22 +803,47 @@ const DashboardScreen = () => {
                                                   onPress={handleDeductionModalCancel}/>
                                 </View>
                             </ButtonContainer>
-                            <Container style={{height: 160, width: 200}}>
-                                <ScrollPicker
-                                    dataSource={deductionValues}
-                                    onValueChange={(data, selectedIndex) => {
-                                        setSelectedDeduction(selectedIndex + 1)
-                                    }}
-                                    wrapperHeight={120}
-                                    wrapperWidth={200}
-                                    wrapperBackground={'#FFFFFF'}
-                                    itemHeight={40}
-                                    highlightColor={'#d8d8d8'}
-                                    highlightBorderWidth={2}
-                                    activeItemColor={'#222121'}
-                                    itemColor={'#B4B4B4'}
-                                />
-                            </Container>
+                            <H6 style={{opacity: 0.6, textAlign: 'center'}}>Select the Amount to deduct. (€)</H6>
+                            <CardContainer style={{marginRight: -10, marginLeft: -10}}>
+                                <Card>
+                                    <H6 style={{opacity: 0.6, textAlign: 'center'}}>Euro</H6>
+                                    <View style={styles.pickerRow}>
+                                        <ScrollPicker
+                                            dataSource={deductionEuro}
+                                            onValueChange={(data, selectedIndex) => {
+                                                setSelectedDeductionEuro(selectedIndex + 1)
+                                            }}
+                                            itemTextStyle={{fontFamily: 'Poppins_500Medium'}}
+                                            wrapperHeight={120}
+                                            wrapperBackground={'#FFFFFF'}
+                                            itemHeight={40}
+                                            highlightColor={'#d8d8d8'}
+                                            highlightBorderWidth={2}
+                                            activeItemColor={'#222121'}
+                                            itemColor={'#B4B4B4'}
+                                        />
+
+
+                                    </View>
+                                </Card>
+                                <Card>
+                                    <H6 style={{opacity: 0.6, textAlign: 'center'}}>Cents</H6>
+                                    <View style={styles.pickerRow}>
+                                        <ScrollPicker
+                                            dataSource={deductionCent}
+                                            onValueChange={(val, index) => updatePrice(selectedDeductionEuro, val, setSelectedDeductionEuro, setSelectedDeductionCent)}
+                                            itemTextStyle={{fontFamily: 'Poppins_500Medium'}}
+                                            wrapperHeight={120}
+                                            wrapperBackground={'#FFFFFF'}
+                                            itemHeight={40}
+                                            highlightColor={'#d8d8d8'}
+                                            highlightBorderWidth={2}
+                                            activeItemColor={'#222121'}
+                                            itemColor={'#B4B4B4'}
+                                        />
+                                    </View>
+                                </Card>
+                            </CardContainer>
                             <ButtonContainer style={{width: "auto", position: "relative"}}>
                                 <ButtonButton
                                     color="#6BFF91"
@@ -807,6 +868,11 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: 'rgba(0,0,0,0.3)',
+    },
+    pickerRow: {
+        width: "100%",
+        flexDirection: 'row',
+        justifyContent: 'space-between',
     },
 });
 

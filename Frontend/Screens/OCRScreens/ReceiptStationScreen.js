@@ -121,8 +121,18 @@ const ReceiptStationScreen = () => {
             });
 
             if (response.ok) {
+                const updatedData = {
+                    ...receipt,
+                    fuel_type: selectedFuelType,
+                    volume: parseFloat(editedFuelAmount),
+                    price_per_litre: priceToUpdate,
+                    fuelstation: selectedStation.name
+                };
+
+                console.log('Updated Data:', updatedData)
+
                 console.log('Successfully updated fuel prices');
-                navigation.navigate('CompleteReceipt', {receipt: receipt, receiptImage: receiptImage});
+                navigation.navigate('CompleteReceipt', {receipt: updatedData, receiptImage: receiptImage});
             } else {
                 console.error('Failed to update fuel prices');
             }
@@ -158,11 +168,11 @@ const ReceiptStationScreen = () => {
                         <>
                             <H6>Fuel Station</H6>
                             <TouchableOpacity onPress={toggleMenu}>
-                <TextContainer bgColor='grey'>{selectedStationName}</TextContainer>
-                <Icon style={{position: 'absolute', right: 0, padding: 10}}
-                      name={isMenuExpanded ? 'chevron-up' : 'chevron-down'} size={16}
-                      color="black"/>
-            </TouchableOpacity>
+                                <TextContainer bgColor='grey'>{selectedStationName}</TextContainer>
+                                <Icon style={{position: 'absolute', right: 0, padding: 10}}
+                                      name={isMenuExpanded ? 'chevron-up' : 'chevron-down'} size={16}
+                                      color="black"/>
+                            </TouchableOpacity>
                             {isMenuExpanded && (
                                 <>
                                     <SearchBox
