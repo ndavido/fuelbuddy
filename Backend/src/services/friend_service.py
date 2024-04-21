@@ -64,22 +64,26 @@ def list_friends():
 def received_friend_requests():
     try:
         user_id = get_jwt_identity()
-        recipient = Users.objects.get(id=user_id)
+        recipient = Users.objects.get(id=user_id)  # Ensures the user exists
 
         friend_requests = FriendRequest.objects(
-            recipient=recipient, status='pending')
+            recipient=recipient, status='pending').select_related()  # Optimize query to prefetch sender
 
-        received_requests_list = [{
-            'friend_id': str(sender_user.id),
-            'friend_name': sender_user.first_name,
-            'request_id': str(friend_request.id),
-            'sent_at': friend_request.sent_at.isoformat()
-        } for friend_request in friend_requests for sender_user in [friend_request.sender]]
+        received_requests_list = [
+            {
+                'friend_id': str(friend_request.sender.id),
+                'friend_name': friend_request.sender.first_name,
+                'request_id': str(friend_request.id),
+                'sent_at': friend_request.sent_at.isoformat()
+            } for friend_request in friend_requests
+        ]
 
         return jsonify({"received_requests": received_requests_list}), 200
 
+    except DoesNotExist:
+        return jsonify({"error": "User not found"}), 404
     except Exception as e:
-        handle_api_error(e)
+        return jsonify({"error": "An unexpected error occurred"}), 500
 
 
 @require_api_key
@@ -87,22 +91,26 @@ def received_friend_requests():
 def sent_friend_requests():
     try:
         user_id = get_jwt_identity()
-        sender = Users.objects.get(id=user_id)
+        sender = Users.objects.get(id=user_id)  # Ensure the sender exists
 
         friend_requests = FriendRequest.objects(
             sender=sender, status='pending')
 
-        sent_requests_list = [{
-            'friend_id': str(recipient_user.id),
-            'friend_name': recipient_user.first_name,
-            'request_id': str(friend_request.id),
-            'sent_at': friend_request.sent_at.isoformat()
-        } for friend_request in friend_requests for recipient_user in [friend_request.recipient]]
+        sent_requests_list = [
+            {
+                'friend_id': str(friend_request.recipient.id),
+                'friend_name': friend_request.recipient.first_name,
+                'request_id': str(friend_request.id),
+                'sent_at': friend_request.sent_at.isoformat()
+            } for friend_request in friend_requests
+        ]
 
         return jsonify({"sent_requests": sent_requests_list}), 200
 
+    except DoesNotExist:
+        return jsonify({"error": "User not found"}), 404
     except Exception as e:
-        handle_api_error(e)
+        return jsonify({"error": "An unexpected error occurred: " + str(e)}), 500
 
 
 @require_api_key
