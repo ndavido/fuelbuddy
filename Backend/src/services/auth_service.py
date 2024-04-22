@@ -52,7 +52,7 @@ def register():
             "radius_preferences": 30
         }
 
-        send_text_code(verification_code, full_phone_number)
+        # send_text_code(verification_code, full_phone_number)
 
         return jsonify({"message": "Verification code sent successfully!"})
 
