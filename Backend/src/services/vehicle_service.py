@@ -8,7 +8,8 @@ from ..middleware import require_api_key
 from datetime import datetime
 from mongoengine.queryset.visitor import Q
 from ..utils import handle_api_error
-from ..utils.vehicle_utils import get_trim_info_by_year, extract_vehicle_data, create_user_vehicle_object, vehicle_to_dict
+from ..utils.vehicle_utils import (get_trim_info_by_year, extract_vehicle_data, create_user_vehicle_object,
+                                   vehicle_to_dict, update_vehicle_fields)
 
 
 
@@ -67,10 +68,7 @@ def update_user_vehicle():
 
         user_vehicle = UserVehicle.objects.get(user_id=current_user_id)
 
-        # Update fields if provided in the request data
-        for key, value in vehicle_data.items():
-            if hasattr(user_vehicle, key):
-                setattr(user_vehicle, key, value)
+        update_vehicle_fields(user_vehicle, vehicle_data)
 
         user_vehicle.save()
 
@@ -122,8 +120,6 @@ def get_vehicle_models_for_makes(make):
         handle_api_error(e)
 
 # Route to get all years for the selected model
-
-
 @require_api_key
 @jwt_required()
 def get_vehicle_years_for_model(model):
