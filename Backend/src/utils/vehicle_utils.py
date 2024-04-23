@@ -29,6 +29,22 @@ def create_user_vehicle_object(user_id, vehicle_data):
     )
 
 
+def vehicle_to_dict(vehicle):
+    return {
+        'make': vehicle.make,
+        'model': vehicle.model,
+        'year': vehicle.year,
+        'series': vehicle.series,
+        'trim': vehicle.trim,
+        'body_type': vehicle.body_type,
+        'engine_type': vehicle.engine_type,
+        'transmission': vehicle.transmission,
+        'fuel_tank_capacity_l': vehicle.fuel_tank_capacity,
+        'city_fuel_per_100km_l': vehicle.city_fuel_per_100km,
+        'co2_emissions_g_km': vehicle.co2_emissions
+    }
+
+
 def get_trim_info_by_year(model):
     trim_info_by_year = {}
     vehicles = Vehicle.objects(models__model=model)

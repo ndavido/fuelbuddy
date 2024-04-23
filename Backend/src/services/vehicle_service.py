@@ -8,7 +8,7 @@ from ..middleware import require_api_key
 from datetime import datetime
 from mongoengine.queryset.visitor import Q
 from ..utils import handle_api_error
-from ..utils.vehicle_utils import get_trim_info_by_year, extract_vehicle_data, create_user_vehicle_object
+from ..utils.vehicle_utils import get_trim_info_by_year, extract_vehicle_data, create_user_vehicle_object, vehicle_to_dict
 
 
 
@@ -47,20 +47,7 @@ def get_user_vehicle():
 
         vehicle = UserVehicle.objects.get(user_id=current_user_id)
 
-        # Convert to a dictionary
-        vehicle_dict = {
-            'make': vehicle.make,
-            'model': vehicle.model,
-            'year': vehicle.year,
-            'series': vehicle.series,
-            'trim': vehicle.trim,
-            'body_type': vehicle.body_type,
-            'engine_type': vehicle.engine_type,
-            'transmission': vehicle.transmission,
-            'fuel_tank_capacity_l': vehicle.fuel_tank_capacity,
-            'city_fuel_per_100km_l': vehicle.city_fuel_per_100km,
-            'co2_emissions_g_km': vehicle.co2_emissions
-        }
+        vehicle_dict = vehicle_to_dict(vehicle)
 
         return jsonify(vehicle_dict), 200
 
@@ -71,8 +58,6 @@ def get_user_vehicle():
 
 # UPDATE
 # Update user vehicle information
-
-
 @require_api_key
 @jwt_required()
 def update_user_vehicle():
@@ -117,8 +102,6 @@ def delete_user_vehicle():
         handle_api_error(e)
 
 # General Vehicle Routes for 'vehicles_data' collection
-
-
 @require_api_key
 @jwt_required()
 def get_vehicle_makes():
