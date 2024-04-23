@@ -21,7 +21,7 @@ Before you begin, make sure you have the following installed:
 
 > Check your Node.js version with the following command:
 
-```
+```bash
 node --version
 ```
 
@@ -51,7 +51,7 @@ node --version
 
    > To ensure NVM was installed correctly, type in the following command:
 
-   ```
+   ```bash
    nvm version
    ```
 
@@ -67,13 +67,13 @@ node --version
 
    Using `curl`:
 
-   ```
+   ```bash
    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
    ```
 
    Or using `wget`:
 
-   ```
+   ```bash
    wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
    ```
 
@@ -85,13 +85,13 @@ To start using nvm immediately, you might need to source your `.bash_profile`, `
 
 > For bash users:
 
-```
+```bash
 source ~/.bashrc
 ```
 
 > For zsh users
 
-```
+```bash
 source ~/.zshrc
 ```
 
@@ -101,7 +101,7 @@ source ~/.zshrc
 
 > Install the latest Node.js LTS (Long-Term Support) version using nvm:
 
-```
+```bash
 nvm install --lts
 ```
 
@@ -111,13 +111,13 @@ nvm install --lts
 
 > Navigate to the Frontend folder in your terminal:
 
-```
+```bash
 cd Frontend
 ```
 
 > Install Axios, a popular HTTP client for making requests:
 
-```
+```bash
 npm install axios
 ```
 
@@ -127,18 +127,18 @@ npm install axios
 
 1. #### _On Windows_
 
-   ```
+   ```bash
    npm install -g expo-cli
    ```
 
 2. #### _On Linux and macOS (requires sudo access)_
-   ```
+   ```bash
    sudo npm install -g expo-cli
    ```
 
 > Make sure you are in the Frontend folder, and then start Expo:
 
-```
+```bash
 expo start
 ```
 
@@ -174,7 +174,7 @@ Installing Python on your system varies slightly between Windows and Unix-like o
 
    > After installing Python, it's a good idea to update `pip`, Python's package installer. In the Command Prompt, type:
 
-   ```
+   ```bash
    python -m pip install --upgrade pip
    ```
 
@@ -184,13 +184,13 @@ Installing Python on your system varies slightly between Windows and Unix-like o
 
       > Most Linux distributions come with Python pre-installed. To check if Python is installed and determine its version, open a terminal and type:
 
-      ```
+      ```bash
       python --version
       ```
 
       > or, for Python 3.x:
 
-      ```
+      ```bash
       python3 --version
       ```
 
@@ -198,7 +198,7 @@ Installing Python on your system varies slightly between Windows and Unix-like o
 
       > If Python is not installed or you want to install a different version, you can use the package manager provided by your distribution. For example, on Ubuntu or Debian:
 
-      ```
+      ```bash
       sudo apt update
       sudo apt install python3
       ```
@@ -217,7 +217,7 @@ Installing Python on your system varies slightly between Windows and Unix-like o
 
       > Open Terminal and type the following command to verify the installation. You should see the version of Python that was installed.
 
-      ```
+      ```bash
       python3 --version
       ```
 
@@ -225,7 +225,7 @@ Installing Python on your system varies slightly between Windows and Unix-like o
 
       > To update pip, the Python package installer, run the following command in the Terminal:
 
-      ```
+      ```bash
       python3 -m pip install --upgrade pip
       ```
 
@@ -233,7 +233,7 @@ Installing Python on your system varies slightly between Windows and Unix-like o
 
 > Navigate to the Backend folder in your terminal:
 
-```
+```bash
 cd Backend
 ```
 
@@ -243,13 +243,13 @@ cd Backend
 
 1. #### _On Windows_
 
-   ```
+   ```bash
    python -m venv venv
    ```
 
 2. #### _On Linux/macOS_
 
-   ```
+   ```bash
    python3 -m venv venv
    ```
 
@@ -257,18 +257,18 @@ cd Backend
 
 1. #### _On Windows (Powershell)_
 
-   ```
+   ```bash
    .\venv\Scripts\activate
    ```
 
 2. #### _On Windows (Command Prompt)_
 
-   ```
+   ```bash
    .\venv\Scripts\activate.bat
    ```
 
 3. #### _On Linux/macOS_
-   ```
+   ```bash
    source venv/bin/activate
    ```
 
@@ -276,7 +276,7 @@ cd Backend
 
 > When you're done working in the virtual environment and want to switch back to the global Python environment, you can deactivate it by running:
 
-```
+```bash
 deactivate
 ```
 
@@ -284,7 +284,7 @@ deactivate
 
 > Once you are inside the virtual environment, install the Python dependencies from the `requirements.txt` file:
 
-```
+```bash
 pip install -r requirements.txt
 ```
 
@@ -292,12 +292,74 @@ pip install -r requirements.txt
 
 > Once you're in the correct directory, you can run the script using the Python interpreter. If you're using Python 3 (which is recommended), you might need to use `python3` instead of `python`, depending on how Python is installed and configured on your system.
 
-```
+```bash
 python app.py
 ```
 
 > or, if you're using Python3 specifically:
 
-```
+```bash
 python3 app.py
 ```
+
+## _Setting up pytesseract_
+
+To use `pytesseract` in your project, you must install both the Tesseract-OCR engine and the Python wrapper package. Follow these steps to set up everything correctly:
+
+### _Step 1: Install Tesseract-OCR_
+
+Tesseract-OCR must be installed on your local machine. The installation process varies depending on your operating system:
+
+#### _For Windows:_
+
+1. Download the installer from the official Tesseract at UB Mannheim repository: [Tesseract at UB Mannheim](https://github.com/UB-Mannheim/tesseract/wiki).
+2. Run the installer and follow the prompts. Make sure to note the installation path (e.g., `C:\Program Files\Tesseract-OCR`).
+3. Add Tesseract’s installation path to your system’s PATH environment variable.
+
+#### _For macOS:_
+
+Use Homebrew to install Tesseract:
+
+```bash
+brew install tesseract
+```
+
+#### _For Linux:_
+
+Install Tesseract using the package manager. For example, on Ubuntu:
+
+```bash
+sudo apt install tesseract-ocr
+```
+
+### _Step 2: Install pytesseract Python package_
+
+Once Tesseract-OCR is installed, you can install the pytesseract Python package via pip:
+
+```bash
+pip install pytesseract
+```
+
+### _Step 3: Configure pytesseract in your Python script_
+
+Modify your Python code to specify the path to the Tesseract executable by uncommenting the line corresponding to your operating system. You will find these lines in the file located at `Backend/src/utils/ocr_utils.py`. Here's what you should look for:
+
+#### _For Windows, uncomment the following line:_
+
+```bash
+#pytesseract.pytesseract.tesseract_cmd = "C:/Program Files/Tesseract-OCR/tesseract.exe"
+```
+
+# _For Linux, uncomment the following line:_
+
+```bash
+#pytesseract.pytesseract.tesseract_cmd = r'/usr/bin/tesseract'
+```
+
+#### _For macOS, uncomment the following line:_
+
+```bash
+#pytesseract.pytesseract.tesseract_cmd = r'/usr/local/bin/tesseract'
+```
+
+Make sure to save the changes after uncommenting the appropriate line. This configuration ensures that `pytesseract` can correctly interface with the Tesseract engine installed on your machine to perform OCR tasks.
