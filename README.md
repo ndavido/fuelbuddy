@@ -9,13 +9,13 @@
 
 _**`Application for assisting in helping users plan journeys and track petrol/diesel usage.`**_
 
-The "fuelbuddy" application enables users to manage their fuel expenses. Fuelbuddy operates on a user-driven approach, where all data is sourced directly from the users. As a result, the information given in the application, such as gasoline prices, will be gathered from users. Fuelbuddy will provide distinctive functionalities that enable users to effectively manage their fuel expenditures. One of the capabilities is a neural network that predicts the user's anticipated fuel expenses for the upcoming week or month. Additionally, it will have functionalities such as a navigation tool that enables users traveling on lengthy trips to identify different gas stations along their route in order to choose the most cost-effective option. Fuelbuddy will cater to both conventional gasoline and diesel automobiles as well as electric vehicles. Electric car users will have the capability to easily find and navigate to charging stations in their vicinity, similar to users of petrol and diesel vehicles. fuelbuddy will further present diverse details on the user's automobile type by enabling them to input the precise model of their vehicle.
+fuelbuddy is an app that allows users to budget their fuel expenditure and plan journeys as well as being able to check current user submitted fuel prices at Stations. fuelbuddy boasts many important features to be able to make drivers lives easier, such as The Receipt Scanner which allows users to update their budget, log the receipt, and update the price at the station all in one go! Or the Dashboard, which breaks down the current and past weekly budgets set by the user!
 
 ## **Setting up Frontend**
 
 ### - _Prerequisites_
 
-Before you begin, make sure you have the following installed:
+> Before you begin, make sure you have the following installed:
 
 #### - _Node.js:_
 
@@ -31,7 +31,7 @@ node --version
 
 1. #### _For Windows_
 
-   NVM for Windows is a separate project from the original NVM and provides similar functionality. Here's how to install it:
+   > NVM for Windows is a separate project from the original NVM and provides similar functionality. Here's how to install it:
 
    #### - _Download the Installer_
 
@@ -304,21 +304,21 @@ python3 app.py
 
 ## _Setting up pytesseract_
 
-To use `pytesseract` in your project, you must install both the Tesseract-OCR engine and the Python wrapper package. Follow these steps to set up everything correctly:
+> To use `pytesseract` in your project, you must install both the Tesseract-OCR engine and the Python wrapper package. Follow these steps to set up everything correctly:
 
 ### _Step 1: Install Tesseract-OCR_
 
-Tesseract-OCR must be installed on your local machine. The installation process varies depending on your operating system:
+> Tesseract-OCR must be installed on your local machine. The installation process varies depending on your operating system:
 
 #### _For Windows:_
 
-1. Download the installer from the official Tesseract at UB Mannheim repository: [Tesseract at UB Mannheim](https://github.com/UB-Mannheim/tesseract/wiki).
-2. Run the installer and follow the prompts. Make sure to note the installation path (e.g., `C:\Program Files\Tesseract-OCR`).
-3. Add Tesseract’s installation path to your system’s PATH environment variable.
+> 1. Download the installer from the official Tesseract at UB Mannheim repository: [Tesseract at UB Mannheim](https://github.com/UB-Mannheim/tesseract/wiki).
+> 2. Run the installer and follow the prompts. Make sure to note the installation path (e.g., `C:\Program Files\Tesseract-OCR`).
+> 3. Add Tesseract’s installation path to your system’s PATH environment variable.
 
 #### _For macOS:_
 
-Use Homebrew to install Tesseract:
+> Use Homebrew to install Tesseract:
 
 ```bash
 brew install tesseract
@@ -326,7 +326,7 @@ brew install tesseract
 
 #### _For Linux:_
 
-Install Tesseract using the package manager. For example, on Ubuntu:
+> Install Tesseract using the package manager. For example, on Ubuntu:
 
 ```bash
 sudo apt install tesseract-ocr
@@ -334,7 +334,7 @@ sudo apt install tesseract-ocr
 
 ### _Step 2: Install pytesseract Python package_
 
-Once Tesseract-OCR is installed, you can install the pytesseract Python package via pip:
+> Once Tesseract-OCR is installed, you can install the pytesseract Python package via pip:
 
 ```bash
 pip install pytesseract
@@ -342,7 +342,7 @@ pip install pytesseract
 
 ### _Step 3: Configure pytesseract in your Python script_
 
-Modify your Python code to specify the path to the Tesseract executable by uncommenting the line corresponding to your operating system. You will find these lines in the file located at `Backend/src/utils/ocr_utils.py`. Here's what you should look for:
+> Modify your Python code to specify the path to the Tesseract executable by uncommenting the line corresponding to your operating system. You will find these lines in the file located at `Backend/src/utils/ocr_utils.py`. Here's what you should look for:
 
 #### _For Windows, uncomment the following line:_
 
@@ -350,7 +350,7 @@ Modify your Python code to specify the path to the Tesseract executable by uncom
 #pytesseract.pytesseract.tesseract_cmd = "C:/Program Files/Tesseract-OCR/tesseract.exe"
 ```
 
-# _For Linux, uncomment the following line:_
+#### _For Linux, uncomment the following line:_
 
 ```bash
 #pytesseract.pytesseract.tesseract_cmd = r'/usr/bin/tesseract'
@@ -362,4 +362,4 @@ Modify your Python code to specify the path to the Tesseract executable by uncom
 #pytesseract.pytesseract.tesseract_cmd = r'/usr/local/bin/tesseract'
 ```
 
-Make sure to save the changes after uncommenting the appropriate line. This configuration ensures that `pytesseract` can correctly interface with the Tesseract engine installed on your machine to perform OCR tasks.
+> Make sure to save the changes after uncommenting the appropriate line. This configuration ensures that `pytesseract` can correctly interface with the Tesseract engine installed on your machine to perform OCR tasks.
