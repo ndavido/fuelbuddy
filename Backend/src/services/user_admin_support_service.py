@@ -44,8 +44,13 @@ def update_role():
 
         user = Users.objects(id=user_id).only(
             'id', 'username', 'roles').first()
-        user.roles.append(role)
-        user.save()
+
+        try:
+            if role not in user.roles:
+                user.roles.append(role)
+                user.save()
+        except:
+            return jsonify({"message": "Role already exists"}), 200
 
         return jsonify({"message": "Role updated successfully"}), 200
 
@@ -70,9 +75,13 @@ def remove_role():
 
         user = Users.objects(id=user_id).only(
             'id', 'username', 'roles').first()
-        if role in user.roles:
-            user.roles.remove(role)
-            user.save()
+
+        try:
+            if role in user.roles:
+                user.roles.remove(role)
+                user.save()
+        except:
+            return jsonify({"message": "Role does not exist"}), 200
 
         return jsonify({"message": "Role removed successfully"}), 200
 
