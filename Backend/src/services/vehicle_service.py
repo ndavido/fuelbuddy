@@ -5,13 +5,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from mongoengine.errors import DoesNotExist
 from ..models import Vehicle, UserVehicle
 from ..middleware import require_api_key
-from datetime import datetime
-from mongoengine.queryset.visitor import Q
-from ..utils import handle_api_error
-from ..utils.vehicle_utils import (get_trim_info_by_year, extract_vehicle_data, create_user_vehicle_object,
-                                   vehicle_to_dict, update_vehicle_fields)
-
-
+from ..utils import handle_api_error, get_trim_info_by_year, extract_vehicle_data, create_user_vehicle_object, vehicle_to_dict, update_vehicle_fields
 
 # ref: https://docs.python.org/3/tutorial/datastructures.html
 # ref: https://www.geeksforgeeks.org/python-set-method/
@@ -38,8 +32,6 @@ def create_user_vehicle():
 
 # READ
 # Retrieve a vehicle from collection
-
-
 @require_api_key
 @jwt_required()
 def get_user_vehicle():
@@ -81,8 +73,6 @@ def update_user_vehicle():
 
 # DELETE
 # Delete a vehicle
-
-
 @require_api_key
 @jwt_required()
 def delete_user_vehicle():
