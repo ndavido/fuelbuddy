@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 
 from flask import request, jsonify
-from mongoengine.errors import DoesNotExist
+from mongoengine.errors import DoesNotExist, ValidationError
 from mongoengine.queryset.visitor import Q
 from ..models import Users, FriendRequest, Friends, Notification, FavoriteFuelStation, FuelStation, FuelPrices, UserActivity
 from ..middleware import require_api_key
@@ -20,10 +20,13 @@ def send_friend_request():
         recipient_phone_number = data['friend_number']
         message = data.get('message', '')
 
+        if not recipient_phone_number:
+            return jsonify({"error": "Phone number is required"}), 400
+
         sender = Users.objects.get(id=user_id)
         recipient = Users.objects.get(phone_number=recipient_phone_number)
 
-        if existing_request := FriendRequest.objects(sender=sender, recipient=recipient).first():
+        if FriendRequest.objects(sender=sender, recipient=recipient).first():
             return jsonify({"error": "Friend request already sent"}), 400
 
         friend_request = FriendRequest(
@@ -34,8 +37,10 @@ def send_friend_request():
 
     except DoesNotExist:
         return jsonify({"error": "User not found"}), 404
+    except ValidationError as e:
+        return jsonify({"error": str(e)}), 400
     except Exception as e:
-        handle_api_error(e)
+        return jsonify({"error": "An unexpected error occurred"}), 500
 
 
 @require_api_key
@@ -132,7 +137,6 @@ def respond_friend_request():
             friend_request.change_status('accepted')
             Friends(user1=friend_request.sender,
                     user2=friend_request.recipient).save()
-
             Notification(
                 user=friend_request.sender,
                 message=f"Your friend request to {friend_request.recipient.first_name} has been accepted.",
@@ -142,7 +146,6 @@ def respond_friend_request():
             message = "Friend request accepted"
         else:
             friend_request.change_status('rejected')
-
             Notification(
                 user=friend_request.sender,
                 message=f"Your friend request to {friend_request.recipient.first_name} has been rejected.",
@@ -154,9 +157,11 @@ def respond_friend_request():
         return jsonify({"message": message}), 200
 
     except DoesNotExist:
-        return jsonify({"error": "Friend request not found"}), 404
+        return jsonify({"error": "Friend request or user not found"}), 404
+    except ValidationError as e:
+        return jsonify({"error": str(e)}), 400
     except Exception as e:
-        handle_api_error(e)
+        return jsonify({"error": "An unexpected error occurred"}), 500
 
 
 @require_api_key
@@ -166,6 +171,9 @@ def cancel_friend_request():
         user_id = get_jwt_identity()
         data = request.get_json()
         request_id = data['request_id']
+
+        if not request_id:
+            return jsonify({"error": "Request ID is required"}), 400
 
         friend_request = FriendRequest.objects.get(
             id=request_id, sender=user_id)
@@ -182,8 +190,10 @@ def cancel_friend_request():
 
     except DoesNotExist:
         return jsonify({"error": "Friend request not found"}), 404
+    except ValidationError as e:
+        return jsonify({"error": str(e)}), 400
     except Exception as e:
-        handle_api_error(e)
+        return jsonify({"error": "An unexpected error occurred"}), 500
 
 
 @require_api_key
@@ -227,13 +237,18 @@ def search_users():
             Q(id__ne=user_id)
         )
 
+        if not users:
+            return jsonify({"error": "No users found"}), 404
+
         users_list = [{'user_id': str(user.id), 'username': user.username, 'phone_number': user.phone_number}
                       for user in users]
 
         return jsonify({"users": users_list}), 200
 
+    except ValidationError as e:
+        return jsonify({"error": str(e)}), 400
     except Exception as e:
-        handle_api_error(e)
+        return jsonify({"error": "An unexpected error occurred"}), 500
 
 
 @require_api_key
