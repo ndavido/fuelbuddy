@@ -1,4 +1,5 @@
 #! /usr/bin/env python3
+from datetime import datetime
 
 from flask import request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
@@ -38,7 +39,7 @@ def get_user_vehicle():
     try:
         current_user_id = get_jwt_identity()
 
-        vehicle = UserVehicle.objects.get(user_id=current_user_id)
+        vehicle = UserVehicle.objects(user_id=current_user_id).order_by('-created_at').first()
 
         vehicle_dict = vehicle_to_dict(vehicle)
 
@@ -61,6 +62,8 @@ def update_user_vehicle():
         user_vehicle = UserVehicle.objects.get(user_id=current_user_id)
 
         update_vehicle_fields(user_vehicle, vehicle_data)
+
+        user_vehicle.updated_at = datetime.utcnow()
 
         user_vehicle.save()
 

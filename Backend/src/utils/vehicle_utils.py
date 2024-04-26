@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from ..models import Vehicle, UserVehicle
 
 
@@ -25,7 +27,8 @@ def create_user_vehicle_object(user_id, vehicle_data):
         transmission=vehicle_data.get('transmission'),
         fuel_tank_capacity=vehicle_data.get('fuel_tank_capacity_l'),
         city_fuel_per_100km=vehicle_data.get('city_fuel_per_100km_l'),
-        co2_emissions=vehicle_data.get('co2_emissions_g_km')
+        co2_emissions=vehicle_data.get('co2_emissions_g_km'),
+        created_at=datetime.utcnow()
     )
 
 

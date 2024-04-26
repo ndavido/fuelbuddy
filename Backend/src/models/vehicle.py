@@ -1,4 +1,6 @@
-from mongoengine import Document, StringField, ListField, EmbeddedDocument, EmbeddedDocumentField
+from datetime import datetime
+
+from mongoengine import Document, StringField, ListField, EmbeddedDocument, EmbeddedDocumentField, DateTimeField
 
 
 class TrimInfo(EmbeddedDocument):
@@ -43,6 +45,8 @@ class UserVehicle(Document):
     fuel_tank_capacity = StringField()
     city_fuel_per_100km = StringField()
     co2_emissions = StringField()
+    updated_at = DateTimeField(default=datetime.utcnow, required=True)
+    created_at = DateTimeField(default=datetime.utcnow, required=True)
 
     meta = {
         'collection': 'user_vehicles'
