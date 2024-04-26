@@ -129,14 +129,15 @@ const ScanScreen = () => {
                 <Content style={{backgroundColor: "#F7F7F7"}}>
                     <Container style={{height: '100%'}}>
                         <H3>Past Receipts</H3>
-                        <ScrollView refreshControl={
+                        <View style={{height: '65%'}}>
+                            <ScrollView refreshControl={
                             <RefreshControl
                                 refreshing={refreshing}
                                 onRefresh={onRefresh}
                             />
                         }>
                             {receipts.length > 0 ? (
-                                <>
+                                <View>
                                     {receipts.map((receipt, index) => (
                                         <CardMini bColor="#FFFFFF" key={index} style={{paddingBottom: 10}}>
                                             <H6 style={{paddingTop: 5}}>{receipt.fuelstation ? receipt.fuelstation : "Receipt"}</H6>
@@ -149,11 +150,13 @@ const ScanScreen = () => {
                                             </H7>
                                         </CardMini>
                                     ))}
-                                </>
+                                </View>
                             ) : (
                                 <H5>No receipts found</H5>
                             )}
                         </ScrollView>
+                        </View>
+
                         <BottomBar>
                             {userData && userData.roles && userData.roles.includes("Developer") && (
                                 <SideButton onPress={pickImage}>
