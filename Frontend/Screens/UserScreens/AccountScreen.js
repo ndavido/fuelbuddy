@@ -12,12 +12,8 @@ import {
     ActivityIndicator, StyleSheet
 } from 'react-native';
 import axios from 'axios';
-import {PanGestureHandler, GestureHandlerRootView, State} from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useCombinedContext} from "../../CombinedContext";
-import * as ImagePicker from "expo-image-picker";
-import {Camera} from "expo-camera";
-import {jwtDecode} from "jwt-decode";
 
 // Styling
 import {
@@ -150,12 +146,10 @@ const AccountScreen = () => {
                 <AccountContainer>
                     <ButtonButton pos="top" series="fa5" iconColor="#b8bec2" icon="user-astronaut" color="#FFFFFF"
                                   txtColor="black" txtMargin="15px" text="my Account" onPress={handleInfo}/>
-                    <ButtonButton pos="bottom" series="fa5" iconColor="#b8bec2" icon="car" color="#FFFFFF"
+                    <ButtonButton pos="middle" series="fa5" iconColor="#b8bec2" icon="car" color="#FFFFFF"
                                   txtColor="black" txtMargin="15px" text="my Vehicle" onPress={handleVehicle}/>
-                    <ButtonButton pos="top" series="mci" iconColor="#b8bec2" icon="gas-station" color="#FFFFFF"
+                    <ButtonButton pos="bottom" series="mci" iconColor="#b8bec2" icon="gas-station" color="#FFFFFF"
                                   txtColor="black" txtMargin="15px" text="my Stations" onPress={handleUsersStation}/>
-                    <ButtonButton pos="bottom" series="mci" iconColor="#b8bec2" icon="routes" color="#FFFFFF"
-                                  txtColor="black" txtMargin="15px" text="my Routes (NA)"/>
                     <ButtonButton pos="top" series="fa" iconColor="#b8bec2" icon="support" color="#FFFFFF"
                                   txtColor="black" txtMargin="15px" text="Support (NA)"/>
                     <ButtonButton pos="bottom" series="mci" iconColor="#b8bec2" icon="police-badge" color="#FFFFFF"

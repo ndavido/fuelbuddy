@@ -67,14 +67,24 @@ export const InputTxt = styled.TextInput`
   ${(props) => props.inputErrorBorder1 && redBorderColor}
 `;
 
-export const TextContainer = styled.Text`
+export const TextBox = styled.View`
+  line-height: 18px;
   margin-bottom: 10px;
   padding: 10px;
+  border-radius: 10px;
+  background-color: ${props => props.bcolor || '#F7F7F7'};
+` ;
+
+export const TextDisplay = styled.Text`
   height: auto;
   line-height: 18px;
-  background-color: ${props => props.bcolor || '#F7F7F7'};
-  border-radius: 10px;
 `;
+
+export const TextContainer = ({ children, bcolor }) => (
+    <TextBox bcolor={bcolor}>
+        <TextDisplay>{children}</TextDisplay>
+    </TextBox>
+);
 
 export const ButtonContainer = styled.View`
   margin-bottom: 30px;
@@ -244,31 +254,6 @@ export const ReceiptContainer= styled.View`
   height: 62%;
   background-color: #FFFFFF;
 `;
-
-
-/* Friends Screen */
-export const FContainer = styled.View`
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px;
-
-`;
-
-export const FSButtonContainer = styled.TouchableOpacity`
-  padding: 8px;
-  width: ${props => props.width};
-  border-radius: 10px;
-  background-color: ${props => props.bgColor};
-  flex-direction: row;
-  display: inline-flex;
-  boxSizing: 'border-box'
-`;
-
-export const AddFriendButton = styled.Text`
-  color: green;
-`;
-
 
 /* Account Screen */
 export const TopInfo = styled.View`

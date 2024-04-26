@@ -8,11 +8,11 @@ import {jwtDecode} from "jwt-decode";
 import {
     AccountContainer, ButtonContainer,
     Content,
-    Main, TextContainer, TextWrapper, Wrapper,
+    Main, TextContainer, TextWrapper, Wrapper, WrapperScroll,
 } from '../../styles/styles';
 import MainLogo from '../../styles/mainLogo';
 import {H3, H4, H5, H6} from "../../styles/text";
-import {View} from "react-native";
+import {RefreshControl, View} from "react-native";
 import {ButtonButton} from "../../styles/buttons";
 
 const url = process.env.REACT_APP_BACKEND_URL
@@ -21,61 +21,80 @@ const apiKey = process.env.REACT_NATIVE_API_KEY;
 const VehicleScreen = () => {
     const [userVehicle, setUserVehicle] = useState({});
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+    const navigate = useNavigation();
 
-    const navigation = useNavigation();
+    const onRefresh = async () => {
+        setRefreshing(true);
 
-    const handleDelete = () => {
-        navigation.navigate('DeleteConfirm');
+        await fetchUsersCar();
+
+        setRefreshing(false);
     };
 
+
     useEffect(() => {
-        const fetchUsersCar = async () => {
-            try {
-                const jwt_user = await AsyncStorage.getItem('token');
-                const user_id = jwtDecode(jwt_user).sub;
-
-                const config = {
-                    headers: {
-                        'X-API-Key': apiKey,
-                        'Authorization': `Bearer ${jwt_user}`,
-                    },
-                };
-                const response = await axios.post(`${url}/get_user_vehicle`, {id: user_id}, config);
-
-                console.log(response.data)
-                if (response.data) {
-                    setUserVehicle(response.data);
-                    console.log(userVehicle);
-                }
-
-            } catch (error) {
-                if (error.response && error.response.status === 404) {
-                    console.log('No vehicle found');
-                    setUserVehicle(null);
-                } else {
-                    console.error('Error fetching User Vehicle:', error);
-                }
-            }
-        };
-
         fetchUsersCar();
     }, []);
+
+    const fetchUsersCar = async () => {
+        try {
+            const jwt_user = await AsyncStorage.getItem('token');
+            const user_id = jwtDecode(jwt_user).sub;
+
+            const config = {
+                headers: {
+                    'X-API-Key': apiKey,
+                    'Authorization': `Bearer ${jwt_user}`,
+                },
+            };
+            const response = await axios.post(`${url}/get_user_vehicle`, {id: user_id}, config);
+
+            console.log(response.data)
+            if (response.data) {
+                setUserVehicle(response.data);
+                console.log(userVehicle);
+            }
+
+        } catch (error) {
+            if (error.response && error.response.status === 404) {
+                console.log('No vehicle found');
+                setUserVehicle(null);
+            } else {
+                console.error('Error fetching User Vehicle:', error);
+            }
+        }
+    };
+
+    const handleAddVehicle = async () => {
+        try {
+            navigate.navigate('AddVehicle');
+
+        } catch (error) {
+            console.error('Error Loading Dev Menu:', error);
+        }
+    };
 
     return (
         <Main>
             <MainLogo bButton={true} PageTxt='Vehicle'/>
-            <Wrapper>
+            <WrapperScroll refreshControl={
+                <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                />
+            }>
                 <AccountContainer style={{minHeight: 800}}>
                     <H3 tmargin='20px' bmargin='20px'>my Vehicle</H3>
                     <ButtonContainer style={{position: 'absolute', marginTop: 10, marginLeft: 10}}>
                         <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
                             {userVehicle ? (
                                 <ButtonButton color='#6BFF91' text='Update Vehicle'
-                                              accessibilityLabel="Update Vehicle Button" accessible={true}
+                                              accessibilityLabel="Update Vehicle Button" accessible={true} onPress={handleAddVehicle}
                                 />
                             ) : (
                                 <ButtonButton icon='plus' text='Add Vehicle' accessibilityLabel="Add Vehicle Button"
-                                              accessible={true}/>
+                                              accessible={true} onPress={handleAddVehicle}/>
                             )}
                         </View>
                     </ButtonContainer>
@@ -103,7 +122,7 @@ const VehicleScreen = () => {
                         )}
                     </Content>
                 </AccountContainer>
-            </Wrapper>
+            </WrapperScroll>
         </Main>
     );
 };

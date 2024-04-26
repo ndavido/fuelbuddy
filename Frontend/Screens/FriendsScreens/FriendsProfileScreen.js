@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRoute }  from '@react-navigation/native';
+import {useRoute} from '@react-navigation/native';
 import BottomSheet from '@gorhom/bottom-sheet';
 
 // Styling
@@ -21,20 +21,21 @@ import {
     ButtonContainer,
     Main, Container,
     WrapperScroll, AccountContainer,
-    ModalContent, SearchBox, TextWrapper
+    ModalContent, SearchBox, TextWrapper, Content, Card
 } from '../../styles/styles';
 import {jwtDecode} from "jwt-decode";
 import {H2, H3, H4, H5, H6} from "../../styles/text";
 import {ButtonButton} from "../../styles/buttons";
 import {useCombinedContext} from "../../CombinedContext";
 import {Ionicons} from '@expo/vector-icons';
+import {AccountImg} from "../../styles/images";
 
 const apiKey = process.env.REACT_NATIVE_API_KEY;
 const url = process.env.REACT_APP_BACKEND_URL
 
 const FriendsProfileScreen = () => {
     const route = useRoute();
-    const { friend } = route.params;
+    const {friend} = route.params;
 
     const [friendInfo, setFriendInfo] = useState([]);
 
@@ -107,14 +108,22 @@ const FriendsProfileScreen = () => {
                 />
             }>
                 <AccountContainer style={{minHeight: 800}}>
-                    <H2 tmargin='20px' lmargin='0px' bmargin='5px'>{friendInfo.username}</H2>
-                    <TextWrapper>
-                        <H6>Phone Number: {friendInfo.phone_number}</H6>
-                        <H6>Name: {friendInfo.first_name} {friendInfo.surname}</H6>
-                        <H6>Email: {friendInfo.email}</H6>
-                        {friendInfo.random_fav_station && <H6>Random Favourite Station: {friendInfo.random_fav_station.name}</H6>}
-                        {friendInfo.recent_activity && <><H6>Recent Activity: {friendInfo.recent_activity.activity}</H6><H6>Time: {friendInfo.recent_activity.timestamp}</H6></>}
-                    </TextWrapper>
+                    <Container>
+                        <H2 tmargin='5px' bmargin='5px'>@{friendInfo.username}</H2>
+                        <ButtonContainer style={{position: 'absolute', marginTop: 20, marginLeft: 20}}>
+                            <View style={{zIndex: 1, marginLeft: 'auto', marginRight: 0}}>
+                                <ButtonButton text="Friended" color="#eaedea" txtColor="#b8bec2"/>
+                            </View>
+                        </ButtonContainer>
+                        <AccountImg/>
+                        <H4>{friendInfo.first_name} {friendInfo.surname}</H4>
+                        <Card style={{marginRight: -10, marginLeft: -10}}>
+                            {friendInfo.random_fav_station &&
+                                <H6>Random Favourite Station: {friendInfo.random_fav_station.name}</H6>}
+                            {friendInfo.recent_activity && <><H6>Recent
+                                Activity: {friendInfo.recent_activity.activity}</H6><H6>Time: {friendInfo.recent_activity.timestamp}</H6></>}
+                        </Card>
+                    </Container>
                 </AccountContainer>
             </WrapperScroll>
         </Main>

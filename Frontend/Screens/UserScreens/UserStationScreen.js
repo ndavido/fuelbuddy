@@ -96,16 +96,14 @@ const UserStationScreen = () => {
                 <AccountContainer style={{minHeight: 800}}>
                     <H3 tmargin='20px' bmargin='20px'>my Stations</H3>
                     <ButtonContainer style={{position: 'absolute', marginTop: 15, marginLeft: 10}}>
-
                     </ButtonContainer>
                     <Content>
                         <View>
                                 {favoriteStations.map(station => (
-                                    <TouchableOpacity>
+                                    <TouchableOpacity key={station.station_id}>
                                         <CardMini bColor="#ffffff">
                                             <H5>{station.name}</H5>
-                                            <H6 style={{opacity: 0.6}}>{station.address}</H6>
-                                            <H6 style={{marginTop: 10}}>Current Prices</H6>
+                                            <H6 style={{marginTop: 10, opacity: 0.6}}>Current Prices</H6>
                                             <CardContainer style={{marginRight: -10, marginLeft: -10}}>
                                                 <Card bColor="#f7f7f7">
                                                     <H5 style={{opacity: 0.6, textAlign: 'center'}}>Petrol</H5>

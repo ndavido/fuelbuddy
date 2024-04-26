@@ -378,7 +378,7 @@ const FriendsScreen = () => {
                                 </View>
                             ))}
                         </View>
-                    <BottomSheet snapPoints={['50%', '90%']}
+                    <BottomSheet snapPoints={['50%', '99%']}
                                  enablePanDownToClose={true}
                                  index={-1}
                                  ref={bottomSheetRef}

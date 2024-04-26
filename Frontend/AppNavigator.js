@@ -42,6 +42,7 @@ import DeleteConfirmScreen from './Screens/UserScreens/DeleteConfirmScreen';
 import VehicleScreen from './Screens/UserScreens/VehicleScreen';
 import DeveloperScreen from './Screens/DeveloperScreen';
 import UserStationScreen from "./Screens/UserScreens/UserStationScreen";
+import AddVehicleScreen from "./Screens/UserScreens/AddVehicleScreen";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -99,6 +100,7 @@ const AccountNavigator = () => {
             <Stack.Screen name="Vehicle" component={VehicleScreen}/>
             <Stack.Screen name="Developer" component={DeveloperScreen}/>
             <Stack.Screen name="UserStation" component={UserStationScreen}/>
+            <Stack.Screen name="AddVehicle" component={AddVehicleScreen}/>
         </Stack.Navigator>
     );
 };
