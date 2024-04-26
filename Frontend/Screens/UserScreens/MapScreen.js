@@ -106,6 +106,8 @@ const MapScreen = () => {
     const [sortedStations, setSortedStations] = useState([]);
 
     const [refreshing, setRefreshing] = useState(false);
+    const [buttonEnabled, setButtonEnabled] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
     const snapPoints = useMemo(() => ['20%', '40%', '85%'], []);
 
@@ -182,6 +184,12 @@ const MapScreen = () => {
 
         fetchLocationAndPetrolStations();
 
+        setIsLoading(false);
+
+        const timeoutId = setTimeout(() => {
+            setButtonEnabled(true);
+        }, 10000);
+
         const calculateSortedStations = () => {
             if (sortOption === 'distance') {
                 setSortedStations([...nearbyStations].sort((a, b) => calculateDistance(a) - calculateDistance(b)));
@@ -195,6 +203,7 @@ const MapScreen = () => {
         return () => {
             clearInterval(refreshInterval);
             clearInterval(intervalId);
+            clearTimeout(timeoutId);
         };
     }, [nearbyStations, sortOption]);
 
@@ -555,7 +564,7 @@ const MapScreen = () => {
         const endLatitude = selectedStation.location.latitude;
         const endLongitude = selectedStation.location.longitude;
 
-        openMap({ latitude: endLatitude, longitude: endLongitude });
+        openMap({latitude: endLatitude, longitude: endLongitude});
     }
 
     const renderMap = () => {
@@ -797,27 +806,18 @@ const MapScreen = () => {
             optionsScrollViewRef.current.setNativeProps({scrollEnabled: isFullyOpen});
         };
 
-        const toggleMenu = () => {
-            setIsMenuExpanded(!isMenuExpanded);
-        };
-
         if (!isWeb && showNearbyStationsSheet) {
             return (
                 <BottomSheet snapPoints={['30%', '85%']} index={0} onChange={handleBottomSheetChange}>
                     <ScrollView style={{marginTop: 10}} ref={optionsScrollViewRef}>
                         <Container style={{paddingTop: 10}}>
-                            <TouchableOpacity onPress={toggleMenu}>
+                            <>
                                 <View>
                                     <View>
                                         <H4>Map Radius</H4>
                                         <H6 style={{opacity: 0.6}}>Higher Kilometers can cause performance Issues</H6>
                                     </View>
-                                    <Icon style={{position: 'absolute', top: 0, right: 0}}
-                                          name={isMenuExpanded ? 'chevron-up' : 'chevron-down'} size={20}
-                                          color="black"/>
                                 </View>
-                            </TouchableOpacity>
-                            {isMenuExpanded && (
                                 <View>
                                     <Slider
                                         value={userData.radius_preferences}
@@ -833,7 +833,7 @@ const MapScreen = () => {
                                                       disabled={!userData.radius_preferences || tempRadius === userData.radius_preferences}/>
                                     </ButtonContainer>
                                 </View>
-                            )}
+                            </>
                             <H4 style={{marginTop: 10}}>Stations Near Me</H4>
                             <H6 style={{opacity: 0.6}}>Sort By Distance or Price</H6>
                             <LRContainer mTop={10} mRight={-1} mLeft={-1}>
@@ -896,13 +896,13 @@ const MapScreen = () => {
         {renderRouteInfoBottomSheet()}
         {renderOptionsBottomSheet()}
         <View style={{position: 'absolute', top: 55, left: 10, zIndex: 0, display: 'flex', flexDirection: 'row'}}>
-
-            <TouchableOpacity style={{marginRight: 10}}>
-                <ButtonButton series="mci" icon="information" iconColor="#b8bec2" color="#F7F7F7"
+            <TouchableOpacity
+                style={{marginRight: 10}}>
+                <ButtonButton series="mci" disabled={!buttonEnabled} icon="information" iconColor="#b8bec2" color="#F7F7F7"
                               onPress={renderOptionsPress}/>
             </TouchableOpacity>
             <TouchableOpacity>
-                <ButtonButton icon="list" iconColor="#b8bec2" color="#F7F7F7" onPress={renderOptionsPress}/>
+                <ButtonButton icon="list" iconColor="#b8bec2" disabled={!buttonEnabled} color="#F7F7F7" onPress={renderOptionsPress}/>
             </TouchableOpacity>
         </View>
 
