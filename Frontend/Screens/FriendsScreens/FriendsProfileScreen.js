@@ -116,13 +116,22 @@ const FriendsProfileScreen = () => {
                             </View>
                         </ButtonContainer>
                         <AccountImg/>
-                        <H4>{friendInfo.first_name} {friendInfo.surname}</H4>
+                        <H4 style={{
+                            marginTop: 10,
+                            marginBottom: 20,
+                                textAlign: 'center',
+                                opacity: 0.5
+                            }}>{friendInfo.first_name} {friendInfo.surname}</H4>
                         <Card style={{marginRight: -10, marginLeft: -10}}>
-                            {friendInfo.random_fav_station &&
-                                <H6>Random Favourite Station: {friendInfo.random_fav_station.name}</H6>}
                             {friendInfo.recent_activity && <><H6>Recent
-                                Activity: {friendInfo.recent_activity.activity}</H6><H6>Time: {friendInfo.recent_activity.timestamp}</H6></>}
+                                Activity</H6><H5>{friendInfo.recent_activity.activity}</H5><H6 style={{opacity: 0.6}}>{friendInfo.recent_activity.timestamp}</H6></>}
                         </Card>
+                        {friendInfo.random_fav_station &&
+                            <Card style={{marginRight: -10, marginLeft: -10}}>
+                                <H6>Random Favorite Station</H6>
+                                <H5>{friendInfo.random_fav_station.name}</H5>
+                            </Card>
+                        }
                     </Container>
                 </AccountContainer>
             </WrapperScroll>

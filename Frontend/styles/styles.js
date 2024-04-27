@@ -183,6 +183,15 @@ export const LRButtonDiv = styled.View`
   position: absolute;
 `;
 
+export const LRButtonDivAlt = styled.View`
+  height: auto;
+  width: 100%;
+  margin-top: 20px;
+  margin-bottom: 100px;
+  padding: 20px;
+  position: relative;
+`;
+
 
 /* Dashboard Screen */
 export const DashboardContainer = styled.View`

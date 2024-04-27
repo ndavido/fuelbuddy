@@ -240,6 +240,8 @@ const DashboardScreen = () => {
                 dailyData.push({date: dateKey, value: cumulativeValue});
             }
 
+            cumulativeValue = parseFloat(cumulativeValue.toFixed(2));
+
             await setLineData(dailyData);
             await setCumulativeValue(cumulativeValue);
             await setRemainingValue(Math.max(0, weeklyBudget - cumulativeValue));

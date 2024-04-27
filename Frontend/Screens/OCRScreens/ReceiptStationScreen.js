@@ -10,7 +10,7 @@ import {H3, H4, H5, H6} from "../../styles/text";
 import {
     AccountContainer,
     ButtonContainer, Container, Content,
-    InputTxt, LRButtonDiv,
+    InputTxt, LRButtonDiv, LRButtonDivAlt,
     Main, SearchBox,
     TextContainer,
     WelcomeMain, Wrapper,
@@ -161,7 +161,7 @@ const ReceiptStationScreen = () => {
 
     return (
         <WelcomeMain>
-            <Wrapper>
+            <WrapperScroll>
                 <Content>
                     <Container>
                         <H3 bmargin="10px">Update Station Price</H3>
@@ -182,18 +182,18 @@ const ReceiptStationScreen = () => {
                                     />
                                     <>
                                         <H5 tmargin="20px" bmargin="10px">Results</H5>
-                                        <View style={{marginBottom: 30}}>
-                                            <FlatList
-                                                style={{height: 150}}
-                                                data={filteredStations}
-                                                keyExtractor={station => station.id}
-                                                renderItem={({item}) => (
-                                                    <TextContainer onPress={() => handleSelectingStation(item)}>
+                                        <FlatList
+                                            style={{height: 150}}
+                                            data={filteredStations}
+                                            keyExtractor={(item) => item.id}
+                                            renderItem={({item}) => (
+                                                <TouchableOpacity onPress={() => handleSelectingStation(item)}>
+                                                    <TextContainer>
                                                         {item.name} - {item.address}
                                                     </TextContainer>
-                                                )}
-                                            />
-                                        </View>
+                                                </TouchableOpacity>
+                                            )}
+                                        />
                                     </>
                                 </>
                             )}
@@ -217,14 +217,14 @@ const ReceiptStationScreen = () => {
                         </>
                         <H6 tmargin='10px' bmargin='10px'>{message}</H6>
                     </Container>
-                    <LRButtonDiv>
+                    <LRButtonDivAlt>
                         <ButtonButton color="#6bff91" txtWidth="100%"
                                       txtColor="white" text="Continue" onPress={handleSave}/>
                         <ButtonButton color="transparent" txtWidth="100%"
                                       txtColor="black" text="Skip" onPress={handleSkip}/>
-                    </LRButtonDiv>
+                    </LRButtonDivAlt>
                 </Content>
-            </Wrapper>
+            </WrapperScroll>
         </WelcomeMain>
     );
 };
